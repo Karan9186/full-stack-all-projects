@@ -1,0 +1,12 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  background: rgb(131, 246, 200);
+  background: linear-gradient(90deg, rgba(131, 246, 200, 0.1517857142857143) 16%, rgba(216, 251, 115, 0.04534313725490191) 49%, rgba(255, 187, 59, 0.050945378151260545) 96%);
+  overflow-x: hidden;
+}
+.example::-webkit-scrollbar {
+  display: none;
+}

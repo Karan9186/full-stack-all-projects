@@ -1,0 +1,93 @@
+.main_all_flex {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+}
+
+.flx {
+  /* background-color: red; */
+  border: 1px solid rgb(220, 220, 220);
+  display: flex;
+  width: 60vw;
+  height: 400px;
+  align-items: start;
+  /* justify-content: center; */
+  overflow: hidden;
+  margin-bottom: 30px;
+
+}
+
+.img_cont img {
+  height: 400px;
+  width: 30vw;
+  object-fit: cover;
+
+}
+
+.main_cont_content {
+  padding: 30px 30px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  color: rgb(127, 127, 127)
+}
+
+.admin_cont {
+  display: flex;
+  flex-direction: column;
+}
+
+.admin_cont .ad_cont_01 {
+  display: flex;
+  gap: 10px;
+  font-weight: 100;
+  align-items: center;
+
+}
+
+.ad_cont_02 {
+  margin-top: 20px;
+}
+
+.ad_cont_02 h1 {
+  font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+  padding-bottom: 20px;
+  font-weight: unset;
+  font-size: 30px;
+}
+
+.ad_cont_02 hr {
+  margin-top: 30px;
+}
+
+.flex_bx_coment {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 10px;
+}
+
+.flex_01 {
+  display: flex;
+  gap: 30px
+}
+
+.btn_like {
+  background-color: transparent;
+  color: black;
+  border: none
+}
+
+.btn_flex_box {
+  display: flex;
+  gap: 10px;
+}
+
+.btn_flex_box button {
+  margin-top: -16px;
+
+}
+.red_like{
+  color:red
+}

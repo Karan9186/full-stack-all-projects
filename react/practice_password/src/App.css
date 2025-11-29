@@ -1,0 +1,56 @@
+.all_checkbox {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 4vw;
+}
+
+.main_cont {
+  background-color: rgb(164, 159, 159);
+  padding: 20px 20px;
+  margin-top: 10vw;
+  color: white;
+  filter: drop-shadow(10px 10px 0px white);
+  border-radius: 10px;
+  font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+}
+
+.child_cont {
+  background-color: white;
+  padding: 10px 10px;
+  border-radius: 10px;
+  color: black;
+
+}
+
+.child_cont input {
+  width: 100%;
+  border: none;
+  background-color: black;
+  padding: 6px 7px;
+  color: white;
+
+  border-radius: 3px;
+}
+
+.number_cont {
+  display: flex;
+  flex-direction: row-reverse;
+  margin-top: 10px;
+  gap: 10px;
+}
+
+.number_cont input {
+  background-color: grey;
+  color: white;
+  text-align: center;
+}
+
+.number_cont button {
+  width: 100%;
+  border: none;
+  background-color: grey;
+  border-radius: 5px;
+  color: white;
+  text-transform: uppercase;
+}

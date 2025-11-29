@@ -1,0 +1,55 @@
+.nav_bar {
+  text-align: left;
+  left: -100%;
+  position: absolute;
+  width: 20%;
+  height: 500px;
+  transition: 1s;
+  background-color: yellow;
+}
+
+.nav_bar button {
+
+  margin-top: 20px;
+  padding: 10px 10px;
+
+}
+
+.nav_bar ul li {
+  list-style: none;
+  padding: 10px 10px;
+  font-size: 20px;
+  transition: 1s;
+  transition: all ease 1s;
+  left: -100px;
+}
+
+.style_span {
+  padding: 4px 4px;
+  width: 10%;
+}
+
+.blck_dis {
+  display: block;
+  left: 0%;
+}
+
+/* new nav */
+
+.nav_new{
+  position: absolute;
+  background-color:aqua;
+  padding:20px 20px;
+  left:-100%;
+  transition: all ease .7s;
+}
+
+
+.nav_new ul li{
+  list-style: none;
+}
+
+.set_nav{
+  left: 0%;
+
+}

@@ -1,0 +1,24 @@
+blogProject/
+node_modules/
+.env
+**/node_modules/
+**/.git
+**/.next
+**/.vite
+**/dist
+**/build
+*.zip
+full stack projects/**/*.zip
+
+full stack projects/bookstoreapp/
+full stack projects/e-comNextJs/
+full stack projects/food-mangament/
+full stack projects/MERNEcommerce/mern-ecommerce
+full stack projects/food-mangament/Food-delivery-app
+full stack projects/food-order/food-app-yt
+full stack projects/hotel-e-booking
+full stack projects/job-portal
+full stack projects/project clone/job_project/job-portal
+nextJs/test
+react/password_generator_app
+react/social-media-project

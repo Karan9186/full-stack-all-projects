@@ -1,0 +1,104 @@
+
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Calculator</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
+  <style>
+    .calculator {
+      width: 300px;
+      margin: 50px auto;
+      padding: 20px;
+      background-color: #f9f9f9;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+    .display {
+      width: 100%;
+      height: 40px;
+      margin-bottom: 20px;
+      padding: 10px;
+      font-size: 24px;
+      font-weight: bold;
+      text-align: right;
+      background-color: #f9f9f9;
+      border: 1px solid #ddd;
+    }
+    .button {
+      width: 60px;
+      height: 60px;
+      margin: 5px;
+      padding: 10px;
+      font-size: 18px;
+      font-weight: bold;
+      text-align: center;
+      background-color: #4CAF50;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+    .button:hover {
+      background-color: #3e8e41;
+    }
+  </style>
+</head>
+<body>
+  <div class="calculator">
+    <input type="text" id="display" class="display" disabled />
+    <div class="flex flex-wrap justify-center">
+      <button class="button" onclick="clearDisplay()">C</button>
+      <button class="button" onclick="backspace()">DEL</button>
+      <button class="button" onclick="calculate('%')">%</button>
+      <button class="button" onclick="calculate('/')">/</button>
+      <button class="button" onclick="calculate('7')">7</button>
+      <button class="button" onclick="calculate('8')">8</button>
+      <button class="button" onclick="calculate('9')">9</button>
+      <button class="button" onclick="calculate('*')">*</button>
+      <button class="button" onclick="calculate('4')">4</button>
+      <button class="button" onclick="calculate('5')">5</button>
+      <button class="button" onclick="calculate('6')">6</button>
+      <button class="button" onclick="calculate('-')">-</button>
+      <button class="button" onclick="calculate('1')">1</button>
+      <button class="button" onclick="calculate('2')">2</button>
+      <button class="button" onclick="calculate('3')">3</button>
+      <button class="button" onclick="calculate('+')">+</button>
+      <button class="button" onclick="calculate('0')">0</button>
+      <button class="button" onclick="calculate('.')">.</button>
+      <button class="button" onclick="calculate('=')">=</button>
+    </div>
+  </div>
+
+  <script>
+    let display = document.getElementById('display');
+    let expression = '';
+
+    function calculate(value) {
+      if (value === '=') {
+        try {
+          display.value = eval(expression);
+          expression = display.value;
+        } catch (e) {
+          display.value = 'Error';
+          expression = '';
+        }
+      } else {
+        expression += value;
+        display.value = expression;
+      }
+    }
+
+    function clearDisplay() {
+      display.value = '';
+      expression = '';
+    }
+
+    function backspace() {
+      expression = expression.slice(0, -1);
+      display.value = expression;
+    }
+  </script>
+</body>
+</html>

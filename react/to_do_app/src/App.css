@@ -1,0 +1,25 @@
+.input_container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2vw;
+  padding: 1vw 1vw;
+  padding-bottom: 2vw;
+}
+
+.main_app_container {
+  justify-content: center;
+  align-items: center;
+}
+
+.list_container {
+  display: flex;
+  align-items: left;
+  justify-content: left;
+  gap: 2vw;
+  padding-bottom: 2vw;
+}
+
+.title {
+  margin-top: 10vw;
+}

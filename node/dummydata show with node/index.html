@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Product Detail</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f5f5f5;
+      }
+
+      .product-container {
+        width: 80%;
+        margin: 20px auto;
+        padding: 20px;
+        background-color: #fff;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      }
+
+      .product-header {
+        border-bottom: 1px solid #ddd;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+      }
+
+      .breadcrumb a {
+        text-decoration: none;
+        color: #007bff;
+      }
+
+      .product-title {
+        font-size: 24px;
+        margin: 10px 0;
+      }
+
+      .product-main {
+        display: flex;
+      }
+
+      .product-image-gallery {
+        flex: 1;
+        margin-right: 20px;
+      }
+
+      .product-main-image {
+        width: 100%;
+        height: auto;
+      }
+
+      .product-thumbnails {
+        display: flex;
+        gap: 10px;
+        margin-top: 10px;
+      }
+
+      .product-thumbnails img {
+        width: 60px;
+        height: 60px;
+        cursor: pointer;
+      }
+
+      .product-info {
+        flex: 1;
+      }
+
+      .rating span {
+        font-size: 20px;
+        color: #ffa500;
+      }
+
+      .price {
+        margin: 10px 0;
+      }
+
+      .price span {
+        font-size: 24px;
+        font-weight: bold;
+      }
+
+      .discount {
+        font-size: 18px;
+        color: #999;
+        text-decoration: line-through;
+        margin-left: 10px;
+      }
+
+      .availability {
+        margin: 10px 0;
+        font-weight: bold;
+        color: #28a745;
+      }
+
+      .short-description {
+        margin: 10px 0;
+      }
+
+      .purchase-section {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin: 20px 0;
+      }
+
+      .add-to-cart {
+        background-color: #007bff;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        cursor: pointer;
+        font-size: 16px;
+      }
+
+      .add-to-cart:hover {
+        background-color: #0056b3;
+      }
+
+      .product-details {
+        margin-top: 20px;
+      }
+
+      .product-details h2,
+      .product-details h3 {
+        margin-top: 20px;
+      }
+
+      .reviews .review {
+        border-bottom: 1px solid #ddd;
+        padding: 10px 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="product-container">
+      <div class="product-header">
+        <div class="breadcrumb">
+          <a href="#">Home</a> &gt; <a href="#">Category</a> &gt;
+          <span>Product Name</span>
+        </div>
+        <h1 class="product-title">**title**</h1>
+      </div>
+      <div class="product-main">
+        <div class="product-image-gallery">
+          <img src="**img**" alt="Product Image" class="product-main-image" />
+          <!-- <div class="product-thumbnails">
+            <img src="**img**" alt="Thumbnail 1" />
+            <img src="**img**" alt="Thumbnail 2" />
+            <img src="**img**" alt="Thumbnail 3" />
+          </div> -->
+        </div>
+        <div class="product-info">
+          <div class="rating">
+            <span>⭐⭐⭐⭐☆</span>
+            <span>(24 reviews)</span>
+          </div>
+          <div class="price">
+            <span>**price**</span>
+            <span class="discount">$149.99</span>
+          </div>
+          <div class="availability">
+            <span>In Stock</span>
+          </div>
+          <div class="short-description">
+            <p>
+              **description**
+            </p>
+          </div>
+          <div class="purchase-section">
+            <label for="quantity">Quantity:</label>
+            <input
+              type="number"
+              id="quantity"
+              name="quantity"
+              value="1"
+              min="1"
+            />
+            <button class="add-to-cart">Add to Cart</button>
+          </div>
+        </div>
+      </div>
+      <div class="product-details">
+        <h2>Product Details</h2>
+        <p>
+          Here is an in-depth description of the product, covering all features
+          and specifications.
+        </p>
+        <h3>Specifications</h3>
+        <ul>
+          <li>Specification 1</li>
+          <li>Specification 2</li>
+          <li>Specification 3</li>
+        </ul>
+        <h3>Reviews</h3>
+        <div class="reviews">
+          <div class="review">
+            <p><strong>John Doe:</strong> Great product!</p>
+          </div>
+          <div class="review">
+            <p><strong>Jane Smith:</strong> Satisfied with the quality.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

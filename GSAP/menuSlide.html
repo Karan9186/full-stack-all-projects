@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/remixicon@4.3.0/fonts/remixicon.css"
+      rel="stylesheet"
+    />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+      }
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+        overflow-x: hidden;
+      }
+      #main {
+        width: 100%;
+        height: 100%;
+        background-image: url(https://images.unsplash.com/photo-1718976142386-e9ebe34d3aee?q=80&w=1932&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D);
+      }
+      #nav {
+        object-fit: cover;
+        display: flex;
+        justify-content: space-between;
+        padding: 20px 50px;
+        align-items: center;
+      }
+      #nav i {
+        cursor: pointer;
+        font-size: 30px;
+      }
+      #full {
+        position: absolute;
+        top: 0;
+        right: -40%;
+        background-color: rgba(255, 255, 255, 0.42);
+        width: 20%;
+        height: 100%;
+        padding: 150px 50px;
+        backdrop-filter: blur(40px);
+      }
+      #full h4 {
+        font-size: 50px;
+        font-weight: 500;
+        text-transform: capitalize;
+      }
+      #full i {
+        cursor: pointer;
+        position: absolute;
+        top: 6%;
+        right: 5%;
+        font-size: 30px;
+        background-color: white;
+        border-radius: 50%;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="main">
+      <div id="nav">
+        <h1>karan</h1>
+        <i class="ri-menu-4-line"></i>
+      </div>
+      <div id="full">
+        <h4>home</h4>
+        <h4>services</h4>
+        <h4>about</h4>
+        <h4>plan</h4>
+        <i class="ri-close-line"></i>
+      </div>
+    </div>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"
+      integrity="sha512-7eHRwcbYkK4d9g/6tD/mhkf++eoTHwpNM9woBxtPUBWm67zeAfFC+HrdoE2GanKeocly/VxeLvIqwvCdk7qScg=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    ></script>
+    <script src="./menuSlide.js "></script>
+  </body>
+</html>

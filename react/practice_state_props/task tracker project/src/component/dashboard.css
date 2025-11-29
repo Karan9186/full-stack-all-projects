@@ -1,0 +1,22 @@
+.icons {
+  border-radius: 100px;
+}
+
+.main_dashboard {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+  text-transform: capitalize;
+
+}
+
+.main_dashboard a {
+  color: black;
+  text-decoration: none;
+}
+
+.activ {
+  color: green;
+  font-weight: 300;
+}

@@ -1,0 +1,43 @@
+#header {
+  display: flex;
+  align-items: center;
+  text-transform: capitalize;
+  padding: 16px 20px;
+  gap: 10px;
+  justify-content: space-between;
+}
+
+.header01 {
+  display: flex;
+  align-items: center;
+  padding-left: 20px;
+  gap: 10px;
+  font-weight: 200;
+}
+
+.header02 {
+  display: flex;
+  align-items: center;
+  gap: 17px;
+  padding: 3px 20px;
+  background-color: rgb(254, 254, 254);
+  border-radius: 30px;
+  box-shadow: 0px 0px 10px 10px transparent;
+}
+
+.header02 .man_input {
+  width: 55vw;
+  border: 1px solid transparent;
+  padding: 5px 0px;
+  background-color: transparent;
+  border-right: 1px solid grey;
+
+}
+
+.summary_class {
+  margin-top: 10px;
+}
+
+.header02 .man_input:focus {
+  outline: none;
+}

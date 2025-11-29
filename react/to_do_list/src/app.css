@@ -1,0 +1,95 @@
+.flex_class {
+  display: flex;
+  /* align-items: center; */
+  margin:auto;
+  margin-top:4%;
+  font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+  justify-content: center;
+  height: 80vh;
+  width: 80vw;
+  background-color: rgba(225, 246, 214, 0.739);
+}
+
+.main_container {
+  padding: 20px 20px;
+  height: 80vh;
+  width: 80vw;
+
+}
+
+.second_div_con form{
+  gap:10px;
+  display: flex;
+}
+.second_div_con form input{
+  width: 60%;
+  padding:4px 4px;
+  font-size: large;
+  background-color:rgb(168, 231, 168);
+  border:2px solid black;
+  border-radius: 3px;
+}
+.second_div_con form button{
+  width: 20%;
+  padding:5px 6px;
+  background-color: green;
+  font-weight: 900;
+  font-size: large;
+  color:white;
+  border:none;
+  border-radius: 4px;
+}
+
+.all_items_show{
+  background-color: white;
+  border-radius: 10px;
+  padding:10px 10px;
+  margin-top:20px;
+  width: 50%;
+  overflow-y: scroll;
+  height: 274px;
+}
+.all_items_show ul li{
+  list-style-type: none;
+font-size: large;
+display: flex;
+justify-content:space-between;
+align-items: center;
+/* border-bottom: 2px solid rgb(177, 243, 177); */
+}
+.all_items_show ul li h3{
+  width: 100%;  
+padding:3px 3px;
+border-radius: 3px;
+}
+.all_items_show ul li button{
+  padding: 3px 10px ;
+  width: 100px;
+  margin-top: 10px;
+  font-size: large;
+  margin-bottom: 10px;
+  background-color:red;
+  border:none;
+  color:white;
+}
+.flex-main-div{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top:40px
+}
+.error-if-not-set-some{
+  color:white;
+  background-color: rgb(205, 68, 68);
+  padding:10px 10px;
+  border-radius: 10px;
+}
+.line_items{
+  text-decoration: line-through;
+  background-color: green;
+  color:white;
+  
+}
+.display_none{
+  display: none;
+}

@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <% for (let product of allProduct) { %> <% if (product) { %>
+    <div
+      style="background-color: red; margin-bottom: 10px; padding: 10px 10px"
+      id="<%= product._id %>"
+    >
+      <h1>name = <%= product.name %></h1>
+      <h1>email =<%= product.email %></h1>
+      <h1>pass =<%= product.pass %></h1>
+      <button onclick="deleteProduct('<%= product._id %>')">
+        delete product
+      </button>
+    </div>
+    <hr />
+    <% } %> <% } %>
+    <h1>this is the server side render file</h1>
+    <script>
+      async function deleteProduct(id) {
+        let prdId = id;
+        const response = await fetch("/demo/" + id, {
+          method: "DELETE",
+        });
+        const doc = await response.json();
+        const el = document.getElementById(doc._id);
+        el.remove();
+      }
+    </script>
+  </body>
+</html>

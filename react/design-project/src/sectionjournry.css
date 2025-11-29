@@ -1,0 +1,44 @@
+.mainJourny{
+  height: 100vh;
+  background-color: rgba(137, 43, 226, 0.342);
+  padding: 30px 30px;
+  padding-left: 20vw;
+  line-height: 5ch;
+  color:rgba(0, 0, 0, 0.764)
+}
+.imgJourney{
+
+  padding-top: 50px;
+  margin-left: 20vw;
+}
+.imgJourney img{
+  width: 40vw;
+  height: 70vh;
+  object-fit: cover;
+  border-radius: 3px;
+}
+.divTopJourny{
+  padding-top: 100px;
+
+}
+.btnJourny{
+  background-color: transparent;
+  border: none;
+  border:1px solid blue;
+  padding: 0px 90px;
+  border-radius: 10px;
+  text-transform: uppercase;
+  transition: 0.4s;
+}
+.btnJourny:hover{
+  background-color: blue;
+  color:white
+}
+.mainJourny2{
+  height: 100vh;
+  background-color:rgba(255, 228, 196, 0.552);
+  padding: 30px 30px;
+  padding-left: 20vw;
+  line-height: 5ch;
+  color:rgba(0, 0, 0, 0.764)
+}

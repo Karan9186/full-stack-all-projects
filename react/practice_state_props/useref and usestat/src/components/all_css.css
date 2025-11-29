@@ -1,0 +1,73 @@
+* {
+  padding: 0px;
+  margin: 0px;
+  font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+}
+
+body {
+  background-color: rgb(255, 238, 238);
+}
+
+.heading {
+  text-align: center;
+  margin-top: 10%;
+  font-weight: 400;
+}
+
+
+.div_todo {
+  display: flex;
+  align-items: center;
+  margin-top: 30px;
+  justify-content: center;
+  gap: 60px;
+  padding: 20px 20px;
+}
+
+.div_todo .textbox {
+  padding: 4px 10px;
+  width: 400px;
+  border: none;
+  font-size: 1.3rem;
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+  border-bottom: 2px solid black;
+}
+
+.div_todo .date_box {
+  padding: 5px 15px;
+  width: 130px;
+  border: none;
+  font-weight: 1.3rem;
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+  border-bottom: 2px solid black;
+}
+
+.div_todo .textbox:focus {
+  outline: none;
+}
+
+.div_todo .submit_todo {
+  padding: 5px 5px;
+  border: none;
+  background-color: white;
+
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+  width: 100px;
+  font-size: 1rem;
+  transition: all ease 0.5s;
+  border-bottom: 2px solid black;
+}
+
+.div_todo .submit_todo:hover {
+  background-color: rgb(255, 202, 202);
+  color: white;
+}
+.all_items_todo{
+  display: flex;
+  gap:20px;
+  align-items: center;
+  justify-content: space-evenly;
+}

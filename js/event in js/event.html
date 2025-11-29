@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      body {
+        background-image: linear-gradient(to right, #636bed, #983fc6);
+      }
+      .mainDiv {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        margin-top: 15%;
+      }
+      .btns button {
+        padding: 6px 20px;
+        border: none;
+        border-radius: 3px;
+        font-weight: 700;
+        box-shadow: 1px 1px 10px 1px rgb(0, 0, 0);
+      }
+      .mainColorCode .colorCodePre {
+        background-color: rgba(255, 255, 255, 0.537);
+        padding: 10px 10px;
+        border-radius: 6px;
+        border-left: 5px solid white;
+        font-weight: 700;
+        color: white;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="mainDiv">
+      <div class="btns">
+        <button class="btn1">#5C8FE5</button>
+        <button class="btn2">#983FC6</button>
+      </div>
+      <p style="color: white; text-transform: capitalize">
+        you can copy the color code here
+      </p>
+
+      <div class="mainColorCode">
+        <pre class="colorCodePre">
+background-image: linear-gradient(
+to right,
+#5C8FE5,
+#983FC6)
+        </pre>
+      </div>
+    </div>
+
+    <script>
+      let colorCode = "0123456789abcdef";
+      let actualCode = "#";
+      let btn1 = document.querySelector(".btn1");
+      let btn2 = document.querySelector(".btn2");
+      let btn1Color = "#5C8FE5";
+      let btn2Color = "#983FC6";
+      let showColorCode = document.querySelector(".colorCodePre");
+
+      const colorCodeGen = () => {
+        let color = "#";
+        for (let i = 0; i < 6; i++) {
+          color = color + colorCode[Math.floor(Math.random() * 16)];
+        }
+        return color;
+      };
+
+      const handleBtn1 = () => {
+        btn1Color = colorCodeGen();
+        btn1.textContent = btn1Color;
+        document.body.style.backgroundImage = `linear-gradient(
+          to right,
+          ${btn1Color},
+          ${btn2Color}
+        )`;
+        showColorCode.textContent = `background-image:linear-gradient(
+to right,
+${btn1Color},
+${btn2Color})`;
+      };
+
+      const handleBtn2 = () => {
+        btn2Color = colorCodeGen();
+        btn2.textContent = btn2Color;
+        console.log(colorCode);
+        document.body.style.backgroundImage = `linear-gradient(
+to right,
+${btn1Color},
+${btn2Color})`;
+
+        showColorCode.textContent = `background-image:linear-gradient(
+to right,
+${btn1Color},
+${btn2Color})`;
+      };
+      btn1.addEventListener("click", handleBtn1);
+      btn2.addEventListener("click", handleBtn2);
+      showColorCode.addEventListener("click", () => {
+        navigator.clipboard.writeText(showColorCode.textContent);
+        alert("text copied");
+      });
+    </script>
+  </body>
+</html>

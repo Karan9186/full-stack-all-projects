@@ -1,0 +1,26 @@
+.company_logos {
+  display: flex;
+  height: 100px;
+  width: 100px;
+  padding: 20px 20px;
+  padding-inline-start: 7vw;
+
+}
+.d_flex_con{
+  padding:10px 10px;
+  padding-top:30px
+}
+.company_logos img {
+padding-inline-start: 4vw;
+  height: 100px;
+  width: 100px;
+}
+
+.our_details {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  text-transform: capitalize;
+}
+

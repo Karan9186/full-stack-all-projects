@@ -1,0 +1,43 @@
+gsap.to(".box-div",{
+  x:1200,
+  duration:2,
+  delay:1,
+  rotate:360,
+  backgroundColor:"grey",
+  borderRadius:"100%",
+  repeat:2,
+  yoyo:true,
+  scale:0.4
+})
+
+gsap.from("h1",{
+  opacity:0,
+  duration:1,
+  delay:0.6,
+  y:30,
+  stagger:1
+})
+
+gsap.to(".box1",{
+  duration:2,
+  delay:1,
+  x:1000,
+  scale:0.5
+})
+gsap.to(".box2",{
+  duration:2,
+  delay:3,
+  rotate:360,
+  borderRadius:100,
+  x:1000
+})
+gsap.to(".box3",{
+  duration:2,
+  delay:5,
+  x:1000,
+  scale:0.5,
+  rotate:360,
+  borderRadius:100,
+  repeat:2,
+  yoyo:true
+})

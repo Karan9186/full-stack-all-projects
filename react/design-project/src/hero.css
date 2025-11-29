@@ -1,0 +1,55 @@
+.mainHerosection{
+  display: flex;
+padding: 20px 20px;
+align-items: center;
+padding-top: 17vh;
+}
+.forImg {
+  width: 50%;
+}
+.forImg img{
+  width: 46vw;
+  height: 80vh;
+  border-radius: 10px;
+  /* box-shadow: 1px 1px 30px rgba(0, 0, 255, 0.291);   */
+}
+.forRightPart{
+  line-height: 4ch;
+}
+.mainLeftHero{
+  /* background-color:rgb(228, 243, 255); */
+  border-radius: 10px;
+  padding: 20px 30px;
+  border:1px solid blue
+}
+.mainLeftHero h3{
+  color: blue;
+  text-transform: uppercase;
+}
+.btnHero{
+  background-color: transparent;
+  border:1px solid blue;
+  border-radius: 8px;
+  transition: 0.2s;
+}
+.btnHero:hover{
+  margin-left: 20px;
+  transform:scale(110%);
+  box-shadow: 1px 1px 10px rgba(0, 0, 0, 0.419);
+}
+
+.mainHerosection p{
+  color: rgb(65, 65, 65);
+}
+.mainLeftHero button{
+  border:1px solid blue;
+  background-color: transparent;
+  border-radius: 7px;
+  transition: 0.2s;
+  color:blue;
+  
+}
+.mainLeftHero button:hover{
+  transform:scale(110%);
+  box-shadow: 1px 1px 10px rgba(0, 0, 0, 0.419);
+}

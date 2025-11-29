@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.min.js"
+      integrity="sha512-ykZ1QQr0Jy/4ZkvKuqWn4iF3lqPZyij9iRv6sGqLRdTPkY69YX6+7wvVGmsdBbiIfN/8OdsI7HABjvEok6ZopQ=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    ></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap-grid.min.css"
+      integrity="sha512-i1b/nzkVo97VN5WbEtaPebBG8REvjWeqNclJ6AItj7msdVcaveKrlIIByDpvjk5nwHjXkIqGZscVxOrTb9tsMA=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+  </head>
+  <body>
+    <form method="POST" action="/demo" enctype="application/x-www-form-urlencoded">
+      <div class="form-group">
+        <label for="exampleInputEmail1">name </label>
+        <input
+          type="text"
+          class="form-control"
+          placeholder="Enter name"
+          name="name"
+        />
+      </div>
+      <div class="form-group">
+        <label for="exampleInputEmail1">Email address</label>
+        <input
+          type="email"
+          class="form-control"
+          placeholder="Enter email"
+          name="email"
+        />
+      </div>
+      <div class="form-group">
+        <label for="exampleInputPassword1">Password</label>
+        <input
+          type="password"
+          class="form-control"
+          id="exampleInputPassword1"
+          placeholder="Password"
+          name="pass"
+        />
+      </div>
+
+      <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
+  </body>
+</html>

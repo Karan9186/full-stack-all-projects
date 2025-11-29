@@ -1,0 +1,45 @@
+.d_flex_class {
+  display: flex;
+  padding: 20px 20px;
+  align-items: center;
+  justify-content: center;
+  background-color: rgb(248 248 248);
+  padding-top: 68px;
+}
+
+.detail_of_img {
+  line-height: 6ch;
+}
+
+.detail_of_img h1 {
+  font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+  font-size: 4rem;
+  color: grey;
+}
+
+.detail_of_img h2 {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 3rem;
+  color: green;
+}
+
+.d_flex_class .img_back {
+  height: 40vw;
+  width: 40vw;
+}
+
+.detail_of_img button {
+  padding: 10px 17px;
+  font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+  background-color: green;
+  color: white;
+  border: none;
+  border-radius: 3px;
+}
+
+.d_flex_class .img_back img {
+  height: 40vw;
+  width: 40vw;
+  object-fit: cover;
+  mix-blend-mode: multiply;
+}
