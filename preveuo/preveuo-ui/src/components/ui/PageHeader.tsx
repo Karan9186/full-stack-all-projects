@@ -30,13 +30,13 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
       <div className="flex flex-col gap-1.5 max-w-2xl">
         {breadcrumbs && <div className="mb-1">{breadcrumbs}</div>}
         <div className="flex items-center gap-3">
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[#0f0f1a]">
+          <h1 className="text-2xl sm:text-[26px] font-bold tracking-[-0.025em] text-[#0f0f1a] leading-tight">
             {title}
           </h1>
           {badge && <div>{badge}</div>}
         </div>
         {description && (
-          <p className="text-[14px] sm:text-[15px] text-[#6b7280] leading-relaxed">
+          <p className="text-[13.5px] sm:text-[14px] text-[#6b7280] font-normal leading-relaxed">
             {description}
           </p>
         )}

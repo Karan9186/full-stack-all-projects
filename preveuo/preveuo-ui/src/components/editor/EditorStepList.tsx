@@ -24,7 +24,7 @@ export const EditorStepList: React.FC<EditorStepListProps> = ({
       <div className="p-4 border-b border-[#f0f0f4] flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Layers className="w-4 h-4 text-[#5B5CE2]" />
-          <span className="text-xs font-bold text-[#0f0f1a] uppercase tracking-wider">
+          <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#5B5CE2]">
             Steps ({steps.length})
           </span>
         </div>
@@ -61,17 +61,17 @@ export const EditorStepList: React.FC<EditorStepListProps> = ({
                   sizes="56px"
                   className="object-cover opacity-80"
                 />
-                <span className="absolute bottom-1 right-1 text-[9px] font-bold text-white bg-black/70 px-1 rounded">
+                <span className="absolute bottom-1 right-1 text-[9.5px] font-medium text-white bg-black/70 px-1 rounded">
                   #{idx + 1}
                 </span>
               </div>
 
               {/* Title & info */}
               <div className="flex-1 min-w-0">
-                <h4 className="text-xs font-bold text-[#0f0f1a] truncate">
+                <h4 className="text-[12.5px] font-medium text-[#0f0f1a] truncate">
                   {st.title}
                 </h4>
-                <p className="text-[11px] text-[#9ca3af] truncate mt-0.5">
+                <p className="text-[11px] text-[#6b7280] font-normal truncate mt-0.5">
                   {st.callout.title}
                 </p>
               </div>

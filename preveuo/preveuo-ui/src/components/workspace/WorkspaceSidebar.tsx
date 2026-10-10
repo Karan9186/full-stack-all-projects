@@ -127,14 +127,17 @@ export const WorkspaceSidebar: React.FC<WorkspaceSidebarProps> = ({
                 key={item.id}
                 href={item.href}
                 onClick={(e) => handleNavClick(item.id, e)}
-                className={`flex items-center justify-between px-3.5 py-2 rounded-xl text-[13.5px] font-semibold transition-all ${
+                className={`relative flex items-center justify-between px-3.5 py-2.5 rounded-xl text-[13.5px] transition-all ${
                   isActive
-                    ? 'bg-[#5B5CE2]/10 text-[#5B5CE2]'
-                    : 'text-[#4b5563] hover:text-[#0f0f1a] hover:bg-[#f8f8fc]'
+                    ? 'bg-[#f4f4fa] text-[#0f0f1a] font-semibold'
+                    : 'text-[#4b5563] font-medium hover:text-[#0f0f1a] hover:bg-[#f8f8fc]'
                 }`}
               >
+                {isActive && (
+                  <span className="absolute -left-3 top-1/2 -translate-y-1/2 w-1 h-5 bg-[#5B5CE2] rounded-r-full" />
+                )}
                 <div className="flex items-center gap-3">
-                  <Icon className={`w-4 h-4 ${isActive ? 'text-[#5B5CE2]' : 'text-[#6b7280]'}`} />
+                  <Icon className={`w-4 h-4 ${isActive ? 'text-[#0f0f1a]' : 'text-[#6b7280]'}`} />
                   <span>{item.label}</span>
                 </div>
 
@@ -164,14 +167,17 @@ export const WorkspaceSidebar: React.FC<WorkspaceSidebarProps> = ({
               key={item.id}
               href={item.href}
               onClick={(e) => handleNavClick(item.id, e)}
-              className={`flex items-center justify-between px-3.5 py-2 rounded-xl text-[13px] font-semibold transition-colors ${
+              className={`relative flex items-center justify-between px-3.5 py-2.5 rounded-xl text-[13px] transition-colors ${
                 isActive
-                  ? 'bg-[#5B5CE2]/10 text-[#5B5CE2]'
-                  : 'text-[#4b5563] hover:text-[#0f0f1a] hover:bg-[#f8f8fc]'
+                  ? 'bg-[#f4f4fa] text-[#0f0f1a] font-semibold'
+                  : 'text-[#4b5563] font-medium hover:text-[#0f0f1a] hover:bg-[#f8f8fc]'
               }`}
             >
+              {isActive && (
+                <span className="absolute -left-3 top-1/2 -translate-y-1/2 w-1 h-5 bg-[#5B5CE2] rounded-r-full" />
+              )}
               <div className="flex items-center gap-3">
-                <Icon className={`w-4 h-4 ${isActive ? 'text-[#5B5CE2]' : 'text-[#6b7280]'}`} />
+                <Icon className={`w-4 h-4 ${isActive ? 'text-[#0f0f1a]' : 'text-[#6b7280]'}`} />
                 <span>{item.label}</span>
               </div>
 
@@ -191,14 +197,14 @@ export const WorkspaceSidebar: React.FC<WorkspaceSidebarProps> = ({
             className="flex items-center justify-between p-2 rounded-xl hover:bg-[#f8f8fc] transition-colors cursor-pointer select-none"
           >
             <div className="flex items-center gap-2.5 min-w-0">
-              <div className="w-8 h-8 rounded-full bg-[#5B5CE2]/15 text-[#5B5CE2] flex items-center justify-center font-bold text-xs shrink-0">
+              <div className="w-8 h-8 rounded-full bg-[#ecebfa] text-[#5B5CE2] flex items-center justify-center font-bold text-xs shrink-0">
                 {usrInitials}
               </div>
               <div className="min-w-0">
-                <h5 className="text-[12.5px] font-bold text-[#0f0f1a] truncate leading-tight">
+                <h5 className="text-[13px] font-semibold text-[#0f0f1a] truncate leading-tight">
                   {usrName}
                 </h5>
-                <p className="text-[11px] text-[#9ca3af] truncate leading-tight mt-0.5">
+                <p className="text-[11.5px] text-[#6b7280] truncate leading-tight mt-0.5">
                   {usrEmail}
                 </p>
               </div>

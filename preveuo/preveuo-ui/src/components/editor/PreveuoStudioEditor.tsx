@@ -5,6 +5,7 @@ import Link from 'next/link';
 import {
   FullDemoData,
   IDemoScene,
+  SceneViewport,
   IDemoStep,
   IDemoElement,
   IDemoInteraction,
@@ -14,6 +15,16 @@ import { DemoRuntimePlayer } from '@/components/runtime/DemoRuntimePlayer';
 import { HotspotMarker, HotspotPropertiesPanel } from '@/components/demos/hotspots';
 import { ChapterRenderer, ChapterPropertiesPanel } from '@/components/demos/chapters';
 import { AddStepModal } from '@/components/demos/steps/AddStepModal';
+import { AspectRatioWarningModal } from '@/components/demos/AspectRatioWarningModal';
+import {
+  calculateAspectRatio,
+  areAspectRatiosMatching,
+  getCanonicalDemoAspectRatio,
+  getImageDimensions,
+  cropImageToAspectRatio,
+  AspectRatioInfo,
+  CanonicalAspectRatioInfo,
+} from '@/lib/utils/aspectRatio';
 import { Button, IconButton, Badge, Input, Textarea, Select } from '@/components/ui';
 import {
   ArrowLeft,
@@ -37,6 +48,13 @@ import {
   Moon,
   Plus,
   Video,
+  Upload,
+  Search,
+  Share2,
+  LayoutGrid,
+  Image as ImageIcon,
+  Command,
+  X,
 } from 'lucide-react';
 
 interface PreveuoStudioEditorProps {
@@ -48,29 +66,58 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
   initialData,
 }) => {
   const [demo, setDemo] = useState(initialData.demo);
-  const [scenes, setScenes] = useState<IDemoScene[]>(() =>
-    initialData.scenes.map((s) => ({
-      ...s,
-      sourceAssetUrl: s.sourceAssetUrl?.includes('1551288049-bebda4e38f71')
-        ? '/yaanna-webpage.png'
-        : s.sourceAssetUrl,
-    }))
-  );
+  const [scenes, setScenes] = useState<IDemoScene[]>(initialData.scenes);
   const [steps, setSteps] = useState<IDemoStep[]>(initialData.steps);
   const [elements, setElements] = useState<IDemoElement[]>(initialData.elements);
   const [interactions, setInteractions] = useState<IDemoInteraction[]>(initialData.interactions);
   const [chapters, setChapters] = useState<IDemoChapter[]>(initialData.chapters || []);
 
-  // Node selection: 'step' or 'chapter'
+  // Synchronize state if initialData changes across navigations
+  useEffect(() => {
+    setDemo(initialData.demo);
+    setScenes(initialData.scenes);
+    setSteps(initialData.steps);
+    setElements(initialData.elements);
+    setInteractions(initialData.interactions);
+    setChapters(initialData.chapters || []);
+    setActiveStepIndex(0);
+    setSelectedNodeType('step');
+    if (initialData.steps && initialData.steps.length > 0) {
+      const firstStepSceneId = initialData.steps[0].sceneId;
+      const matchIdx = initialData.scenes.findIndex(
+        (sc) => sc.id === firstStepSceneId || (sc as any)._id === firstStepSceneId
+      );
+      setActiveSceneIndex(matchIdx !== -1 ? matchIdx : 0);
+    } else {
+      setActiveSceneIndex(0);
+    }
+  }, [initialData]);
+
+  // Node selection: always default to 'step' to show the first step when opening demo
   const [selectedNodeType, setSelectedNodeType] = useState<'step' | 'chapter'>('step');
   const [selectedChapterId, setSelectedChapterId] = useState<string | null>(
-    (initialData.chapters && initialData.chapters.length > 0) ? initialData.chapters[0].id : null
+    initialData.chapters && initialData.chapters.length > 0 ? initialData.chapters[0].id : null
   );
   const [openChapterMenuId, setOpenChapterMenuId] = useState<string | null>(null);
 
-  const [activeSceneIndex, setActiveSceneIndex] = useState(0);
   const [activeStepIndex, setActiveStepIndex] = useState(0);
+  const [activeSceneIndex, setActiveSceneIndex] = useState(() => {
+    if (initialData.steps && initialData.steps.length > 0) {
+      const firstStepSceneId = initialData.steps[0].sceneId;
+      const matchIdx = initialData.scenes.findIndex(
+        (sc) => sc.id === firstStepSceneId || (sc as any)._id === firstStepSceneId
+      );
+      if (matchIdx !== -1) return matchIdx;
+    }
+    return 0;
+  });
   const [activeTab, setActiveTab] = useState<'step' | 'interactions' | 'settings'>('step');
+
+  // Direct media upload and drag & drop state
+  const [isUploadingMedia, setIsUploadingMedia] = useState(false);
+  const [isDraggingOverStage, setIsDraggingOverStage] = useState(false);
+  const replaceFileInputRef = useRef<HTMLInputElement>(null);
+  const directFileInputRef = useRef<HTMLInputElement>(null);
 
   // Hotspot Editing & Placement state
   const [isPlacingHotspot, setIsPlacingHotspot] = useState(false);
@@ -87,6 +134,23 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
   );
   const [showPublishModal, setShowPublishModal] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
+  const [isShortcutModalOpen, setIsShortcutModalOpen] = useState(false);
+  const [lastAddedStepId, setLastAddedStepId] = useState<string | null>(null);
+  const [lastAddedChapterId, setLastAddedChapterId] = useState<string | null>(null);
+
+  // Canonical Aspect Ratio single source of truth across editor, preview, and player
+  const canonicalRatioInfo = useMemo(() => {
+    return getCanonicalDemoAspectRatio(demo, scenes);
+  }, [demo, scenes]);
+
+  // Aspect Ratio Warning Modal state for direct uploads and scene replacements
+  const [editorAspectWarning, setEditorAspectWarning] = useState<{
+    file: File;
+    currentInfo: CanonicalAspectRatioInfo;
+    newInfo: AspectRatioInfo;
+    target: 'direct_upload' | 'replace_scene';
+  } | null>(null);
+  const [isEditorCropping, setIsEditorCropping] = useState(false);
 
   const canvasRef = useRef<HTMLDivElement>(null);
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -109,27 +173,36 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
       if (el.stepId) {
         return el.stepId === currentStep?.id || el.stepId === currentStep?._id;
       }
-      return el.id === currentStep?.targetElementId || el._id === currentStep?.targetElementId;
+      return Boolean(
+        currentStep?.targetElementId &&
+        (el.id === currentStep.targetElementId || el._id === currentStep.targetElementId)
+      );
     });
   }, [elements, currentStep]);
 
-  // Selected Hotspot element
+  // Selected Hotspot element (only within the active step)
   const selectedHotspotElement = useMemo(() => {
     if (!selectedElementId) return null;
-    return elements.find(
-      (el) =>
-        (el.id === selectedElementId || el._id === selectedElementId) &&
-        (el.type === 'hotspot' || el.hotspotConfig)
-    ) || null;
-  }, [elements, selectedElementId]);
+    return (
+      stepElements.find(
+        (el) =>
+          (el.id === selectedElementId || el._id === selectedElementId) &&
+          (el.type === 'hotspot' || el.hotspotConfig)
+      ) || null
+    );
+  }, [stepElements, selectedElementId]);
 
-  // Auto-select first hotspot of active step on mount or step change if none selected
+  // Auto-select first hotspot of active step on mount or step change if none selected, or clear if step has no hotspots
   useEffect(() => {
-    if (!selectedElementId && stepElements.length > 0) {
-      const firstHotspot = stepElements.find((el) => el.type === 'hotspot' || el.hotspotConfig);
-      if (firstHotspot) {
-        setSelectedElementId(firstHotspot.id);
+    if (stepElements.length > 0) {
+      const isCurrentSelectedInStep = stepElements.some(
+        (el) => el.id === selectedElementId || el._id === selectedElementId
+      );
+      if (!isCurrentSelectedInStep) {
+        setSelectedElementId(stepElements[0].id || (stepElements[0] as any)._id || null);
       }
+    } else {
+      setSelectedElementId(null);
     }
   }, [activeStepIndex, stepElements, selectedElementId]);
 
@@ -171,6 +244,69 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
     return () => window.removeEventListener('click', handleOutsideClick);
   }, []);
 
+  // Immediate Save helper
+  const saveImmediately = useCallback(
+    async (
+      updatedDemo = demo,
+      updatedScenes = scenes,
+      updatedSteps = steps,
+      updatedElements = elements,
+      updatedInteractions = interactions,
+      updatedChapters = chapters
+    ) => {
+      if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+      setSaveStatus('saving');
+      try {
+        // Always compute thumbnail from the first step's scene
+        const sortedSteps = (updatedSteps || []).slice().sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+        const firstStep = sortedSteps[0];
+        let computedThumbnail = '';
+        if (firstStep?.sceneId) {
+          const matchedScene = updatedScenes.find(
+            (s) => s.id === firstStep.sceneId || (s as any)._id === firstStep.sceneId
+          );
+          if (matchedScene?.sourceAssetUrl) {
+            computedThumbnail = matchedScene.sourceAssetUrl;
+          }
+        }
+        if (!computedThumbnail) {
+          computedThumbnail =
+            updatedScenes.find((s) => s.sourceAssetUrl)?.sourceAssetUrl ||
+            updatedDemo.thumbnail ||
+            '';
+        }
+
+        const res = await fetch(`/api/demos/${demo.id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: updatedDemo.name,
+            description: updatedDemo.description,
+            thumbnail: computedThumbnail,
+            settings: updatedDemo.settings,
+            scenes: updatedScenes,
+            steps: updatedSteps,
+            elements: updatedElements,
+            interactions: updatedInteractions,
+            chapters: updatedChapters,
+          }),
+        });
+        if (res.ok) {
+          const resData = await res.json().catch(() => null);
+          if (resData?.data?.demo) {
+            setDemo(resData.data.demo);
+          }
+          setSaveStatus('saved');
+        } else {
+          setSaveStatus('error');
+        }
+      } catch {
+        setSaveStatus('error');
+      }
+    },
+    [demo, scenes, steps, elements, interactions, chapters]
+  );
+
   // Debounced Autosave
   const triggerAutosave = useCallback(
     (
@@ -185,32 +321,17 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
       if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
 
       saveTimeoutRef.current = setTimeout(async () => {
-        try {
-          const res = await fetch(`/api/demos/${demo.id}`, {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              name: updatedDemo.name,
-              description: updatedDemo.description,
-              settings: updatedDemo.settings,
-              scenes: updatedScenes,
-              steps: updatedSteps,
-              elements: updatedElements,
-              interactions: updatedInteractions,
-              chapters: updatedChapters,
-            }),
-          });
-          if (res.ok) {
-            setSaveStatus('saved');
-          } else {
-            setSaveStatus('error');
-          }
-        } catch {
-          setSaveStatus('error');
-        }
-      }, 1000);
+        await saveImmediately(
+          updatedDemo,
+          updatedScenes,
+          updatedSteps,
+          updatedElements,
+          updatedInteractions,
+          updatedChapters
+        );
+      }, 800);
     },
-    [demo, scenes, steps, elements, interactions, chapters]
+    [saveImmediately]
   );
 
   // Clean up timer on unmount
@@ -222,31 +343,7 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
 
   // Immediate Save for manual button press
   const handleImmediateSave = async () => {
-    if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
-    setSaveStatus('saving');
-    try {
-      const res = await fetch(`/api/demos/${demo.id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: demo.name,
-          description: demo.description,
-          settings: demo.settings,
-          scenes,
-          steps,
-          elements,
-          interactions,
-          chapters,
-        }),
-      });
-      if (res.ok) {
-        setSaveStatus('saved');
-      } else {
-        setSaveStatus('error');
-      }
-    } catch {
-      setSaveStatus('error');
-    }
+    await saveImmediately();
   };
 
   // Update Demo Details
@@ -339,6 +436,10 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
     setSelectedNodeType('chapter');
     setSelectedChapterId(newChapterId);
     setSelectedElementId(null);
+    setLastAddedChapterId(newChapterId);
+    setTimeout(() => {
+      setLastAddedChapterId((prev) => (prev === newChapterId ? null : prev));
+    }, 2500);
     triggerAutosave(demo, scenes, steps, elements, interactions, nextChapters);
   };
 
@@ -492,9 +593,36 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
     mediaType: 'image' | 'video';
     existingSceneId?: string;
     chapterId?: string;
+    aspectRatioChange?: {
+      width: number;
+      height: number;
+      aspectRatio: string;
+    };
   }) => {
     let targetSceneId = payload.existingSceneId;
     let nextScenes = [...scenes];
+
+    // Determine viewport for new scene
+    let sceneViewport: SceneViewport = { width: 1920, height: 1080, aspectRatio: '16:9' };
+    if (payload.aspectRatioChange) {
+      sceneViewport = {
+        width: payload.aspectRatioChange.width,
+        height: payload.aspectRatioChange.height,
+        aspectRatio: payload.aspectRatioChange.aspectRatio,
+      };
+    } else if (scenes.length > 0 && scenes[0].viewport) {
+      sceneViewport = {
+        width: scenes[0].viewport.width,
+        height: scenes[0].viewport.height,
+        aspectRatio: scenes[0].viewport.aspectRatio || '16:9',
+      };
+    } else if (demo.settings?.canonicalWidth && demo.settings?.canonicalHeight) {
+      sceneViewport = {
+        width: demo.settings.canonicalWidth,
+        height: demo.settings.canonicalHeight,
+        aspectRatio: demo.settings.aspectRatio || '16:9',
+      };
+    }
 
     // If user uploaded a new image/video or entered a custom URL, create a new Scene!
     if (!targetSceneId) {
@@ -507,69 +635,28 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
         order: scenes.length,
         sourceType: payload.mediaType === 'video' ? 'recording' : 'screenshot',
         sourceAssetUrl: payload.mediaUrl,
-        viewport: { width: 1440, height: 900, aspectRatio: '16:10' },
+        viewport: sceneViewport,
         metadata: {},
       };
       nextScenes.push(newScene);
-      setScenes(nextScenes);
       targetSceneId = newSceneId;
     }
 
-    const stepNumber = steps.length + 1;
-    const newElementId = `el_${Date.now()}`;
-    const newStepId = `st_${Date.now()}`;
+    // If aspect ratio was changed, update all existing scenes to maintain canonical consistency
+    if (payload.aspectRatioChange) {
+      nextScenes = nextScenes.map((sc) => ({
+        ...sc,
+        viewport: {
+          ...sc.viewport,
+          width: payload.aspectRatioChange!.width,
+          height: payload.aspectRatioChange!.height,
+          aspectRatio: payload.aspectRatioChange!.aspectRatio,
+        },
+      }));
+    }
 
-    // Create starter hotspot element matching reference UI
-    const newHotspot: IDemoElement = {
-      id: newElementId,
-      demoId: demo.id,
-      sceneId: targetSceneId,
-      stepId: newStepId,
-      type: 'hotspot',
-      name: `${payload.title || `Step ${stepNumber}`} Hotspot`,
-      position: { x: 50, y: 45, width: 28, height: 18 },
-      style: {
-        backgroundColor: '#5B5CE2',
-        color: '#ffffff',
-        borderRadius: 16,
-        pulseAnimation: true,
-      },
-      hotspotConfig: {
-        type: 'pointer',
-        content: {
-          text: 'Add some hotspot text here.',
-          textAlign: 'left',
-        },
-        appearance: {
-          background: '#5B5CE2',
-          textColor: '#ffffff',
-          backdrop: false,
-          borderRadius: 'rounded',
-          width: 'medium',
-          animation: 'ping',
-        },
-        visibility: 'always',
-        navigation: {
-          showNext: true,
-          nextButton: {
-            enabled: true,
-            text: '',
-            background: 'rgba(255, 255, 255, 0.22)',
-            textColor: '#ffffff',
-            action: 'nextStep',
-          },
-          backButton: {
-            enabled: false,
-            text: 'Back',
-            background: '#ffffff',
-            textColor: '#6b7280',
-            action: 'previousStep',
-          },
-        },
-      },
-      visible: true,
-      order: elements.length,
-    };
+    const stepNumber = steps.length + 1;
+    const newStepId = `st_${Date.now()}`;
 
     const insertIdx = addStepContext?.insertIndex;
     const assignedChapterId =
@@ -577,6 +664,7 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
       addStepContext?.chapterId ||
       (selectedNodeType === 'chapter' ? selectedChapterId || undefined : currentStep?.chapterId);
 
+    // Create new step cleanly without any default hotspot
     const newStep: IDemoStep = {
       id: newStepId,
       demoId: demo.id,
@@ -584,12 +672,12 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
       chapterId: assignedChapterId,
       order: typeof insertIdx === 'number' ? insertIdx : steps.length,
       title: payload.title || `Step ${stepNumber}`,
-      description: 'Interact with the highlighted hotspot to proceed.',
-      targetElementId: newElementId,
+      description: '',
+      targetElementId: '',
       action: 'click',
       tooltip: {
         title: payload.title || `Step ${stepNumber}`,
-        description: 'Add some hotspot text here.',
+        description: '',
         position: 'bottom',
         badge: `Step ${stepNumber}`,
         buttonText: 'Next',
@@ -603,7 +691,7 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
       navigation: { canSkip: true, autoAdvance: false },
     };
 
-    const nextElements = [...elements, newHotspot];
+    const nextElements = [...elements];
     let nextSteps = [...steps];
     const targetIdx = typeof insertIdx === 'number' ? insertIdx : steps.length;
     nextSteps.splice(targetIdx, 0, newStep);
@@ -615,7 +703,11 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
     setSteps(nextSteps);
     setSelectedNodeType('step');
     setActiveStepIndex(targetIdx);
-    setSelectedElementId(newElementId);
+    setSelectedElementId(null);
+    setLastAddedStepId(newStepId);
+    setTimeout(() => {
+      setLastAddedStepId((prev) => (prev === newStepId ? null : prev));
+    }, 2500);
 
     // Automatically sync scene
     const scIdx = nextScenes.findIndex(
@@ -624,8 +716,276 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
     if (scIdx !== -1) {
       setActiveSceneIndex(scIdx);
     }
+    const updatedDemo = {
+      ...demo,
+      thumbnail: demo.thumbnail || (payload.mediaType === 'image' ? payload.mediaUrl : demo.thumbnail),
+      settings: {
+        ...demo.settings,
+        ...(payload.aspectRatioChange
+          ? {
+              aspectRatio: payload.aspectRatioChange.aspectRatio,
+              canonicalWidth: payload.aspectRatioChange.width,
+              canonicalHeight: payload.aspectRatioChange.height,
+            }
+          : scenes.length === 0
+          ? {
+              aspectRatio: sceneViewport.aspectRatio,
+              canonicalWidth: sceneViewport.width,
+              canonicalHeight: sceneViewport.height,
+            }
+          : {}),
+      },
+    };
+    setDemo(updatedDemo);
+    await saveImmediately(updatedDemo, nextScenes, nextSteps, nextElements, interactions, chapters);
+  };
 
-    triggerAutosave(demo, nextScenes, nextSteps, nextElements, interactions, chapters);
+  // Helper to execute direct upload and add step
+  const executeDirectUpload = async (
+    file: File,
+    aspectRatioChange?: { width: number; height: number; aspectRatio: string }
+  ) => {
+    try {
+      setIsUploadingMedia(true);
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || 'Upload failed');
+      }
+
+      await handleConfirmAddStep({
+        title: file.name.replace(/\.[^/.]+$/, '').slice(0, 30) || `Step ${steps.length + 1}`,
+        mediaUrl: data.url,
+        mediaType: data.type || (file.type.startsWith('video/') ? 'video' : 'image'),
+        aspectRatioChange,
+      });
+    } catch (err: any) {
+      alert(err.message || 'Failed to upload media.');
+    } finally {
+      setIsUploadingMedia(false);
+    }
+  };
+
+  // Direct upload for the empty state dropzone / file picker with aspect-ratio validation
+  const handleDirectUploadFile = async (file: File) => {
+    try {
+      const dims = await getImageDimensions(file);
+      const fileAspect = calculateAspectRatio(dims.width, dims.height);
+      const canonical = getCanonicalDemoAspectRatio(demo, scenes);
+
+      if (scenes.length > 0 && !areAspectRatiosMatching(fileAspect.ratio, canonical.ratio)) {
+        setEditorAspectWarning({
+          file,
+          currentInfo: canonical,
+          newInfo: fileAspect,
+          target: 'direct_upload',
+        });
+        return;
+      }
+
+      await executeDirectUpload(
+        file,
+        scenes.length === 0
+          ? {
+              width: dims.width,
+              height: dims.height,
+              aspectRatio: fileAspect.label,
+            }
+          : undefined
+      );
+    } catch (err: any) {
+      alert(err.message || 'Failed to inspect media dimensions.');
+    }
+  };
+
+  // Screen & camera recording helper
+  const handleStartScreenRecording = async () => {
+    try {
+      if (typeof window === 'undefined' || !navigator.mediaDevices?.getDisplayMedia) {
+        alert('Screen recording is not supported in this browser.');
+        return;
+      }
+      const stream = await navigator.mediaDevices.getDisplayMedia({
+        video: true,
+        audio: false,
+      });
+
+      const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9')
+        ? 'video/webm;codecs=vp9'
+        : 'video/webm';
+      const mediaRecorder = new MediaRecorder(stream, { mimeType });
+
+      const chunks: Blob[] = [];
+      mediaRecorder.ondataavailable = (e) => {
+        if (e.data && e.data.size > 0) chunks.push(e.data);
+      };
+
+      mediaRecorder.onstop = async () => {
+        if (chunks.length === 0) return;
+        const blob = new Blob(chunks, { type: 'video/webm' });
+        const file = new File([blob], `recording-${Date.now()}.webm`, { type: 'video/webm' });
+        await handleDirectUploadFile(file);
+        stream.getTracks().forEach((track) => track.stop());
+      };
+
+      mediaRecorder.start();
+    } catch (err: any) {
+      if (err.name !== 'NotAllowedError') {
+        alert(err.message || 'Screen recording could not be started.');
+      }
+    }
+  };
+
+  // Helper to execute replacing media for the currently selected scene
+  const executeReplaceSceneMedia = async (
+    file: File,
+    aspectRatioChange?: { width: number; height: number; aspectRatio: string }
+  ) => {
+    if (!currentScene) return;
+    try {
+      setIsUploadingMedia(true);
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || 'Failed to upload media');
+      }
+
+      let nextScenes = scenes.map((sc) =>
+        sc.id === currentScene.id || (sc as any)._id === currentScene.id
+          ? {
+              ...sc,
+              sourceAssetUrl: data.url,
+              sourceType: data.type === 'video' ? ('recording' as const) : ('screenshot' as const),
+              viewport: aspectRatioChange
+                ? {
+                    width: aspectRatioChange.width,
+                    height: aspectRatioChange.height,
+                    aspectRatio: aspectRatioChange.aspectRatio,
+                  }
+                : sc.viewport,
+            }
+          : sc
+      );
+
+      if (aspectRatioChange) {
+        nextScenes = nextScenes.map((sc) => ({
+          ...sc,
+          viewport: {
+            ...sc.viewport,
+            width: aspectRatioChange.width,
+            height: aspectRatioChange.height,
+            aspectRatio: aspectRatioChange.aspectRatio,
+          },
+        }));
+      }
+
+      const isFirstScene =
+        scenes.findIndex((sc) => sc.id === currentScene.id || (sc as any)._id === currentScene.id) <= 0;
+      const updatedDemo = {
+        ...demo,
+        thumbnail: isFirstScene ? data.url : demo.thumbnail,
+        settings: {
+          ...demo.settings,
+          ...(aspectRatioChange
+            ? {
+                aspectRatio: aspectRatioChange.aspectRatio,
+                canonicalWidth: aspectRatioChange.width,
+                canonicalHeight: aspectRatioChange.height,
+              }
+            : {}),
+        },
+      };
+
+      setScenes(nextScenes);
+      setDemo(updatedDemo);
+      await saveImmediately(updatedDemo, nextScenes, steps, elements, interactions, chapters);
+    } catch (err: any) {
+      alert(err.message || 'Failed to replace scene media.');
+    } finally {
+      setIsUploadingMedia(false);
+      if (replaceFileInputRef.current) replaceFileInputRef.current.value = '';
+    }
+  };
+
+  // Replace media for the currently selected scene with aspect-ratio validation
+  const handleReplaceSceneMedia = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !currentScene) return;
+
+    try {
+      const dims = await getImageDimensions(file);
+      const fileAspect = calculateAspectRatio(dims.width, dims.height);
+      const canonical = getCanonicalDemoAspectRatio(demo, scenes);
+
+      if (scenes.length > 0 && !areAspectRatiosMatching(fileAspect.ratio, canonical.ratio)) {
+        setEditorAspectWarning({
+          file,
+          currentInfo: canonical,
+          newInfo: fileAspect,
+          target: 'replace_scene',
+        });
+        return;
+      }
+
+      await executeReplaceSceneMedia(file);
+    } catch (err: any) {
+      alert(err.message || 'Failed to inspect media dimensions.');
+    }
+  };
+
+  const handleCancelEditorAspectWarning = () => {
+    setEditorAspectWarning(null);
+    if (replaceFileInputRef.current) replaceFileInputRef.current.value = '';
+    if (directFileInputRef.current) directFileInputRef.current.value = '';
+  };
+
+  const handleChangeEditorAspectRatio = async () => {
+    if (!editorAspectWarning) return;
+    const { file, newInfo, target } = editorAspectWarning;
+    const change = {
+      width: newInfo.width,
+      height: newInfo.height,
+      aspectRatio: newInfo.label,
+    };
+    setEditorAspectWarning(null);
+    if (target === 'direct_upload') {
+      await executeDirectUpload(file, change);
+    } else {
+      await executeReplaceSceneMedia(file, change);
+    }
+  };
+
+  const handleCropEditorToMatch = async () => {
+    if (!editorAspectWarning) return;
+    const { file, currentInfo, target } = editorAspectWarning;
+    try {
+      setIsEditorCropping(true);
+      const cropped = await cropImageToAspectRatio(file, currentInfo.ratio);
+      setEditorAspectWarning(null);
+      if (target === 'direct_upload') {
+        await executeDirectUpload(cropped);
+      } else {
+        await executeReplaceSceneMedia(cropped);
+      }
+    } catch (err: any) {
+      alert(err.message || 'Failed to crop image to current aspect ratio.');
+    } finally {
+      setIsEditorCropping(false);
+    }
   };
 
   // Duplicate Step
@@ -817,9 +1177,13 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
     const nextElements = elements.filter(
       (el) => el.id !== elementId && el._id !== elementId
     );
+    const nextSteps = steps.map((st) =>
+      st.targetElementId === elementId ? { ...st, targetElementId: '' } : st
+    );
     setElements(nextElements);
+    setSteps(nextSteps);
     setSelectedElementId(null);
-    triggerAutosave(demo, scenes, steps, nextElements, interactions, chapters);
+    triggerAutosave(demo, scenes, nextSteps, nextElements, interactions, chapters);
   };
 
   // Keyboard positioning & deletion for selected hotspot with focus safety
@@ -911,10 +1275,17 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
   // Check if backdrop is enabled on selected hotspot
   const isBackdropActive = selectedHotspotElement?.hotspotConfig?.appearance?.backdrop ?? false;
 
+  // Open Preview Modal ensuring any latest in-flight changes are saved
+  const handleOpenPreview = async () => {
+    await saveImmediately();
+    setIsPreviewOpen(true);
+  };
+
   // Publish Demo Flow
   const handlePublish = async () => {
     try {
       setIsPublishing(true);
+      await saveImmediately();
       const res = await fetch(`/api/demos/${demo.id}/publish`, {
         method: 'POST',
       });
@@ -948,6 +1319,17 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
     setTimeout(() => setCopiedLink(false), 2000);
   };
 
+  const handleShare = async () => {
+    if (demo.publicId && demo.status === 'published') {
+      const url = `${window.location.origin}/d/${demo.publicId}`;
+      navigator.clipboard.writeText(url);
+      setCopiedLink(true);
+      setTimeout(() => setCopiedLink(false), 2000);
+    } else {
+      await handlePublish();
+    }
+  };
+
   // Helper to render "+ Add Step" dashed divider
   const renderAddStepDivider = (insertIndex: number) => (
     <div className="relative py-2 flex items-center justify-center group select-none">
@@ -978,7 +1360,7 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
               type="text"
               value={demo.name}
               onChange={(e) => handleUpdateDemoName(e.target.value)}
-              className="text-[14px] sm:text-[15px] font-bold text-[#0f0f1a] bg-transparent border-b border-transparent hover:border-[#d1d5db] focus:border-[#5B5CE2] focus:outline-none px-1 py-0.5 transition-colors max-w-xs sm:max-w-md"
+              className="text-[14px] sm:text-[15px] font-semibold text-[#0f0f1a] bg-transparent border-b border-transparent hover:border-[#d1d5db] focus:border-[#5B5CE2] focus:outline-none px-1 py-0.5 transition-colors max-w-xs sm:max-w-md"
             />
 
             {saveStatus === 'saving' && (
@@ -999,95 +1381,144 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
           </div>
         </div>
 
-        {/* Action Toolbar matching Reference UI */}
-        <div className="flex items-center gap-2">
-          {/* Hotspot Toggle */}
-          <button
-            type="button"
-            onClick={() => setIsPlacingHotspot((prev) => !prev)}
-            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-              isPlacingHotspot
-                ? 'bg-[#5B5CE2] text-white shadow-sm ring-2 ring-[#5B5CE2]/40'
-                : 'bg-white hover:bg-[#f8f8fc] text-[#0f0f1a] border border-[#d1d5db]'
-            }`}
-            title="Click to place a new hotspot on canvas"
-          >
-            <Radio className="w-3.5 h-3.5" />
-            <span>Hotspot</span>
-          </button>
+        {/* Action Toolbar */}
+        {steps.length === 0 ? (
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              className="w-8 h-8 rounded-lg hover:bg-[#f8f8fc] text-[#6b7280] hover:text-[#0f0f1a] flex items-center justify-center transition-colors cursor-pointer"
+              title="Search"
+            >
+              <Search className="w-4 h-4" />
+            </button>
 
-          {/* Blur & Annotate */}
-          <button
-            type="button"
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-white hover:bg-[#f8f8fc] text-[#0f0f1a] border border-[#d1d5db] transition-colors cursor-pointer"
-          >
-            <Droplets className="w-3.5 h-3.5 text-[#6b7280]" />
-            <span>Blur & Annotate</span>
-          </button>
+            <button
+              type="button"
+              onClick={handleOpenPreview}
+              className="px-3.5 py-1.5 rounded-xl border border-[#d1d5db] bg-white text-xs font-semibold text-[#0f0f1a] hover:bg-[#f8f8fc] hover:border-[#5B5CE2] flex items-center gap-1.5 transition-all shadow-xs cursor-pointer"
+            >
+              <Eye className="w-3.5 h-3.5 text-[#6b7280]" />
+              <span>Preview</span>
+            </button>
 
-          {/* Voice... */}
-          <button
-            type="button"
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-white hover:bg-[#f8f8fc] text-[#0f0f1a] border border-[#d1d5db] transition-colors cursor-pointer"
-          >
-            <Mic className="w-3.5 h-3.5 text-[#6b7280]" />
-            <span>Voice...</span>
-          </button>
+            <button
+              type="button"
+              onClick={handleShare}
+              className="px-4 py-1.5 rounded-xl bg-[#5B5CE2] hover:bg-[#4a4bd4] text-xs font-semibold text-white flex items-center gap-1.5 transition-all shadow-sm cursor-pointer"
+            >
+              <Share2 className="w-3.5 h-3.5 text-white" />
+              <span>{copiedLink ? 'Copied!' : 'Share'}</span>
+            </button>
 
-          <div className="h-5 w-px bg-[#e5e7eb] mx-1" />
+            <button
+              type="button"
+              onClick={() => setShowPublishModal(true)}
+              className="w-8 h-8 rounded-lg hover:bg-[#f8f8fc] text-[#6b7280] hover:text-[#0f0f1a] flex items-center justify-center transition-colors cursor-pointer"
+              title="More Options"
+            >
+              <MoreVertical className="w-4 h-4" />
+            </button>
+          </div>
+        ) : (
+          <div className="flex items-center gap-2">
+            {/* Hotspot Toggle */}
+            <button
+              type="button"
+              onClick={() => setIsPlacingHotspot((prev) => !prev)}
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs transition-all cursor-pointer ${
+                isPlacingHotspot
+                  ? 'font-semibold bg-[#5B5CE2] text-white shadow-sm ring-2 ring-[#5B5CE2]/40'
+                  : 'font-medium bg-white hover:bg-[#f8f8fc] text-[#0f0f1a] border border-[#d1d5db]'
+              }`}
+              title="Click to place a new hotspot on canvas"
+            >
+              <Radio className="w-3.5 h-3.5" />
+              <span>Hotspot</span>
+            </button>
 
-          {/* Preview Button */}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setIsPreviewOpen(true)}
-            leftIcon={<Eye className="w-3.5 h-3.5" />}
-          >
-            Preview
-          </Button>
+            {/* Blur & Annotate */}
+            <button
+              type="button"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium bg-white hover:bg-[#f8f8fc] text-[#0f0f1a] border border-[#d1d5db] transition-colors cursor-pointer"
+            >
+              <Droplets className="w-3.5 h-3.5 text-[#6b7280]" />
+              <span>Blur & Annotate</span>
+            </button>
 
-          {/* Publish Button */}
-          <Button
-            variant="primary"
-            size="sm"
-            isLoading={isPublishing}
-            onClick={handlePublish}
-            leftIcon={<Send className="w-3.5 h-3.5" />}
-          >
-            {demo.status === 'published' ? 'Update & Publish' : 'Publish'}
-          </Button>
-        </div>
+            {/* Voice... */}
+            <button
+              type="button"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium bg-white hover:bg-[#f8f8fc] text-[#0f0f1a] border border-[#d1d5db] transition-colors cursor-pointer"
+            >
+              <Mic className="w-3.5 h-3.5 text-[#6b7280]" />
+              <span>Voice...</span>
+            </button>
+
+            <div className="h-5 w-px bg-[#e5e7eb] mx-1" />
+
+            {/* Preview Button */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleOpenPreview}
+              leftIcon={<Eye className="w-3.5 h-3.5" />}
+            >
+              Preview
+            </Button>
+
+            {/* Share / Publish Button */}
+            <Button
+              variant="primary"
+              size="sm"
+              isLoading={isPublishing}
+              onClick={handleShare}
+              leftIcon={<Share2 className="w-3.5 h-3.5" />}
+            >
+              {copiedLink ? 'Copied!' : demo.status === 'published' ? 'Share' : 'Publish'}
+            </Button>
+
+            <button
+              type="button"
+              onClick={() => setShowPublishModal(true)}
+              className="w-8 h-8 rounded-lg hover:bg-[#f8f8fc] text-[#6b7280] hover:text-[#0f0f1a] flex items-center justify-center transition-colors cursor-pointer"
+              title="More Options"
+            >
+              <MoreVertical className="w-4 h-4" />
+            </button>
+          </div>
+        )}
       </header>
 
       {/* Main Studio Body (3 Columns) */}
       <div className="flex-1 flex overflow-hidden">
-        {/* Left Rail: Chapters & Steps */}
-        <aside className="w-64 sm:w-72 border-r border-[#e5e7eb] bg-[#fafafc] flex flex-col shrink-0 overflow-y-auto">
+        {/* Left Rail: Chapters & Steps (only shown when steps exist) */}
+        {steps.length > 0 && (
+          <aside className="w-64 sm:w-72 border-r border-[#e5e7eb] bg-[#fafafc] flex flex-col shrink-0 overflow-y-auto">
           {/* Add Step & Add Chapter Action Buttons */}
           <div className="p-3 border-b border-[#f0f0f4] grid grid-cols-2 gap-2">
             <button
               type="button"
               onClick={() => handleOpenAddStepModal()}
-              className="py-2.5 px-2 rounded-xl bg-white hover:bg-[#f8f8fc] border border-[#e5e7eb] flex items-center justify-center gap-1.5 transition-all cursor-pointer group shadow-xs hover:border-[#5B5CE2] hover:shadow-sm"
+              className="py-2 px-2 rounded-xl bg-white hover:bg-[#f8f8fc] border border-[#e5e7eb] flex items-center justify-center gap-1.5 transition-all cursor-pointer group shadow-xs hover:border-[#5B5CE2] hover:shadow-sm"
               title="Add step with image or video"
             >
               <div className="w-6 h-6 rounded-lg bg-[#5B5CE2]/10 group-hover:bg-[#5B5CE2] flex items-center justify-center transition-colors">
                 <Plus className="w-3.5 h-3.5 text-[#5B5CE2] group-hover:text-white" />
               </div>
-              <span className="text-xs font-bold text-[#0f0f1a] group-hover:text-[#5B5CE2]">
+              <span className="text-xs font-medium text-[#0f0f1a] group-hover:text-[#5B5CE2]">
                 + Add Step
               </span>
             </button>
             <button
               type="button"
               onClick={() => handleAddChapter()}
-              className="py-2.5 px-2 rounded-xl bg-white hover:bg-[#f8f8fc] border border-[#e5e7eb] flex items-center justify-center gap-1.5 transition-all cursor-pointer group shadow-xs hover:border-[#5B5CE2] hover:shadow-sm"
+              className="py-2 px-2 rounded-xl bg-white hover:bg-[#f8f8fc] border border-[#e5e7eb] flex items-center justify-center gap-1.5 transition-all cursor-pointer group shadow-xs hover:border-[#5B5CE2] hover:shadow-sm"
               title="Add new chapter"
             >
               <div className="w-6 h-6 rounded-lg bg-[#5B5CE2]/10 group-hover:bg-[#5B5CE2] flex items-center justify-center transition-colors">
                 <FolderPlus className="w-3.5 h-3.5 text-[#5B5CE2] group-hover:text-white" />
               </div>
-              <span className="text-xs font-bold text-[#0f0f1a] group-hover:text-[#5B5CE2]">
+              <span className="text-xs font-medium text-[#0f0f1a] group-hover:text-[#5B5CE2]">
                 + Chapter
               </span>
             </button>
@@ -1108,6 +1539,10 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
                       isChapterSelected
                         ? 'border-[#5B5CE2] bg-white ring-2 ring-[#5B5CE2]/30 shadow-md'
                         : 'border-[#e5e7eb] bg-white hover:border-[#cbd5e1]'
+                    } ${
+                      lastAddedChapterId === ch.id
+                        ? 'animate-slide-in-step animate-highlight-glow ring-2 ring-[#5B5CE2]'
+                        : ''
                     }`}
                   >
                     <div className="flex items-center justify-between gap-2">
@@ -1116,10 +1551,10 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
                           <BookOpen className="w-3.5 h-3.5" />
                         </span>
                         <div className="min-w-0">
-                          <span className="block text-[10px] font-bold uppercase tracking-wider text-[#5B5CE2]">
+                          <span className="block text-[10px] font-semibold uppercase tracking-[0.16em] text-[#5B5CE2]">
                             Chapter {chIdx + 1}
                           </span>
-                          <h4 className="text-xs font-bold text-[#0f0f1a] truncate">
+                          <h4 className="text-[12.5px] font-semibold text-[#0f0f1a] truncate">
                             {ch.title || `Chapter ${chIdx + 1}`}
                           </h4>
                         </div>
@@ -1175,6 +1610,7 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
                   <div className="pl-3 border-l-2 border-[#e5e7eb] space-y-1.5">
                     {chapterStepItems.map(({ step: st, originalIndex: idx }) => {
                       const isStepActive = selectedNodeType === 'step' && activeStepIndex === idx;
+                      const isJustAdded = lastAddedStepId === st.id;
                       return (
                         <div
                           key={st.id || idx}
@@ -1183,6 +1619,10 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
                             isStepActive
                               ? 'border-[#3b82f6] ring-2 ring-[#3b82f6]/40 shadow-md'
                               : 'border-[#e5e7eb] hover:border-[#cbd5e1]'
+                          } ${
+                            isJustAdded
+                              ? 'animate-slide-in-step animate-highlight-glow ring-2 ring-[#5B5CE2]'
+                              : ''
                           }`}
                         >
                           <div className="relative aspect-[16/9] w-full bg-[#1e1e2d] overflow-hidden">
@@ -1217,11 +1657,7 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
                               }
                               return (
                                 <img
-                                  src={
-                                    stepScene.sourceAssetUrl.includes('1551288049-bebda4e38f71')
-                                      ? '/yaanna-webpage.png'
-                                      : stepScene.sourceAssetUrl
-                                  }
+                                  src={stepScene.sourceAssetUrl}
                                   alt={st.title}
                                   className="w-full h-full object-cover pointer-events-none"
                                 />
@@ -1301,6 +1737,7 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
                 )}
                 {stepsByChapter.unassigned.map(({ step: st, originalIndex: idx }) => {
                   const isStepActive = selectedNodeType === 'step' && activeStepIndex === idx;
+                  const isJustAdded = lastAddedStepId === st.id;
                   return (
                     <React.Fragment key={st.id || idx}>
                       {chapters.length === 0 && renderAddStepDivider(idx)}
@@ -1310,6 +1747,10 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
                           isStepActive
                             ? 'border-[#3b82f6] ring-2 ring-[#3b82f6]/40 shadow-md'
                             : 'border-[#e5e7eb] hover:border-[#cbd5e1]'
+                        } ${
+                          isJustAdded
+                            ? 'animate-slide-in-step animate-highlight-glow ring-2 ring-[#5B5CE2]'
+                            : ''
                         }`}
                       >
                         <div className="relative aspect-[16/9] w-full bg-[#1e1e2d] overflow-hidden">
@@ -1344,11 +1785,7 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
                             }
                             return (
                               <img
-                                src={
-                                  stepScene.sourceAssetUrl.includes('1551288049-bebda4e38f71')
-                                    ? '/yaanna-webpage.png'
-                                    : stepScene.sourceAssetUrl
-                                }
+                                src={stepScene.sourceAssetUrl}
                                 alt={st.title}
                                 className="w-full h-full object-cover pointer-events-none"
                               />
@@ -1405,7 +1842,17 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
                     </React.Fragment>
                   );
                 })}
-                {chapters.length === 0 && renderAddStepDivider(steps.length)}
+                {chapters.length === 0 && steps.length > 0 && renderAddStepDivider(steps.length)}
+              </div>
+            )}
+
+            {/* Empty Sidebar Notice */}
+            {steps.length === 0 && chapters.length === 0 && (
+              <div className="p-4 rounded-2xl bg-white border border-[#e5e7eb] text-center my-3 shadow-2xs">
+                <p className="text-xs font-semibold text-[#0f0f1a] mb-1">No steps yet</p>
+                <p className="text-[11px] text-[#6b7280]">
+                  Click + Add Step below or upload media on the canvas.
+                </p>
               </div>
             )}
 
@@ -1420,8 +1867,9 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
             </button>
           </div>
         </aside>
+      )}
 
-        {/* Center: Dotted Grid Canvas Stage */}
+      {/* Center: Dotted Grid Canvas Stage */}
         <main
           className="flex-1 p-6 flex flex-col items-center justify-center overflow-auto relative select-none"
           style={{
@@ -1430,7 +1878,156 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
             backgroundSize: '16px 16px',
           }}
         >
-          {selectedNodeType === 'chapter' && selectedChapter ? (
+          {steps.length === 0 ? (
+            <>
+              {/* Hidden file input for direct uploads */}
+              <input
+                ref={directFileInputRef}
+                type="file"
+                accept="image/*,video/*"
+                onChange={(e) => {
+                  if (e.target.files && e.target.files[0]) {
+                    handleDirectUploadFile(e.target.files[0]);
+                  }
+                }}
+                className="hidden"
+              />
+
+              {/* Floating Top-Left Action Widget matching Reference UI */}
+              <div className="absolute top-6 left-6 z-20 flex items-center gap-2 p-2 bg-white/95 backdrop-blur-md rounded-2xl border border-[#e5e7eb] shadow-md">
+                <button
+                  type="button"
+                  onClick={() => handleOpenAddStepModal()}
+                  className="w-10 h-10 rounded-xl bg-[#f1f3f9] hover:bg-[#e4e7f2] hover:text-[#5B5CE2] text-[#64748b] flex items-center justify-center transition-all cursor-pointer"
+                  title="Open Media Library"
+                >
+                  <LayoutGrid className="w-4 h-4" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => directFileInputRef.current?.click()}
+                  className="w-10 h-10 rounded-xl bg-[#f1f3f9] hover:bg-[#e4e7f2] hover:text-[#5B5CE2] text-[#64748b] flex items-center justify-center transition-all cursor-pointer"
+                  title="Upload Image/Video"
+                >
+                  <ImageIcon className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* Centered Browser Window Mockup matching Reference UI */}
+              <div
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  setIsDraggingOverStage(true);
+                }}
+                onDragLeave={() => setIsDraggingOverStage(false)}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  setIsDraggingOverStage(false);
+                  if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                    handleDirectUploadFile(e.dataTransfer.files[0]);
+                  }
+                }}
+                className={`w-full max-w-2xl bg-white rounded-2xl shadow-xl border overflow-hidden flex flex-col my-auto transition-all ${
+                  isDraggingOverStage ? 'border-[#5B5CE2] ring-4 ring-[#5B5CE2]/10 scale-[0.99]' : 'border-[#e5e7eb]'
+                }`}
+              >
+                {/* Browser Mockup Top Bar */}
+                <div className="h-11 bg-[#f8f9fc] border-b border-[#e5e7eb]/80 px-4 flex items-center justify-between select-none">
+                  {/* Traffic Light Dots */}
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#ff5f56]" />
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#ffbd2e]" />
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#27c93f]" />
+                  </div>
+
+                  {/* Centered Pill with Demo Name */}
+                  <div className="bg-[#eef0f6] text-[#4b5563] text-xs font-semibold px-6 py-1 rounded-full shadow-inner max-w-xs truncate">
+                    {demo.name || 'New Demo'}
+                  </div>
+
+                  {/* Top Right Preview & Theme Icons */}
+                  <div className="flex items-center gap-2.5 text-[#64748b]">
+                    <button
+                      type="button"
+                      onClick={handleOpenPreview}
+                      className="hover:text-[#0f0f1a] transition-colors p-1 cursor-pointer"
+                      title="Preview demo"
+                    >
+                      <Eye className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      type="button"
+                      className="hover:text-[#0f0f1a] transition-colors p-1 cursor-pointer"
+                      title="Theme"
+                    >
+                      <Moon className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Mockup Inside Content */}
+                <div className="py-16 px-8 flex flex-col items-center justify-center text-center">
+                  <h1 className="text-2xl sm:text-[26px] font-bold text-[#0f0f1a] tracking-[-0.025em] mb-2 leading-tight">
+                    Create a Supademo in minutes
+                  </h1>
+                  <p className="text-[13px] sm:text-[14px] text-[#64748b] mb-8 font-normal leading-relaxed">
+                    Upload content or record your screen to get started.
+                  </p>
+
+                  {isUploadingMedia ? (
+                    <div className="flex items-center gap-2.5 text-sm text-[#5B5CE2] font-semibold py-4">
+                      <div className="w-5 h-5 rounded-full border-2 border-[#5B5CE2] border-t-transparent animate-spin" />
+                      <span>Uploading media to storage...</span>
+                    </div>
+                  ) : (
+                    <div className="w-64 sm:w-72 flex flex-col gap-3">
+                      {/* Button 1: Open Media Library */}
+                      <button
+                        type="button"
+                        onClick={() => handleOpenAddStepModal()}
+                        className="w-full py-2.5 px-4 rounded-xl border border-[#d1d5db] bg-white text-[#0f0f1a] hover:border-[#5B5CE2] hover:text-[#5B5CE2] text-xs sm:text-[13px] font-medium flex items-center justify-center gap-2.5 shadow-xs hover:shadow-sm transition-all cursor-pointer"
+                      >
+                        <LayoutGrid className="w-4 h-4 text-[#64748b]" />
+                        <span>Open Media Library</span>
+                      </button>
+
+                      {/* Button 2: Upload Media */}
+                      <button
+                        type="button"
+                        onClick={() => directFileInputRef.current?.click()}
+                        className="w-full py-2.5 px-4 rounded-xl bg-[#5B5CE2] hover:bg-[#4a4bd4] text-white text-xs sm:text-[13px] font-semibold flex items-center justify-center gap-2.5 shadow-sm hover:shadow-md transition-all cursor-pointer"
+                      >
+                        <Upload className="w-4 h-4 text-white" />
+                        <span>Upload Media</span>
+                      </button>
+
+                      {/* Button 3: Record Cam & Screen */}
+                      <button
+                        type="button"
+                        onClick={handleStartScreenRecording}
+                        className="w-full py-2.5 px-4 rounded-xl bg-[#5B5CE2] hover:bg-[#4a4bd4] text-white text-xs sm:text-[13px] font-semibold flex items-center justify-center gap-2.5 shadow-sm hover:shadow-md transition-all cursor-pointer"
+                      >
+                        <Video className="w-4 h-4 text-white" />
+                        <span>Record Cam & Screen</span>
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Floating Shortcut Button in Bottom Right */}
+              <div className="absolute bottom-6 right-6 z-20">
+                <button
+                  type="button"
+                  onClick={() => setIsShortcutModalOpen(true)}
+                  className="w-11 h-11 rounded-full bg-white border border-[#e2e8f0] shadow-md flex items-center justify-center text-[#4b5563] hover:text-[#5B5CE2] hover:border-[#5B5CE2] hover:shadow-lg transition-all cursor-pointer ring-4 ring-black/[0.02]"
+                  title="Shortcuts (⌘)"
+                >
+                  <Command className="w-4 h-4" />
+                </button>
+              </div>
+            </>
+          ) : selectedNodeType === 'chapter' && selectedChapter ? (
             <>
               {/* Chapter Indicator Header above Mockup */}
               <div className="mb-3 text-center">
@@ -1461,7 +2058,7 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
                   <div className="flex items-center gap-2.5 text-[#6b7280]">
                     <button
                       type="button"
-                      onClick={() => setIsPreviewOpen(true)}
+                      onClick={handleOpenPreview}
                       className="hover:text-[#0f0f1a] transition-colors p-1 cursor-pointer"
                       title="Preview demo"
                     >
@@ -1498,7 +2095,7 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
             <>
               {/* Step Indicator Header above Mockup */}
               <div className="mb-3 text-center">
-                <span className="text-xs font-bold text-[#6b7280] tracking-wider uppercase">
+                <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#6b7280]">
                   Step {activeStepIndex + 1}
                 </span>
               </div>
@@ -1524,7 +2121,22 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
                     <div className="flex-1 bg-white rounded-lg border border-[#e5e7eb] px-3 py-1 flex items-center gap-1.5 text-xs text-[#6b7280]">
                       <span className="w-2 h-2 rounded-full bg-emerald-400" />
                       <span className="truncate">{currentScene?.slug || 'yaanna.lifestyle'}</span>
+                      <span
+                        className="ml-auto px-2 py-0.5 rounded bg-[#f0f0f4] text-[10px] font-bold text-[#5B5CE2] tracking-wider uppercase shrink-0"
+                        title={`Canonical aspect ratio: ${canonicalRatioInfo.label} (${canonicalRatioInfo.width} × ${canonicalRatioInfo.height})`}
+                      >
+                        {canonicalRatioInfo.label}
+                      </span>
                     </div>
+                    <button
+                      type="button"
+                      onClick={() => replaceFileInputRef.current?.click()}
+                      className="px-2 py-0.5 rounded-md bg-white border border-[#d1d5db] hover:border-[#5B5CE2] hover:text-[#5B5CE2] text-[10px] font-semibold text-[#4b5563] transition-all flex items-center gap-1 cursor-pointer shrink-0"
+                      title="Replace media for this scene"
+                    >
+                      <Upload className="w-2.5 h-2.5" />
+                      <span>Replace</span>
+                    </button>
                   </div>
 
                   {/* Placement Hint or Hotspot coords */}
@@ -1543,11 +2155,14 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
                   </div>
                 </div>
 
-                {/* Canvas Viewport */}
+                {/* Canvas Viewport with Canonical Aspect Ratio */}
                 <div
                   ref={canvasRef}
                   onClick={handleCanvasClick}
-                  className={`relative aspect-[16/10] w-full bg-[#0a0a10] overflow-hidden select-none ${
+                  style={{
+                    aspectRatio: canonicalRatioInfo.cssRatio,
+                  }}
+                  className={`relative w-full max-h-[75vh] bg-[#0a0a10] overflow-hidden select-none transition-all duration-300 mx-auto ${
                     isPlacingHotspot ? 'cursor-crosshair' : 'cursor-default'
                   }`}
                 >
@@ -1567,11 +2182,7 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
                     ) : (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
-                        src={
-                          currentScene.sourceAssetUrl.includes('1551288049-bebda4e38f71')
-                            ? '/yaanna-webpage.png'
-                            : currentScene.sourceAssetUrl
-                        }
+                        src={currentScene.sourceAssetUrl}
                         alt={currentScene.name}
                         className="w-full h-full object-cover pointer-events-none"
                       />
@@ -1596,6 +2207,8 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
                           element={element}
                           isSelected={selectedElementId === element.id || selectedElementId === element._id}
                           isEditor={true}
+                          stepNumber={activeStepIndex + 1}
+                          totalSteps={steps.length}
                           containerRef={canvasRef}
                           onSelect={() => setSelectedElementId(element.id)}
                           onMove={(x, y) => handleMoveHotspot(element.id, x, y)}
@@ -1613,7 +2226,8 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
         </main>
 
         {/* Right Properties Inspector */}
-        {selectedNodeType === 'chapter' && selectedChapter ? (
+        {steps.length > 0 && (
+          selectedNodeType === 'chapter' && selectedChapter ? (
           <ChapterPropertiesPanel
             chapter={selectedChapter}
             steps={steps}
@@ -1644,10 +2258,10 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
               <button
                 type="button"
                 onClick={() => setActiveTab('step')}
-                className={`flex-1 pb-2.5 text-xs font-bold transition-colors cursor-pointer border-b-2 ${
+                className={`flex-1 pb-2.5 text-xs transition-colors cursor-pointer border-b-2 ${
                   activeTab === 'step'
-                    ? 'border-[#5B5CE2] text-[#5B5CE2]'
-                    : 'border-transparent text-[#6b7280] hover:text-[#0f0f1a]'
+                    ? 'font-semibold border-[#5B5CE2] text-[#5B5CE2]'
+                    : 'font-medium border-transparent text-[#6b7280] hover:text-[#0f0f1a]'
                 }`}
               >
                 Step Details
@@ -1655,10 +2269,10 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
               <button
                 type="button"
                 onClick={() => setActiveTab('interactions')}
-                className={`flex-1 pb-2.5 text-xs font-bold transition-colors cursor-pointer border-b-2 ${
+                className={`flex-1 pb-2.5 text-xs transition-colors cursor-pointer border-b-2 ${
                   activeTab === 'interactions'
-                    ? 'border-[#5B5CE2] text-[#5B5CE2]'
-                    : 'border-transparent text-[#6b7280] hover:text-[#0f0f1a]'
+                    ? 'font-semibold border-[#5B5CE2] text-[#5B5CE2]'
+                    : 'font-medium border-transparent text-[#6b7280] hover:text-[#0f0f1a]'
                 }`}
               >
                 Interactions
@@ -1666,10 +2280,10 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
               <button
                 type="button"
                 onClick={() => setActiveTab('settings')}
-                className={`flex-1 pb-2.5 text-xs font-bold transition-colors cursor-pointer border-b-2 ${
+                className={`flex-1 pb-2.5 text-xs transition-colors cursor-pointer border-b-2 ${
                   activeTab === 'settings'
-                    ? 'border-[#5B5CE2] text-[#5B5CE2]'
-                    : 'border-transparent text-[#6b7280] hover:text-[#0f0f1a]'
+                    ? 'font-semibold border-[#5B5CE2] text-[#5B5CE2]'
+                    : 'font-medium border-transparent text-[#6b7280] hover:text-[#0f0f1a]'
                 }`}
               >
                 Settings
@@ -1703,6 +2317,54 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
                     }
                   />
 
+                  {/* Scene Media Section */}
+                  <div className="p-3 bg-[#f8f8fc] rounded-xl border border-[#e5e7eb] space-y-2.5">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[12.5px] font-medium text-[#0f0f1a]">Scene Media</span>
+                      <span className="text-[10px] font-semibold text-[#6b7280] uppercase tracking-[0.16em]">
+                        {currentScene?.sourceType === 'recording' ? 'Video' : 'Screenshot'}
+                      </span>
+                    </div>
+
+                    {currentScene?.sourceAssetUrl ? (
+                      <div className="relative aspect-[16/10] rounded-lg overflow-hidden border border-[#e5e7eb] bg-[#0a0a10]">
+                        {Boolean(currentScene.sourceAssetUrl.match(/\.(mp4|webm|mov)$/i)) ||
+                        currentScene.sourceType === 'recording' ? (
+                          <video
+                            src={currentScene.sourceAssetUrl}
+                            className="w-full h-full object-cover"
+                            muted
+                          />
+                        ) : (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={currentScene.sourceAssetUrl}
+                            alt={currentScene.name}
+                            className="w-full h-full object-cover"
+                          />
+                        )}
+                      </div>
+                    ) : null}
+
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      fullWidth
+                      onClick={() => replaceFileInputRef.current?.click()}
+                      leftIcon={<Upload className="w-3.5 h-3.5" />}
+                      isLoading={isUploadingMedia}
+                    >
+                      Replace Media / Upload
+                    </Button>
+                    <input
+                      ref={replaceFileInputRef}
+                      type="file"
+                      accept="image/*,video/*"
+                      onChange={handleReplaceSceneMedia}
+                      className="hidden"
+                    />
+                  </div>
+
                   <div className="p-3 bg-[#f8f8fc] rounded-xl border border-[#e5e7eb] text-xs text-[#6b7280] leading-relaxed">
                     Select a hotspot on the canvas or click <strong>Hotspot</strong> on the top bar to create and configure custom pointer callouts, area zones, animations, and navigation actions.
                   </div>
@@ -1723,11 +2385,11 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
                   />
 
                   <div className="p-3 bg-[#fafafc] rounded-xl border border-[#e5e7eb] space-y-2">
-                    <div className="flex items-center gap-2 text-xs font-bold text-[#0f0f1a]">
+                    <div className="flex items-center gap-2 text-xs font-semibold text-[#0f0f1a]">
                       <SlidersHorizontal className="w-3.5 h-3.5 text-[#5B5CE2]" />
                       <span>Action Pipeline</span>
                     </div>
-                    <p className="text-[12px] text-[#6b7280] leading-relaxed">
+                    <p className="text-[12px] text-[#6b7280] font-normal leading-relaxed">
                       Hotspots trigger interactive animations, step transitions, external URLs, and track analytics events.
                     </p>
                   </div>
@@ -1754,7 +2416,7 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
                   />
 
                   <div className="flex items-center justify-between pt-2">
-                    <label className="text-xs font-bold text-[#0f0f1a]">
+                    <label className="text-[12.5px] font-medium text-[#374151]">
                       Show Progress Bar
                     </label>
                     <input
@@ -1775,29 +2437,30 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
               )}
             </div>
           </aside>
-        )}
+        ))}
       </div>
 
       {/* Full Preview Modal using REAL DemoRuntimePlayer */}
       {isPreviewOpen && (
-        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex flex-col p-4 sm:p-6 animate-fade-in">
+        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex flex-col p-4 sm:p-6 animate-in fade-in duration-200">
           <div className="flex items-center justify-between pb-3 text-white">
             <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-400" />
-              <span className="font-bold text-sm">Live Preview Mode</span>
-              <span className="text-xs text-white/50">(Using Real Production Hotspot Runtime Engine)</span>
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
+              <span className="font-semibold text-sm">Live Preview Mode</span>
+              <span className="text-xs text-white/50 font-normal hidden sm:inline">(Using Real Production Hotspot Runtime Engine)</span>
             </div>
             <button
               type="button"
               onClick={() => setIsPreviewOpen(false)}
-              className="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold cursor-pointer"
+              className="px-3.5 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold cursor-pointer transition-all duration-150 hover:scale-105 active:scale-95 shadow-sm"
             >
               Exit Preview
             </button>
           </div>
 
-          <div className="flex-1 w-full max-w-6xl mx-auto rounded-2xl overflow-hidden shadow-2xl border border-white/10">
+          <div className="flex-1 w-full max-w-6xl mx-auto rounded-2xl overflow-hidden shadow-2xl border border-white/10 animate-preview-modal">
             <DemoRuntimePlayer
+              key={`preview-${activeStepIndex}-${steps.length}-${scenes.map((s) => s.sourceAssetUrl).join('|')}`}
               demoName={demo.name}
               demoSettings={demo.settings}
               scenes={scenes}
@@ -1805,6 +2468,7 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
               chapters={chapters}
               elements={elements}
               interactions={interactions}
+              initialStepIndex={activeStepIndex}
             />
           </div>
         </div>
@@ -1818,10 +2482,10 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
               <Send className="w-7 h-7" />
             </div>
 
-            <h3 className="text-xl font-extrabold text-[#0f0f1a] mb-1">
+            <h3 className="text-xl font-semibold text-[#0f0f1a] mb-1 tracking-tight">
               Tour Published Successfully!
             </h3>
-            <p className="text-xs text-[#6b7280] mb-5">
+            <p className="text-xs text-[#6b7280] font-normal mb-5 leading-relaxed">
               Your interactive demo is live and ready to be shared with prospects or embedded into your website.
             </p>
 
@@ -1835,7 +2499,7 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
               <button
                 type="button"
                 onClick={handleCopyLink}
-                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[#5B5CE2] text-white text-xs font-bold hover:bg-[#4a4bd4] transition-colors cursor-pointer shrink-0"
+                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[#5B5CE2] text-white text-xs font-semibold hover:bg-[#4a4bd4] transition-colors cursor-pointer shrink-0"
               >
                 {copiedLink ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
                 <span>{copiedLink ? 'Copied' : 'Copy'}</span>
@@ -1846,7 +2510,7 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
               <button
                 type="button"
                 onClick={() => setShowPublishModal(false)}
-                className="flex-1 px-4 py-2.5 rounded-xl border border-[#d1d5db] text-xs font-bold text-[#0f0f1a] hover:bg-[#f8f8fc]"
+                className="flex-1 px-4 py-2.5 rounded-xl border border-[#d1d5db] text-xs font-semibold text-[#0f0f1a] hover:bg-[#f8f8fc] cursor-pointer"
               >
                 Close
               </button>
@@ -1854,7 +2518,7 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
                 href={publicShareLink}
                 target="_blank"
                 rel="noreferrer"
-                className="flex-1 inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#5B5CE2] text-white text-xs font-bold hover:bg-[#4a4bd4] shadow-md"
+                className="flex-1 inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#5B5CE2] text-white text-xs font-semibold hover:bg-[#4a4bd4] shadow-md"
               >
                 <span>Open Live Demo</span>
                 <ExternalLink className="w-3.5 h-3.5" />
@@ -1879,7 +2543,85 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
         nextStepNumber={steps.length + 1}
         scenes={scenes}
         chapters={chapters}
+        demo={demo}
       />
+
+      {/* Aspect Ratio Warning Modal for Direct Editor Uploads and Replace Media */}
+      {editorAspectWarning && (
+        <AspectRatioWarningModal
+          isOpen={Boolean(editorAspectWarning)}
+          currentInfo={editorAspectWarning.currentInfo}
+          newInfo={editorAspectWarning.newInfo}
+          onCancel={handleCancelEditorAspectWarning}
+          onChangeAspectRatio={handleChangeEditorAspectRatio}
+          onCropToMatch={
+            editorAspectWarning.file.type.startsWith('image/')
+              ? handleCropEditorToMatch
+              : undefined
+          }
+          isProcessing={isEditorCropping}
+        />
+      )}
+
+      {/* Keyboard Shortcuts Modal */}
+      {isShortcutModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl border border-[#e5e7eb] w-full max-w-md p-6 animate-scale-in">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-[#5B5CE2]/10 text-[#5B5CE2] flex items-center justify-center">
+                  <Command className="w-4 h-4" />
+                </div>
+                <h3 className="text-[16px] font-semibold text-[#0f0f1a] tracking-tight">Studio Shortcuts</h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsShortcutModalOpen(false)}
+                className="text-[#9ca3af] hover:text-[#0f0f1a] p-1 cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="space-y-2.5 text-xs">
+              <div className="flex items-center justify-between p-2.5 rounded-xl bg-[#f8f8fc]">
+                <span className="text-[#4b5563] font-medium">Open Media Library</span>
+                <kbd className="px-2 py-1 rounded-md bg-white border border-[#e5e7eb] font-mono font-semibold text-[#0f0f1a] shadow-2xs">
+                  ⌘ + M
+                </kbd>
+              </div>
+              <div className="flex items-center justify-between p-2.5 rounded-xl bg-[#f8f8fc]">
+                <span className="text-[#4b5563] font-medium">Upload Media</span>
+                <kbd className="px-2 py-1 rounded-md bg-white border border-[#e5e7eb] font-mono font-semibold text-[#0f0f1a] shadow-2xs">
+                  ⌘ + U
+                </kbd>
+              </div>
+              <div className="flex items-center justify-between p-2.5 rounded-xl bg-[#f8f8fc]">
+                <span className="text-[#4b5563] font-medium">Record Screen</span>
+                <kbd className="px-2 py-1 rounded-md bg-white border border-[#e5e7eb] font-mono font-semibold text-[#0f0f1a] shadow-2xs">
+                  ⌘ + R
+                </kbd>
+              </div>
+              <div className="flex items-center justify-between p-2.5 rounded-xl bg-[#f8f8fc]">
+                <span className="text-[#4b5563] font-medium">Preview Demo</span>
+                <kbd className="px-2 py-1 rounded-md bg-white border border-[#e5e7eb] font-mono font-semibold text-[#0f0f1a] shadow-2xs">
+                  Space
+                </kbd>
+              </div>
+            </div>
+
+            <div className="mt-5">
+              <button
+                type="button"
+                onClick={() => setIsShortcutModalOpen(false)}
+                className="w-full py-2.5 rounded-xl bg-[#5B5CE2] hover:bg-[#4a4bd4] text-white text-xs font-semibold transition-colors cursor-pointer"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -51,7 +51,7 @@ export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
           <div className="flex items-center justify-between">
             <label
               htmlFor={inputId}
-              className="block text-[13px] font-semibold text-[#0f0f1a]"
+              className="block text-[12.5px] font-medium text-[#374151]"
             >
               {label}
               {required && <span className="text-[#5B5CE2] ml-1">*</span>}

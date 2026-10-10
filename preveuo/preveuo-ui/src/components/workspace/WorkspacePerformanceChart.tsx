@@ -10,17 +10,17 @@ export const WorkspacePerformanceChart: React.FC = () => {
       {/* Chart Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
-          <h3 className="text-[16px] font-bold text-[#0f0f1a]">
+          <h3 className="text-[15px] sm:text-[16px] font-semibold text-[#0f0f1a]">
             Demo performance
           </h3>
-          <p className="text-[12.5px] text-[#6b7280] mt-0.5">
+          <p className="text-[12px] text-[#6b7280] font-normal mt-0.5">
             Views and unique viewers over time
           </p>
         </div>
 
         <div className="flex items-center gap-4">
           {/* Legend */}
-          <div className="flex items-center gap-3 text-xs font-medium">
+          <div className="flex items-center gap-3 text-xs font-normal">
             <span className="flex items-center gap-1.5 text-[#0f0f1a]">
               <span className="w-2 h-2 rounded-full bg-[#5B5CE2]" />
               Views
@@ -34,7 +34,7 @@ export const WorkspacePerformanceChart: React.FC = () => {
           {/* Period selector */}
           <button
             type="button"
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#fafafc] border border-[#e5e7eb] text-[#0f0f1a] hover:border-[#d1d5db] transition-colors cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium bg-white border border-[#e5e7eb] text-[#0f0f1a] hover:border-[#d1d5db] transition-colors cursor-pointer"
           >
             <span>Last 30 days</span>
             <ChevronDown className="w-3.5 h-3.5 text-[#9ca3af]" />

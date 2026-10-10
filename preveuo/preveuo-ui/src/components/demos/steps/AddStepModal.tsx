@@ -1,8 +1,18 @@
 'use client';
 
 import React, { useState, useRef } from 'react';
-import { IDemoScene, IDemoChapter } from '@/types/demo';
+import { IDemoScene, IDemoChapter, IDemo } from '@/types/demo';
 import { Button, Input, Select } from '@/components/ui';
+import {
+  calculateAspectRatio,
+  areAspectRatiosMatching,
+  getCanonicalDemoAspectRatio,
+  getImageDimensions,
+  cropImageToAspectRatio,
+  AspectRatioInfo,
+  CanonicalAspectRatioInfo,
+} from '@/lib/utils/aspectRatio';
+import { AspectRatioWarningModal } from '@/components/demos/AspectRatioWarningModal';
 import {
   Upload,
   Image as ImageIcon,
@@ -15,6 +25,7 @@ import {
   Check,
   AlertCircle,
   Sparkles,
+  Crop,
 } from 'lucide-react';
 
 interface AddStepModalProps {
@@ -26,11 +37,17 @@ interface AddStepModalProps {
     mediaType: 'image' | 'video';
     existingSceneId?: string;
     chapterId?: string;
+    aspectRatioChange?: {
+      width: number;
+      height: number;
+      aspectRatio: string;
+    };
   }) => Promise<void> | void;
   defaultChapterId?: string;
   nextStepNumber: number;
   scenes: IDemoScene[];
   chapters: IDemoChapter[];
+  demo?: IDemo;
 }
 
 type TabType = 'upload' | 'scenes' | 'url';
@@ -43,6 +60,7 @@ export const AddStepModal: React.FC<AddStepModalProps> = ({
   nextStepNumber,
   scenes = [],
   chapters = [],
+  demo,
 }) => {
   const [activeTab, setActiveTab] = useState<TabType>('upload');
   const [title, setTitle] = useState(`Step ${nextStepNumber}`);
@@ -58,6 +76,18 @@ export const AddStepModal: React.FC<AddStepModalProps> = ({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
 
+  // Aspect ratio warning & confirmation state
+  const [isWarningOpen, setIsWarningOpen] = useState(false);
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
+  const [pendingAspectInfo, setPendingAspectInfo] = useState<AspectRatioInfo | null>(null);
+  const [pendingCanonicalInfo, setPendingCanonicalInfo] = useState<CanonicalAspectRatioInfo | null>(null);
+  const [isCropping, setIsCropping] = useState(false);
+  const [acceptedAspectChange, setAcceptedAspectChange] = useState<{
+    width: number;
+    height: number;
+    aspectRatio: string;
+  } | null>(null);
+
   // Existing Scene state
   const [selectedSceneId, setSelectedSceneId] = useState<string>(
     scenes[0]?.id || (scenes[0] as any)?._id || ''
@@ -71,32 +101,108 @@ export const AddStepModal: React.FC<AddStepModalProps> = ({
 
   if (!isOpen) return null;
 
-  // File selection handler
-  const handleFileChange = (file: File) => {
+  // File selection handler with instant aspect ratio inspection
+  const handleFileChange = async (file: File) => {
     setErrorMessage(null);
     const mime = file.type || '';
-    const isImg = mime.startsWith('image/');
-    const isVid = mime.startsWith('video/');
+    const ext = file.name.split('.').pop()?.toLowerCase() || '';
+
+    const imageExts = ['png', 'jpg', 'jpeg', 'webp', 'gif', 'svg', 'bmp', 'ico', 'avif'];
+    const videoExts = ['mp4', 'webm', 'mov', 'm4v', 'ogg', 'ogv', 'avi', 'mkv'];
+
+    const isImg = mime.startsWith('image/') || imageExts.includes(ext);
+    const isVid = mime.startsWith('video/') || videoExts.includes(ext);
 
     if (!isImg && !isVid) {
-      setErrorMessage('Please select a valid image (.png, .jpg, .webp) or video (.mp4, .webm) file.');
+      setErrorMessage('Please select a valid image (.png, .jpg, .webp) or video (.mp4, .webm, .mov) file.');
       return;
     }
 
-    // Size limit: 50MB for video, 20MB for image
-    const maxSize = isVid ? 50 * 1024 * 1024 : 20 * 1024 * 1024;
+    // Size limit: 50MB for video, 25MB for image
+    const maxSize = isVid ? 50 * 1024 * 1024 : 25 * 1024 * 1024;
     if (file.size > maxSize) {
       setErrorMessage(
         `File is too large (${(file.size / (1024 * 1024)).toFixed(1)}MB). Max allowed: ${
-          isVid ? '50MB' : '20MB'
+          isVid ? '50MB' : '25MB'
         }.`
       );
       return;
     }
 
-    setSelectedFile(file);
-    setMediaType(isVid ? 'video' : 'image');
-    setPreviewUrl(URL.createObjectURL(file));
+    try {
+      // 1. Measure the real dimensions of the media file
+      const dims = await getImageDimensions(file);
+      const fileAspect = calculateAspectRatio(dims.width, dims.height);
+      const canonical = getCanonicalDemoAspectRatio(demo, scenes);
+
+      // 2. If existing scenes exist in the demo, check if aspect ratios match
+      if (scenes.length > 0 && !areAspectRatiosMatching(fileAspect.ratio, canonical.ratio)) {
+        // Mismatch! Open Aspect Ratio Warning Modal (Supademo behavior)
+        setPendingFile(file);
+        setPendingAspectInfo(fileAspect);
+        setPendingCanonicalInfo(canonical);
+        setIsWarningOpen(true);
+        return;
+      }
+
+      // If matching, or if this is the very first slide in the demo
+      setSelectedFile(file);
+      setMediaType(isVid ? 'video' : 'image');
+      setPreviewUrl(URL.createObjectURL(file));
+
+      if (scenes.length === 0) {
+        // First slide establishes the canonical aspect ratio for the entire demo!
+        setAcceptedAspectChange({
+          width: fileAspect.width,
+          height: fileAspect.height,
+          aspectRatio: fileAspect.label,
+        });
+      } else {
+        setAcceptedAspectChange(null);
+      }
+    } catch (err: any) {
+      setErrorMessage(err.message || 'Could not verify media dimensions.');
+    }
+  };
+
+  const handleCancelWarning = () => {
+    setIsWarningOpen(false);
+    setPendingFile(null);
+    setPendingAspectInfo(null);
+    setPendingCanonicalInfo(null);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  const handleChangeAspectRatio = () => {
+    if (!pendingFile || !pendingAspectInfo) return;
+    setIsWarningOpen(false);
+    setSelectedFile(pendingFile);
+    setMediaType(pendingFile.type.startsWith('video/') ? 'video' : 'image');
+    setPreviewUrl(URL.createObjectURL(pendingFile));
+    setAcceptedAspectChange({
+      width: pendingAspectInfo.width,
+      height: pendingAspectInfo.height,
+      aspectRatio: pendingAspectInfo.label,
+    });
+    setPendingFile(null);
+  };
+
+  const handleCropToMatch = async () => {
+    if (!pendingFile || !pendingCanonicalInfo) return;
+    try {
+      setIsCropping(true);
+      const cropped = await cropImageToAspectRatio(pendingFile, pendingCanonicalInfo.ratio);
+      setIsWarningOpen(false);
+      setSelectedFile(cropped);
+      setMediaType('image');
+      setPreviewUrl(URL.createObjectURL(cropped));
+      setAcceptedAspectChange(null); // Keep existing canonical ratio!
+      setPendingFile(null);
+    } catch (err: any) {
+      setErrorMessage(err.message || 'Failed to crop image to current aspect ratio.');
+    } finally {
+      setIsCropping(false);
+    }
   };
 
   // Drag and drop handlers
@@ -150,6 +256,7 @@ export const AddStepModal: React.FC<AddStepModalProps> = ({
           mediaUrl: data.url,
           mediaType: data.type || mediaType,
           chapterId: selectedChapterId || undefined,
+          aspectRatioChange: acceptedAspectChange || undefined,
         });
 
         onClose();
@@ -208,8 +315,8 @@ export const AddStepModal: React.FC<AddStepModalProps> = ({
               <Plus className="w-4 h-4" />
             </div>
             <div>
-              <h3 className="text-base font-bold text-[#0f0f1a]">Add New Step</h3>
-              <p className="text-xs text-[#6b7280]">
+              <h3 className="text-[16px] font-semibold text-[#0f0f1a] tracking-tight">Add New Step</h3>
+              <p className="text-[12.5px] text-[#6b7280] font-normal leading-normal">
                 Upload an image screenshot or video recording to create this step.
               </p>
             </div>
@@ -228,10 +335,10 @@ export const AddStepModal: React.FC<AddStepModalProps> = ({
           <button
             type="button"
             onClick={() => setActiveTab('upload')}
-            className={`flex items-center gap-2 pb-3 px-3 text-xs font-bold border-b-2 transition-all cursor-pointer ${
+            className={`flex items-center gap-2 pb-3 px-3 text-xs border-b-2 transition-all cursor-pointer ${
               activeTab === 'upload'
-                ? 'border-[#5B5CE2] text-[#5B5CE2]'
-                : 'border-transparent text-[#6b7280] hover:text-[#0f0f1a]'
+                ? 'font-semibold border-[#5B5CE2] text-[#5B5CE2]'
+                : 'font-medium border-transparent text-[#6b7280] hover:text-[#0f0f1a]'
             }`}
           >
             <Upload className="w-3.5 h-3.5" />
@@ -240,10 +347,10 @@ export const AddStepModal: React.FC<AddStepModalProps> = ({
           <button
             type="button"
             onClick={() => setActiveTab('scenes')}
-            className={`flex items-center gap-2 pb-3 px-3 text-xs font-bold border-b-2 transition-all cursor-pointer ${
+            className={`flex items-center gap-2 pb-3 px-3 text-xs border-b-2 transition-all cursor-pointer ${
               activeTab === 'scenes'
-                ? 'border-[#5B5CE2] text-[#5B5CE2]'
-                : 'border-transparent text-[#6b7280] hover:text-[#0f0f1a]'
+                ? 'font-semibold border-[#5B5CE2] text-[#5B5CE2]'
+                : 'font-medium border-transparent text-[#6b7280] hover:text-[#0f0f1a]'
             }`}
           >
             <Layers className="w-3.5 h-3.5" />
@@ -252,10 +359,10 @@ export const AddStepModal: React.FC<AddStepModalProps> = ({
           <button
             type="button"
             onClick={() => setActiveTab('url')}
-            className={`flex items-center gap-2 pb-3 px-3 text-xs font-bold border-b-2 transition-all cursor-pointer ${
+            className={`flex items-center gap-2 pb-3 px-3 text-xs border-b-2 transition-all cursor-pointer ${
               activeTab === 'url'
-                ? 'border-[#5B5CE2] text-[#5B5CE2]'
-                : 'border-transparent text-[#6b7280] hover:text-[#0f0f1a]'
+                ? 'font-semibold border-[#5B5CE2] text-[#5B5CE2]'
+                : 'font-medium border-transparent text-[#6b7280] hover:text-[#0f0f1a]'
             }`}
           >
             <LinkIcon className="w-3.5 h-3.5" />
@@ -303,18 +410,18 @@ export const AddStepModal: React.FC<AddStepModalProps> = ({
                   <div className="w-12 h-12 rounded-2xl bg-[#5B5CE2]/10 text-[#5B5CE2] flex items-center justify-center mb-3">
                     <Upload className="w-6 h-6" />
                   </div>
-                  <h4 className="text-sm font-bold text-[#0f0f1a] mb-1">
+                  <h4 className="text-[14px] font-semibold text-[#0f0f1a] mb-1">
                     Choose Image or Video to Upload
                   </h4>
-                  <p className="text-xs text-[#6b7280] max-w-sm mb-3">
+                  <p className="text-[12.5px] text-[#6b7280] font-normal max-w-sm mb-3">
                     Drag and drop your file here, or click to browse. Supports screenshots (.png, .jpg, .webp) and screen recordings (.mp4, .webm).
                   </p>
                   <div className="flex items-center gap-3 text-[11px] text-[#9ca3af]">
-                    <span className="flex items-center gap-1">
+                    <span className="flex items-center gap-1 font-normal">
                       <ImageIcon className="w-3.5 h-3.5" /> Images up to 20MB
                     </span>
                     <span>•</span>
-                    <span className="flex items-center gap-1">
+                    <span className="flex items-center gap-1 font-normal">
                       <Film className="w-3.5 h-3.5" /> Videos up to 50MB
                     </span>
                   </div>
@@ -339,7 +446,7 @@ export const AddStepModal: React.FC<AddStepModalProps> = ({
                   )}
 
                   {/* Media Type Badge & Replace Button */}
-                  <div className="absolute top-3 left-3 bg-black/70 backdrop-blur-md text-white text-[10px] font-bold px-2.5 py-1 rounded-md flex items-center gap-1.5">
+                  <div className="absolute top-3 left-3 bg-black/70 backdrop-blur-md text-white text-[10px] font-medium px-2.5 py-1 rounded-md flex items-center gap-1.5">
                     {mediaType === 'video' ? (
                       <>
                         <Video className="w-3 h-3 text-[#5B5CE2]" />
@@ -382,7 +489,7 @@ export const AddStepModal: React.FC<AddStepModalProps> = ({
           {/* TAB 2: CHOOSE EXISTING SCENE */}
           {activeTab === 'scenes' && (
             <div className="space-y-3">
-              <label className="block text-xs font-bold text-[#0f0f1a]">
+              <label className="block text-[12.5px] font-medium text-[#374151]">
                 Select an existing scene screenshot:
               </label>
               {scenes.length === 0 ? (
@@ -419,7 +526,7 @@ export const AddStepModal: React.FC<AddStepModalProps> = ({
                           )}
                         </div>
                         <div className="p-2 bg-white flex items-center justify-between text-xs">
-                          <span className="font-bold text-[#0f0f1a] truncate">
+                          <span className="font-medium text-[#0f0f1a] truncate">
                             {sc.name || `Scene ${scIdx + 1}`}
                           </span>
                           {isSelected && <Check className="w-3.5 h-3.5 text-[#5B5CE2] shrink-0" />}
@@ -443,12 +550,12 @@ export const AddStepModal: React.FC<AddStepModalProps> = ({
                 helperText="Direct link to hosted media asset"
               />
               <div className="flex items-center gap-3 pt-1">
-                <label className="text-xs font-bold text-[#0f0f1a]">Media Type:</label>
+                <label className="text-[12.5px] font-medium text-[#374151]">Media Type:</label>
                 <div className="flex items-center gap-2">
                   <button
                     type="button"
                     onClick={() => setCustomUrlType('image')}
-                    className={`px-3 py-1 rounded-lg text-xs font-semibold cursor-pointer border transition-colors ${
+                    className={`px-3 py-1 rounded-lg text-xs font-medium cursor-pointer border transition-colors ${
                       customUrlType === 'image'
                         ? 'bg-[#5B5CE2] text-white border-[#5B5CE2]'
                         : 'bg-white text-[#6b7280] border-[#d1d5db]'
@@ -459,7 +566,7 @@ export const AddStepModal: React.FC<AddStepModalProps> = ({
                   <button
                     type="button"
                     onClick={() => setCustomUrlType('video')}
-                    className={`px-3 py-1 rounded-lg text-xs font-semibold cursor-pointer border transition-colors ${
+                    className={`px-3 py-1 rounded-lg text-xs font-medium cursor-pointer border transition-colors ${
                       customUrlType === 'video'
                         ? 'bg-[#5B5CE2] text-white border-[#5B5CE2]'
                         : 'bg-white text-[#6b7280] border-[#d1d5db]'
@@ -514,6 +621,23 @@ export const AddStepModal: React.FC<AddStepModalProps> = ({
           </div>
         </form>
       </div>
+
+      {/* Supademo-Style Aspect Ratio Warning & Confirmation Modal */}
+      {isWarningOpen && pendingCanonicalInfo && pendingAspectInfo && (
+        <AspectRatioWarningModal
+          isOpen={isWarningOpen}
+          currentInfo={pendingCanonicalInfo}
+          newInfo={pendingAspectInfo}
+          onCancel={handleCancelWarning}
+          onChangeAspectRatio={handleChangeAspectRatio}
+          onCropToMatch={
+            pendingFile && pendingFile.type.startsWith('image/')
+              ? handleCropToMatch
+              : undefined
+          }
+          isProcessing={isCropping}
+        />
+      )}
     </div>
   );
 };

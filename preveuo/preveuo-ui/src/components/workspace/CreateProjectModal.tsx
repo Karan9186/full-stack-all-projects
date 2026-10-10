@@ -44,8 +44,8 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
           <div className="w-10 h-10 rounded-xl bg-[#5B5CE2]/10 text-[#5B5CE2] flex items-center justify-center mb-3">
             <Sparkles className="w-5 h-5" />
           </div>
-          <h3 className="text-lg font-bold text-[#0f0f1a]">Create Interactive Demo</h3>
-          <p className="text-xs text-[#6b7280] mt-1">
+          <h3 className="text-[17px] font-semibold text-[#0f0f1a] tracking-tight">Create Interactive Demo</h3>
+          <p className="text-[13px] text-[#6b7280] mt-1 font-normal leading-normal">
             Capture or import workflow steps to produce a self-guided walkthrough.
           </p>
         </div>

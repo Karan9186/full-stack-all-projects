@@ -94,13 +94,13 @@ export const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({
             {userInitials}
           </div>
           <div className="min-w-0">
-            <h4 className="text-[13.5px] font-bold text-[#0f0f1a] truncate leading-tight">
+            <h4 className="text-[13.5px] font-semibold text-[#0f0f1a] truncate leading-tight">
               {userName}
             </h4>
-            <p className="text-[11.5px] text-[#6b7280] truncate leading-tight mt-0.5">
+            <p className="text-[11.5px] text-[#6b7280] font-normal truncate leading-tight mt-0.5">
               {userEmail}
             </p>
-            <span className="inline-block text-[10px] font-bold text-[#5B5CE2] bg-[#5B5CE2]/10 px-2 py-0.5 rounded-full mt-1.5 uppercase tracking-wider">
+            <span className="inline-block text-[10.5px] font-medium text-[#5B5CE2] bg-[#5B5CE2]/10 px-2 py-0.5 rounded-full mt-1.5 tracking-wide">
               Workspace {roleName} • Pro
             </span>
           </div>
@@ -109,7 +109,7 @@ export const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({
 
       {/* Switch Workspace Section */}
       <div className="px-2 py-1.5">
-        <div className="text-[10px] font-bold uppercase tracking-wider text-[#9ca3af] px-2 py-1">
+        <div className="text-[10.5px] font-semibold uppercase tracking-[0.16em] text-[#9ca3af] px-2 py-1">
           Switch Workspace
         </div>
         <button
@@ -132,7 +132,7 @@ export const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({
           className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-xl text-[12.5px] font-medium text-[#6b7280] hover:text-[#0f0f1a] hover:bg-[#f8f8fc] transition-colors cursor-pointer"
         >
           <div className="flex items-center gap-2">
-            <div className="w-5 h-5 rounded-md bg-[#f0f0f4] text-[#6b7280] flex items-center justify-center text-[10px] font-bold">
+            <div className="w-5 h-5 rounded-md bg-[#f0f0f4] text-[#6b7280] flex items-center justify-center text-[10px] font-medium">
               P
             </div>
             <span>Personal Workspace</span>
@@ -145,7 +145,7 @@ export const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({
             onClose();
             window.location.href = '/register';
           }}
-          className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-xl text-[12px] font-semibold text-[#5B5CE2] hover:bg-[#5B5CE2]/10 transition-colors mt-0.5 cursor-pointer"
+          className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-xl text-[12px] font-medium text-[#5B5CE2] hover:bg-[#5B5CE2]/10 transition-colors mt-0.5 cursor-pointer"
         >
           <Plus className="w-3.5 h-3.5" />
           <span>Create workspace</span>
@@ -162,7 +162,7 @@ export const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({
             onClose();
             if (onSelectTab) onSelectTab('settings');
           }}
-          className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-[12.5px] font-semibold text-[#4b5563] hover:text-[#0f0f1a] hover:bg-[#f8f8fc] transition-colors text-left cursor-pointer"
+          className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] font-medium text-[#374151] hover:text-[#0f0f1a] hover:bg-[#f8f8fc] transition-colors text-left cursor-pointer"
         >
           <Settings className="w-4 h-4 text-[#9ca3af]" />
           <span>Account & Settings</span>
@@ -174,7 +174,7 @@ export const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({
             onClose();
             if (onSelectTab) onSelectTab('help');
           }}
-          className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-[12.5px] font-semibold text-[#4b5563] hover:text-[#0f0f1a] hover:bg-[#f8f8fc] transition-colors text-left cursor-pointer"
+          className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] font-medium text-[#374151] hover:text-[#0f0f1a] hover:bg-[#f8f8fc] transition-colors text-left cursor-pointer"
         >
           <HelpCircle className="w-4 h-4 text-[#9ca3af]" />
           <span>Help & Documentation</span>
@@ -183,7 +183,7 @@ export const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({
         <button
           type="button"
           onClick={() => onClose()}
-          className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-[12.5px] font-semibold text-[#4b5563] hover:text-[#0f0f1a] hover:bg-[#f8f8fc] transition-colors text-left cursor-pointer"
+          className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-[13px] font-medium text-[#374151] hover:text-[#0f0f1a] hover:bg-[#f8f8fc] transition-colors text-left cursor-pointer"
         >
           <div className="flex items-center gap-2.5">
             <Keyboard className="w-4 h-4 text-[#9ca3af]" />
@@ -202,7 +202,7 @@ export const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({
         <button
           type="button"
           onClick={handleLogout}
-          className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-[12.5px] font-semibold text-red-600 hover:bg-red-50 transition-colors cursor-pointer text-left"
+          className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] font-medium text-red-600 hover:bg-red-50 transition-colors cursor-pointer text-left"
         >
           <LogOut className="w-4 h-4 text-red-500" />
           <span>Sign out</span>

@@ -31,10 +31,10 @@ export const AssetsTabContent: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
-          <h2 className="text-[26px] sm:text-[30px] font-extrabold tracking-tight text-[#0f0f1a]">
+          <h2 className="text-[24px] sm:text-[28px] font-bold tracking-tight text-[#0f0f1a]">
             Asset library
           </h2>
-          <p className="text-[14px] text-[#6b7280] mt-0.5">
+          <p className="text-[13.5px] text-[#6b7280] font-normal mt-0.5">
             Manage screenshots, product recordings, brand marks, and video media.
           </p>
         </div>
@@ -55,8 +55,8 @@ export const AssetsTabContent: React.FC = () => {
             <HardDrive className="w-5 h-5" />
           </div>
           <div>
-            <span className="text-[13px] font-bold text-[#0f0f1a]">Cloud Storage Quota</span>
-            <p className="text-[12px] text-[#6b7280]">18.2 MB of 10 GB used (0.2%)</p>
+            <span className="text-[13px] font-semibold text-[#0f0f1a]">Cloud Storage Quota</span>
+            <p className="text-[12px] text-[#6b7280] font-normal">18.2 MB of 10 GB used (0.2%)</p>
           </div>
         </div>
 
@@ -75,7 +75,7 @@ export const AssetsTabContent: React.FC = () => {
               key={t}
               type="button"
               onClick={() => setTypeFilter(t)}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold capitalize transition-all cursor-pointer ${
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-medium capitalize transition-all cursor-pointer ${
                 typeFilter === t
                   ? 'bg-[#5B5CE2] text-white shadow-xs'
                   : 'bg-white text-[#6b7280] hover:text-[#0f0f1a] border border-[#e5e7eb]'
@@ -113,7 +113,7 @@ export const AssetsTabContent: React.FC = () => {
                   className="object-cover group-hover:scale-105 transition-transform duration-300 opacity-90"
                 />
                 <div className="absolute top-2.5 left-2.5">
-                  <Badge variant="purple" size="sm" className="capitalize">
+                  <Badge variant="purple" size="sm" className="capitalize font-medium">
                     {asset.type}
                   </Badge>
                 </div>
@@ -122,7 +122,7 @@ export const AssetsTabContent: React.FC = () => {
               {/* Details */}
               <div className="p-4">
                 <div className="flex items-start justify-between gap-2 mb-1">
-                  <h4 className="text-[13.5px] font-bold text-[#0f0f1a] truncate group-hover:text-[#5B5CE2] transition-colors">
+                  <h4 className="text-[13.5px] font-semibold text-[#0f0f1a] truncate group-hover:text-[#5B5CE2] transition-colors">
                     {asset.name}
                   </h4>
                   <button type="button" className="text-[#9ca3af] hover:text-[#0f0f1a] p-0.5">
@@ -130,7 +130,7 @@ export const AssetsTabContent: React.FC = () => {
                   </button>
                 </div>
 
-                <div className="flex items-center gap-3 text-[11.5px] text-[#9ca3af]">
+                <div className="flex items-center gap-3 text-[11.5px] text-[#9ca3af] font-normal">
                   <span>{asset.size}</span>
                   {asset.dimensions && (
                     <>

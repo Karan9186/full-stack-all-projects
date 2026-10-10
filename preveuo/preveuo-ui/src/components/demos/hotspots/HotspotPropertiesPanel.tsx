@@ -7,6 +7,7 @@ import {
   IDemoStep,
   IDemoScene,
   HotspotType,
+  HotspotPointerStyle,
   HotspotTextAlign,
   HotspotBorderRadius,
   HotspotWidth,
@@ -14,6 +15,7 @@ import {
   HotspotVisibility,
   HotspotActionType,
   IDemoChapter,
+  PointerAnimationSettings,
 } from '@/types/demo';
 import {
   Input,
@@ -36,7 +38,13 @@ import {
   AlignLeft,
   AlignCenter,
   AlignRight,
+  Radio,
+  Pointer,
+  Target,
+  Hash,
 } from 'lucide-react';
+import { PointerStyleSelector } from './PointerStyleSelector';
+import { PointerMiniPreview } from './PointerMiniPreview';
 
 interface HotspotPropertiesPanelProps {
   element: IDemoElement;
@@ -137,7 +145,7 @@ export const HotspotPropertiesPanel: React.FC<HotspotPropertiesPanelProps> = ({
       <div className="h-14 px-5 border-b border-[#f0f0f4] flex items-center justify-between shrink-0 bg-[#fafafc]">
         <div className="flex items-center gap-2">
           <SlidersHorizontal className="w-4 h-4 text-[#5B5CE2]" />
-          <h3 className="text-xs font-extrabold uppercase tracking-wider text-[#0f0f1a]">
+          <h3 className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#0f0f1a]">
             Hotspot Settings
           </h3>
         </div>
@@ -155,20 +163,60 @@ export const HotspotPropertiesPanel: React.FC<HotspotPropertiesPanelProps> = ({
       <div className="flex-1 overflow-y-auto p-5 space-y-6">
         {/* 1. CONTENT SECTION */}
         <section className="space-y-3.5">
-          <span className="text-[11px] font-extrabold uppercase tracking-widest text-[#5B5CE2]">
+          <span className="text-[10.5px] font-semibold uppercase tracking-[0.16em] text-[#5B5CE2]">
             Content
           </span>
 
+          <Input
+            label="Badge Label (Optional)"
+            placeholder="e.g. STEP 2 OF 12"
+            value={config.content.badge || ''}
+            onChange={(e) => updateContent({ badge: e.target.value })}
+          />
+
+          <Input
+            label="Headline / Title"
+            placeholder="e.g. Everything, at a glance"
+            value={
+              config.content.title !== undefined
+                ? config.content.title
+                : config.content.text?.includes('\n')
+                ? config.content.text.split('\n')[0]
+                : config.content.text || ''
+            }
+            onChange={(e) => {
+              const newTitle = e.target.value;
+              const currentDesc = config.content.description || '';
+              updateContent({
+                title: newTitle,
+                text: currentDesc ? `${newTitle}\n${currentDesc}` : newTitle,
+              });
+            }}
+          />
+
           <Textarea
-            label="Hotspot Text"
+            label="Description"
             rows={3}
-            value={config.content.text}
-            onChange={(e) => updateContent({ text: e.target.value })}
-            placeholder="Add some hotspot text here."
+            placeholder="e.g. See the metrics that matter and spot changes before they become blockers."
+            value={
+              config.content.description !== undefined
+                ? config.content.description
+                : config.content.text?.includes('\n')
+                ? config.content.text.split('\n').slice(1).join('\n')
+                : ''
+            }
+            onChange={(e) => {
+              const newDesc = e.target.value;
+              const currentTitle = config.content.title || config.content.text || '';
+              updateContent({
+                description: newDesc,
+                text: `${currentTitle}\n${newDesc}`,
+              });
+            }}
           />
 
           <div>
-            <label className="block text-[12.5px] font-bold text-[#0f0f1a] mb-1.5">
+            <label className="block text-[12.5px] font-medium text-[#374151] mb-1.5">
               Text Alignment
             </label>
             <SegmentedControl
@@ -185,12 +233,12 @@ export const HotspotPropertiesPanel: React.FC<HotspotPropertiesPanelProps> = ({
 
         {/* 2. APPEARANCE SECTION */}
         <section className="space-y-4 pt-4 border-t border-[#f0f0f4]">
-          <span className="text-[11px] font-extrabold uppercase tracking-widest text-[#5B5CE2]">
+          <span className="text-[10.5px] font-semibold uppercase tracking-[0.16em] text-[#5B5CE2]">
             Appearance
           </span>
 
           <div>
-            <label className="block text-[12.5px] font-bold text-[#0f0f1a] mb-1.5">
+            <label className="block text-[12.5px] font-medium text-[#374151] mb-1.5">
               Hotspot Style
             </label>
             <SegmentedControl
@@ -204,17 +252,42 @@ export const HotspotPropertiesPanel: React.FC<HotspotPropertiesPanelProps> = ({
             />
           </div>
 
+          {config.type === 'pointer' && (
+            <div className="space-y-3.5">
+              <PointerStyleSelector
+                value={config.appearance.pointerStyle || 'beacon'}
+                onChange={(val) => updateAppearance({ pointerStyle: val })}
+              />
+
+              <PointerMiniPreview
+                style={config.appearance.pointerStyle || 'beacon'}
+                color={config.appearance.background || '#5B5CE2'}
+                size={config.appearance.pointerAnimation?.size || 'md'}
+                animationSettings={config.appearance.pointerAnimation}
+                onAnimationChange={(animUpdates: Partial<PointerAnimationSettings>) => {
+                  updateAppearance({
+                    pointerAnimation: {
+                      ...(config.appearance.pointerAnimation || {}),
+                      ...animUpdates,
+                    },
+                  });
+                }}
+              />
+            </div>
+          )}
+
           <ColorField
-            label="Background Color"
-            value={config.appearance.background || '#5B5CE2'}
+            label="Tooltip Background Color"
+            value={config.appearance.background || '#18181b'}
             onChange={(color) => updateAppearance({ background: color })}
+            presetColors={['#18181b', '#0f0f1a', '#5B5CE2', '#1e1b4b', '#2563eb', '#059669', '#d97706', '#dc2626']}
           />
 
           <ColorField
             label="Text Color"
             value={config.appearance.textColor || '#ffffff'}
             onChange={(color) => updateAppearance({ textColor: color })}
-            presetColors={['#ffffff', '#0f0f1a', '#f8fafc', '#1e1b4b', '#475569']}
+            presetColors={['#ffffff', '#f8fafc', '#e2e8f0', '#0f0f1a', '#475569']}
           />
 
           <Switch
@@ -225,7 +298,7 @@ export const HotspotPropertiesPanel: React.FC<HotspotPropertiesPanelProps> = ({
           />
 
           <div>
-            <label className="block text-[12.5px] font-bold text-[#0f0f1a] mb-1.5">
+            <label className="block text-[12.5px] font-medium text-[#374151] mb-1.5">
               Border Radius
             </label>
             <SegmentedControl
@@ -240,7 +313,7 @@ export const HotspotPropertiesPanel: React.FC<HotspotPropertiesPanelProps> = ({
           </div>
 
           <div>
-            <label className="block text-[12.5px] font-bold text-[#0f0f1a] mb-1.5">
+            <label className="block text-[12.5px] font-medium text-[#374151] mb-1.5">
               Animation
             </label>
             <SegmentedControl
@@ -256,7 +329,7 @@ export const HotspotPropertiesPanel: React.FC<HotspotPropertiesPanelProps> = ({
           </div>
 
           <div>
-            <label className="block text-[12.5px] font-bold text-[#0f0f1a] mb-1.5">
+            <label className="block text-[12.5px] font-medium text-[#374151] mb-1.5">
               Visibility
             </label>
             <Select
@@ -273,7 +346,7 @@ export const HotspotPropertiesPanel: React.FC<HotspotPropertiesPanelProps> = ({
 
           {!isArea && (
             <div>
-              <label className="block text-[12.5px] font-bold text-[#0f0f1a] mb-1.5">
+              <label className="block text-[12.5px] font-medium text-[#374151] mb-1.5">
                 Callout Width
               </label>
               <SegmentedControl
@@ -292,10 +365,10 @@ export const HotspotPropertiesPanel: React.FC<HotspotPropertiesPanelProps> = ({
         {/* 3. POSITION & ANCHOR SECTION */}
         <section className="space-y-3.5 pt-4 border-t border-[#f0f0f4]">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-extrabold uppercase tracking-widest text-[#5B5CE2]">
+            <span className="text-[10.5px] font-semibold uppercase tracking-[0.16em] text-[#5B5CE2]">
               Position & Anchor
             </span>
-            <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-[#5B5CE2]/10 text-[#5B5CE2] text-[10.5px] font-bold">
+            <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-[#5B5CE2]/10 text-[#5B5CE2] text-[10.5px] font-medium">
               <span className="w-1.5 h-1.5 rounded-full bg-[#5B5CE2]" />
               Anchor Point
             </div>
@@ -386,7 +459,7 @@ export const HotspotPropertiesPanel: React.FC<HotspotPropertiesPanelProps> = ({
 
         {/* 4. NAVIGATION SECTION */}
         <section className="space-y-4 pt-4 border-t border-[#f0f0f4]">
-          <span className="text-[11px] font-extrabold uppercase tracking-widest text-[#5B5CE2]">
+          <span className="text-[10.5px] font-semibold uppercase tracking-[0.16em] text-[#5B5CE2]">
             Navigation Buttons
           </span>
 
@@ -400,7 +473,7 @@ export const HotspotPropertiesPanel: React.FC<HotspotPropertiesPanelProps> = ({
           {/* Next Button Config */}
           {config.navigation.showNext && (
             <div className="p-3.5 bg-[#fafafc] rounded-2xl border border-[#e5e7eb] space-y-3">
-              <span className="text-xs font-bold text-[#0f0f1a] block">
+              <span className="text-xs font-medium text-[#0f0f1a] block">
                 Next Button Settings
               </span>
 
@@ -628,7 +701,7 @@ export const HotspotPropertiesPanel: React.FC<HotspotPropertiesPanelProps> = ({
         <button
           type="button"
           onClick={onDelete}
-          className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
+          className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
         >
           <Trash2 className="w-3.5 h-3.5" />
           <span>Delete</span>

@@ -8,10 +8,10 @@ export const WorkspaceTeamActivity: React.FC = () => {
   return (
     <Card className="p-6">
       <div className="mb-5">
-        <h3 className="text-[16px] font-bold text-[#0f0f1a]">
+        <h3 className="text-[15px] sm:text-[16px] font-semibold text-[#0f0f1a]">
           Team activity
         </h3>
-        <p className="text-[12.5px] text-[#6b7280] mt-0.5">
+        <p className="text-[12px] text-[#6b7280] font-normal mt-0.5">
           Latest from your workspace
         </p>
       </div>
@@ -25,11 +25,11 @@ export const WorkspaceTeamActivity: React.FC = () => {
 
             <div className="flex-1 min-w-0">
               <p className="text-[#0f0f1a]">
-                <span className="font-bold">{act.user}</span>{' '}
-                <span className="text-[#6b7280]">{act.action}</span>{' '}
-                <span className="font-semibold text-[#5B5CE2]">{act.demoName}</span>
+                <span className="font-semibold">{act.user}</span>{' '}
+                <span className="text-[#6b7280] font-normal">{act.action}</span>{' '}
+                <span className="font-medium text-[#5B5CE2]">{act.demoName}</span>
               </p>
-              <span className="text-[11px] text-[#9ca3af] mt-0.5 block">
+              <span className="text-[11px] text-[#9ca3af] font-normal mt-0.5 block">
                 {act.timeAgo}
               </span>
             </div>

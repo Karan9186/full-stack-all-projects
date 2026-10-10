@@ -70,10 +70,10 @@ export const IntegrationsTabContent: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
-          <h2 className="text-[26px] sm:text-[30px] font-extrabold tracking-tight text-[#0f0f1a]">
+          <h2 className="text-[24px] sm:text-[28px] font-bold tracking-tight text-[#0f0f1a]">
             Integrations & Apps
           </h2>
-          <p className="text-[14px] text-[#6b7280] mt-0.5">
+          <p className="text-[13.5px] text-[#6b7280] font-normal mt-0.5">
             Connect Preveuo with your tech stack to automate lead routing, analytics, and CRM data.
           </p>
         </div>
@@ -104,8 +104,8 @@ export const IntegrationsTabContent: React.FC = () => {
             <CheckCircle2 className="w-5 h-5" />
           </div>
           <div>
-            <div className="text-[11px] font-bold uppercase tracking-wider text-[#9ca3af]">Connected</div>
-            <div className="text-xl font-black text-[#0f0f1a]">3 Active</div>
+            <div className="text-[11px] font-medium uppercase tracking-wider text-[#9ca3af]">Connected</div>
+            <div className="text-xl font-bold text-[#0f0f1a]">3 Active</div>
           </div>
         </div>
 
@@ -114,8 +114,8 @@ export const IntegrationsTabContent: React.FC = () => {
             <SlidersHorizontal className="w-5 h-5" />
           </div>
           <div>
-            <div className="text-[11px] font-bold uppercase tracking-wider text-[#9ca3af]">Leads Synced</div>
-            <div className="text-xl font-black text-[#0f0f1a]">1,248</div>
+            <div className="text-[11px] font-medium uppercase tracking-wider text-[#9ca3af]">Leads Synced</div>
+            <div className="text-xl font-bold text-[#0f0f1a]">1,248</div>
           </div>
         </div>
 
@@ -124,8 +124,8 @@ export const IntegrationsTabContent: React.FC = () => {
             <Zap className="w-5 h-5" />
           </div>
           <div>
-            <div className="text-[11px] font-bold uppercase tracking-wider text-[#9ca3af]">Webhook Events</div>
-            <div className="text-xl font-black text-[#0f0f1a]">42.1k / mo</div>
+            <div className="text-[11px] font-medium uppercase tracking-wider text-[#9ca3af]">Webhook Events</div>
+            <div className="text-xl font-bold text-[#0f0f1a]">42.1k / mo</div>
           </div>
         </div>
 
@@ -134,8 +134,8 @@ export const IntegrationsTabContent: React.FC = () => {
             <ShieldCheck className="w-5 h-5" />
           </div>
           <div>
-            <div className="text-[11px] font-bold uppercase tracking-wider text-[#9ca3af]">API Status</div>
-            <div className="text-xl font-black text-[#0f0f1a]">99.98%</div>
+            <div className="text-[11px] font-medium uppercase tracking-wider text-[#9ca3af]">API Status</div>
+            <div className="text-xl font-bold text-[#0f0f1a]">99.98%</div>
           </div>
         </div>
       </div>
@@ -185,17 +185,17 @@ export const IntegrationsTabContent: React.FC = () => {
               <div>
                 <div className="flex items-start justify-between gap-3 mb-3">
                   <div className="flex items-center gap-3">
-                    <div className="w-11 h-11 rounded-xl bg-[#f8f8fc] border border-[#f0f0f4] flex items-center justify-center font-black text-sm text-[#0f0f1a]">
+                    <div className="w-11 h-11 rounded-xl bg-[#f8f8fc] border border-[#f0f0f4] flex items-center justify-center font-bold text-sm text-[#0f0f1a]">
                       {item.name.substring(0, 2).toUpperCase()}
                     </div>
                     <div>
-                      <h4 className="text-[15px] font-bold text-[#0f0f1a] flex items-center gap-2">
+                      <h4 className="text-[15px] font-semibold text-[#0f0f1a] flex items-center gap-2">
                         {item.name}
                         {isConnected && (
                           <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                         )}
                       </h4>
-                      <span className="text-[11px] font-semibold text-[#5B5CE2] uppercase tracking-wider">
+                      <span className="text-[11px] font-medium text-[#5B5CE2] uppercase tracking-wider">
                         {item.category}
                       </span>
                     </div>
@@ -209,13 +209,13 @@ export const IntegrationsTabContent: React.FC = () => {
                   </Badge>
                 </div>
 
-                <p className="text-[13px] text-[#6b7280] leading-relaxed mb-4">
+                <p className="text-[13px] text-[#6b7280] font-normal leading-relaxed mb-4">
                   {item.description}
                 </p>
               </div>
 
               <div className="pt-4 border-t border-[#f0f0f4] flex items-center justify-between">
-                <span className="text-[11px] text-[#9ca3af] font-medium">
+                <span className="text-[11px] text-[#9ca3af] font-normal">
                   {item.lastSync || 'Not connected'}
                 </span>
 
@@ -238,16 +238,16 @@ export const IntegrationsTabContent: React.FC = () => {
           <div className="w-8 h-8 rounded-lg bg-[#5B5CE2]/10 text-[#5B5CE2] flex items-center justify-center">
             <Key className="w-4 h-4" />
           </div>
-          <h3 className="text-[18px] font-bold text-[#0f0f1a]">Developer API & Webhooks</h3>
+          <h3 className="text-[17px] font-semibold text-[#0f0f1a]">Developer API & Webhooks</h3>
         </div>
-        <p className="text-[13.5px] text-[#6b7280] mb-6">
+        <p className="text-[13px] text-[#6b7280] font-normal mb-6">
           Stream real-time demo events directly to your endpoint or ingest Preveuo metrics programmatically.
         </p>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* API Key */}
           <div className="space-y-2">
-            <label className="text-[12.5px] font-bold text-[#0f0f1a]">Live Workspace API Key</label>
+            <label className="text-[12.5px] font-semibold text-[#0f0f1a]">Live Workspace API Key</label>
             <div className="flex items-center gap-2">
               <input
                 type="password"

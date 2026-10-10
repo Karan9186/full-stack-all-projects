@@ -44,7 +44,7 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
             <span className="w-3 h-3 rounded-full bg-[#34d399]/70" />
           </div>
 
-          <span className="text-[11px] font-mono text-[#9ca3af] bg-[#f0f0f5] px-4 py-1 rounded-full">
+          <span className="text-[11.5px] font-normal text-[#6b7280] bg-[#f0f0f5] px-4 py-1 rounded-full">
             Click anywhere on screenshot to reposition hotspot target
           </span>
 
@@ -65,17 +65,24 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
             priority
           />
 
-          {/* Hotspot indicator */}
+          {/* Hotspot indicator (Supademo dual-radar pulse) */}
           <div
             style={{
               left: `${targetPoint.x}%`,
               top: `${targetPoint.y}%`,
             }}
-            className="absolute -translate-x-1/2 -translate-y-1/2 z-30 pointer-events-none"
+            className="absolute -translate-x-1/2 -translate-y-1/2 z-30 pointer-events-none flex items-center justify-center"
           >
-            <span className="absolute -inset-3 rounded-full bg-[#5B5CE2]/30 animate-ping opacity-75" />
-            <span className="relative flex items-center justify-center w-8 h-8 rounded-full bg-[#5B5CE2] text-white shadow-lg border-2 border-white">
-              <span className="w-2.5 h-2.5 rounded-full bg-white" />
+            <span className="absolute w-10 h-10 rounded-full bg-[#5B5CE2] animate-hotspot-radar-1 opacity-70" />
+            <span className="absolute w-8 h-8 rounded-full bg-[#5B5CE2] animate-hotspot-radar-2 opacity-50" />
+            <span
+              style={{
+                backgroundColor: '#5B5CE2',
+                boxShadow: '0 0 0 2.5px #ffffff, 0 4px 14px rgba(91,92,226,0.6)',
+              }}
+              className="relative flex items-center justify-center w-[20px] h-[20px] rounded-full text-white"
+            >
+              <span className="w-2 h-2 rounded-full bg-white shadow-xs animate-pulse" />
             </span>
           </div>
 
@@ -87,14 +94,14 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
             <Badge variant="purple" size="sm" className="mb-2">
               {callout.badge || `Step ${step.stepNumber}`}
             </Badge>
-            <h4 className="text-xs font-bold text-[#0f0f1a]">
+            <h4 className="text-[13px] font-semibold text-[#0f0f1a]">
               {callout.title}
             </h4>
-            <p className="text-[11.5px] text-[#6b7280] mt-1 leading-relaxed">
+            <p className="text-[12px] text-[#6b7280] font-normal mt-1 leading-relaxed">
               {callout.description}
             </p>
             <div className="mt-3 flex justify-end">
-              <span className="px-3 py-1 rounded-lg bg-[#5B5CE2] text-white text-[11px] font-semibold">
+              <span className="px-3 py-1 rounded-lg bg-[#5B5CE2] text-white text-[11.5px] font-medium">
                 {callout.buttonText || 'Next Step'}
               </span>
             </div>

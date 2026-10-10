@@ -31,7 +31,7 @@ export const FormLabel: React.FC<FormLabelProps> = ({
 }) => {
   return (
     <label
-      className={`block text-[13px] font-semibold text-[#0f0f1a] select-none ${className}`}
+      className={`block text-[12.5px] font-medium text-[#374151] select-none ${className}`}
       {...props}
     >
       {children}

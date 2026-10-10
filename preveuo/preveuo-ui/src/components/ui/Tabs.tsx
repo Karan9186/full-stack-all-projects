@@ -89,11 +89,11 @@ export const TabsTrigger: React.FC<TabsTriggerProps> = ({
       disabled={disabled}
       onClick={() => context.onValueChange(value)}
       className={`
-        px-3.5 py-1.5 rounded-lg text-[13px] font-semibold transition-all duration-150 select-none
+        px-3.5 py-1.5 rounded-lg text-[13px] transition-all duration-150 select-none
         ${
           isSelected
-            ? 'bg-white text-[#0f0f1a] shadow-2xs'
-            : 'text-[#6b7280] hover:text-[#0f0f1a] hover:bg-white/50'
+            ? 'font-semibold bg-white text-[#0f0f1a] shadow-2xs'
+            : 'font-medium text-[#6b7280] hover:text-[#0f0f1a] hover:bg-white/50'
         }
         disabled:opacity-40 disabled:cursor-not-allowed
         ${className}

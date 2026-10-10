@@ -38,7 +38,7 @@ export const EditorHeader: React.FC<EditorHeaderProps> = ({
             type="text"
             value={tourName}
             onChange={(e) => onTourNameChange(e.target.value)}
-            className="text-[14px] sm:text-[15px] font-bold text-[#0f0f1a] bg-transparent border-b border-transparent hover:border-[#d1d5db] focus:border-[#5B5CE2] focus:outline-none px-1 py-0.5 transition-colors"
+            className="text-[14px] sm:text-[15px] font-semibold text-[#0f0f1a] bg-transparent border-b border-transparent hover:border-[#d1d5db] focus:border-[#5B5CE2] focus:outline-none px-1 py-0.5 transition-colors"
           />
           <Badge variant={isSaved ? 'success' : 'warning'} size="sm" dot>
             {isSaved ? 'Saved' : 'Unsaved changes'}

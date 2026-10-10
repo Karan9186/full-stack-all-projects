@@ -3,6 +3,7 @@
 import React, { useEffect, useState, use, Suspense } from 'react';
 import { DemoRuntimeSnapshot, DemoAnalyticsEventType } from '@/types/demo';
 import { DemoRuntimePlayer } from '@/components/runtime/DemoRuntimePlayer';
+import { getCanonicalDemoAspectRatio } from '@/lib/utils/aspectRatio';
 import { Share2, Code2, Check, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 
@@ -162,9 +163,14 @@ function PublicDemoPlayerContent({
         </div>
       </header>
 
-      {/* Center Player Stage */}
+      {/* Center Player Stage with Canonical Aspect Ratio */}
       <main className="flex-1 p-3 sm:p-6 flex items-center justify-center overflow-hidden">
-        <div className="w-full max-w-[1440px] aspect-[16/9] max-h-[85vh] relative rounded-2xl overflow-hidden shadow-2xl border border-white/10">
+        <div
+          style={{
+            aspectRatio: getCanonicalDemoAspectRatio(snapshot.demo as any, snapshot.scenes).cssRatio,
+          }}
+          className="w-full max-w-[1440px] max-h-[85vh] relative rounded-2xl overflow-hidden shadow-2xl border border-white/10 transition-all duration-300 mx-auto"
+        >
           <DemoRuntimePlayer
             demoName={snapshot.demo.name}
             demoSettings={snapshot.demo.settings}

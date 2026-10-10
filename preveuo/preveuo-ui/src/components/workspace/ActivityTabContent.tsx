@@ -41,10 +41,10 @@ export const ActivityTabContent: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
-          <h2 className="text-[26px] sm:text-[30px] font-extrabold tracking-tight text-[#0f0f1a]">
+          <h2 className="text-[24px] sm:text-[28px] font-bold tracking-tight text-[#0f0f1a]">
             Activity & Audit Log
           </h2>
-          <p className="text-[14px] text-[#6b7280] mt-0.5">
+          <p className="text-[13.5px] text-[#6b7280] font-normal mt-0.5">
             Full compliance audit trail of all demo edits, publications, integrations, and leads.
           </p>
         </div>
@@ -66,7 +66,7 @@ export const ActivityTabContent: React.FC = () => {
         <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
           {/* Member Filter */}
           <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold text-[#6b7280]">Member:</span>
+            <span className="text-xs font-medium text-[#6b7280]">Member:</span>
             <select
               value={selectedUser}
               onChange={(e) => setSelectedUser(e.target.value)}
@@ -82,7 +82,7 @@ export const ActivityTabContent: React.FC = () => {
 
           {/* Event Filter */}
           <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold text-[#6b7280]">Event:</span>
+            <span className="text-xs font-medium text-[#6b7280]">Event:</span>
             <select
               value={selectedType}
               onChange={(e) => setSelectedType(e.target.value)}
@@ -112,7 +112,7 @@ export const ActivityTabContent: React.FC = () => {
 
       {/* Activity Timeline List */}
       <div className="bg-white rounded-2xl border border-[#e5e7eb] overflow-hidden">
-        <div className="p-4 bg-[#fafafc] border-b border-[#f0f0f4] flex items-center justify-between text-xs font-semibold text-[#6b7280]">
+        <div className="p-4 bg-[#fafafc] border-b border-[#f0f0f4] flex items-center justify-between text-xs font-medium text-[#6b7280]">
           <span>Audit Events ({filteredActivities.length})</span>
           <span className="flex items-center gap-1.5">
             <Calendar className="w-3.5 h-3.5" /> Past 30 Days
@@ -145,21 +145,21 @@ export const ActivityTabContent: React.FC = () => {
 
                   <div className="min-w-0">
                     <p className="text-[13.5px] text-[#0f0f1a] leading-snug">
-                      <span className="font-bold">{act.user}</span>{' '}
-                      <span className="text-[#6b7280]">{act.action}</span>{' '}
-                      <span className="font-semibold text-[#5B5CE2] hover:underline cursor-pointer">
+                      <span className="font-semibold">{act.user}</span>{' '}
+                      <span className="text-[#6b7280] font-normal">{act.action}</span>{' '}
+                      <span className="font-medium text-[#5B5CE2] hover:underline cursor-pointer">
                         {act.demoName}
                       </span>
                     </p>
 
-                    <p className="text-[12.5px] text-[#6b7280] mt-1 bg-[#f8f8fc] p-2 rounded-lg border border-[#f0f0f4]">
+                    <p className="text-[12.5px] text-[#6b7280] font-normal mt-1 bg-[#f8f8fc] p-2 rounded-lg border border-[#f0f0f4]">
                       {act.details}
                     </p>
 
                     <div className="flex items-center gap-2 mt-2">
-                      <span className="text-[11px] text-[#9ca3af] font-medium">{act.timeAgo}</span>
+                      <span className="text-[11px] text-[#9ca3af] font-normal">{act.timeAgo}</span>
                       <span className="text-[#d1d5db]">•</span>
-                      <span className="text-[11px] text-[#6b7280] flex items-center gap-1 font-mono">
+                      <span className="text-[11px] text-[#6b7280] font-normal flex items-center gap-1 font-mono">
                         ID: {act.id}
                       </span>
                     </div>

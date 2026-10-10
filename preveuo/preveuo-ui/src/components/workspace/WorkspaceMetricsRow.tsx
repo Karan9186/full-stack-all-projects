@@ -25,14 +25,14 @@ export const WorkspaceMetricsRow: React.FC = () => {
             </div>
 
             {/* Value */}
-            <div className="text-[28px] sm:text-[32px] font-extrabold text-[#0f0f1a] tracking-tight leading-none mb-3">
+            <div className="text-[28px] sm:text-[32px] font-bold text-[#0f0f1a] tracking-tight leading-none mb-3">
               {metric.value}
             </div>
           </div>
 
           {/* Bottom row: trend + sparkline */}
           <div className="flex items-end justify-between pt-1">
-            <div className="flex items-center gap-1 text-[12px] font-semibold text-emerald-600">
+            <div className="flex items-center gap-1 text-[11.5px] font-medium text-emerald-600">
               <ArrowUp className="w-3 h-3 stroke-[2.5]" />
               <span>{metric.change}</span>
             </div>
@@ -41,11 +41,20 @@ export const WorkspaceMetricsRow: React.FC = () => {
             <div className="w-20 h-7">
               <svg viewBox="0 0 80 28" fill="none" className="w-full h-full overflow-visible">
                 <path
-                  d="M0 22 Q 10 18, 20 20 T 40 14 T 60 10 T 80 4"
+                  d={
+                    metric.id === 'm1'
+                      ? "M0 22 Q 15 22, 25 18 T 45 19 T 65 10 T 80 8"
+                      : metric.id === 'm2'
+                      ? "M0 24 Q 15 23, 25 18 T 45 20 T 65 14 T 80 9"
+                      : metric.id === 'm3'
+                      ? "M0 22 Q 15 22, 25 18 T 45 20 T 65 15 T 80 11"
+                      : "M0 24 Q 15 24, 25 21 T 45 21 T 65 16 T 80 13"
+                  }
                   fill="none"
                   stroke="#5B5CE2"
                   strokeWidth="2.2"
                   strokeLinecap="round"
+                  strokeLinejoin="round"
                 />
               </svg>
             </div>

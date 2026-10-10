@@ -19,10 +19,10 @@ export const CollectionsTabContent: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
-          <h2 className="text-[26px] sm:text-[30px] font-extrabold tracking-tight text-[#0f0f1a]">
+          <h2 className="text-[24px] sm:text-[28px] font-bold tracking-tight text-[#0f0f1a]">
             Collections
           </h2>
-          <p className="text-[14px] text-[#6b7280] mt-0.5">
+          <p className="text-[13.5px] text-[#6b7280] font-normal mt-0.5">
             Group demos into curated, shareable experiences.
           </p>
         </div>
@@ -51,7 +51,7 @@ export const CollectionsTabContent: React.FC = () => {
 
         <button
           type="button"
-          className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-white border border-[#e5e7eb] text-[#0f0f1a] shadow-2xs hover:border-[#d1d5db] transition-colors cursor-pointer shrink-0"
+          className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium bg-white border border-[#e5e7eb] text-[#0f0f1a] shadow-2xs hover:border-[#d1d5db] transition-colors cursor-pointer shrink-0"
         >
           <Filter className="w-3.5 h-3.5 text-[#6b7280]" />
           <span>Filter</span>
@@ -76,10 +76,10 @@ export const CollectionsTabContent: React.FC = () => {
 
               {/* Content */}
               <div className="p-5">
-                <h3 className="font-bold text-[15px] text-[#0f0f1a] group-hover:text-[#5B5CE2] transition-colors mb-1.5">
+                <h3 className="font-semibold text-[15px] text-[#0f0f1a] group-hover:text-[#5B5CE2] transition-colors mb-1.5">
                   {col.title}
                 </h3>
-                <p className="text-[12.5px] text-[#6b7280] line-clamp-1">
+                <p className="text-[12.5px] font-normal text-[#6b7280] line-clamp-1">
                   {col.description}
                 </p>
               </div>
@@ -87,7 +87,7 @@ export const CollectionsTabContent: React.FC = () => {
 
             {/* Footer */}
             <div className="px-5 py-3 border-t border-[#f0f0f4] bg-white flex items-center justify-between text-[11.5px]">
-              <span className="text-[#9ca3af] font-medium">{col.status}</span>
+              <span className="text-[#9ca3af] font-normal">{col.status}</span>
               <ChevronRight className="w-4 h-4 text-[#9ca3af] group-hover:text-[#5B5CE2] group-hover:translate-x-0.5 transition-all" />
             </div>
           </Card>

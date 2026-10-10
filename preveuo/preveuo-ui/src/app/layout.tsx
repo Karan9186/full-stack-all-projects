@@ -25,10 +25,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${inter.variable} h-full antialiased`} suppressHydrationWarning>
+    <html lang="en" className={`${inter.variable} ${inter.className} h-full antialiased`} suppressHydrationWarning>
       <body
-        className="min-h-full flex flex-col bg-white text-[#0f0f1a]"
-        style={{ fontFamily: 'var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif' }}
+        className={`${inter.className} min-h-full flex flex-col bg-white text-[#0f0f1a] font-sans`}
         suppressHydrationWarning
       >
         {children}

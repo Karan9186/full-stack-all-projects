@@ -114,11 +114,7 @@ export const ChapterRenderer: React.FC<ChapterRendererProps> = ({
     if (coverConfig.type === 'none') {
       return null;
     }
-    let url = targetScene?.sourceAssetUrl || scenes[0]?.sourceAssetUrl || null;
-    // Replace dummy unsplash placeholder with real Step 1 YAANNA website screenshot
-    if (!url || url.includes('1551288049-bebda4e38f71')) {
-      url = '/yaanna-webpage.png';
-    }
+    const url = targetScene?.sourceAssetUrl || scenes[0]?.sourceAssetUrl || null;
     return url;
   }, [coverConfig.type, coverConfig.assetUrl, targetScene, scenes]);
 

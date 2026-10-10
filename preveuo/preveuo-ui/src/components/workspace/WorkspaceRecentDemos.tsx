@@ -14,17 +14,17 @@ export const WorkspaceRecentDemos: React.FC = () => {
     <Card className="p-6">
       <div className="flex items-center justify-between mb-5">
         <div>
-          <h3 className="text-[16px] font-bold text-[#0f0f1a]">
+          <h3 className="text-[15px] sm:text-[16px] font-semibold text-[#0f0f1a]">
             Recent demos
           </h3>
-          <p className="text-[12.5px] text-[#6b7280] mt-0.5">
+          <p className="text-[12px] text-[#6b7280] font-normal mt-0.5">
             Continue where your team left off
           </p>
         </div>
 
         <Link
-          href="/workspace#all-demos"
-          className="inline-flex items-center gap-1 text-xs font-semibold text-[#5B5CE2] hover:underline"
+          href="/workspace?tab=demos"
+          className="inline-flex items-center gap-1 text-xs font-medium text-[#5B5CE2] hover:underline"
         >
           View all <ChevronRight className="w-3.5 h-3.5" />
         </Link>
@@ -34,7 +34,7 @@ export const WorkspaceRecentDemos: React.FC = () => {
         {recentDemos.map((demo) => (
           <div
             key={demo.id}
-            className="group rounded-2xl border border-[#e5e7eb] hover:border-[#5B5CE2]/50 bg-white overflow-hidden transition-all flex flex-col justify-between"
+            className="group rounded-2xl border border-[#e5e7eb] hover:border-[#5B5CE2]/40 bg-white overflow-hidden transition-all flex flex-col justify-between"
           >
             <div>
               <div className="relative aspect-[16/10] bg-[#0f0f1a] overflow-hidden">
@@ -62,20 +62,20 @@ export const WorkspaceRecentDemos: React.FC = () => {
               </div>
 
               <div className="p-4">
-                <h4 className="text-[14px] font-bold text-[#0f0f1a] truncate group-hover:text-[#5B5CE2] transition-colors">
+                <h4 className="text-[13.5px] font-semibold text-[#0f0f1a] truncate group-hover:text-[#5B5CE2] transition-colors">
                   {demo.name}
                 </h4>
-                <div className="flex items-center gap-3 text-[11.5px] text-[#6b7280] mt-2">
+                <div className="flex items-center gap-3 text-[11.5px] text-[#6b7280] font-normal mt-2">
                   <span>{demo.views.toLocaleString()} views</span>
                   <span>·</span>
-                  <span className="text-emerald-600 font-semibold">{demo.completionRate}% completion</span>
+                  <span className="text-emerald-600 font-medium">{demo.completionRate}% completion</span>
                 </div>
               </div>
             </div>
 
-            <div className="px-4 py-2.5 border-t border-[#f0f0f4] bg-[#fafafc] flex items-center justify-between text-[11px] text-[#9ca3af]">
+            <div className="px-4 py-2.5 border-t border-[#f0f0f4] bg-[#fafafc] flex items-center justify-between text-[11px] text-[#9ca3af] font-normal">
               <span>Updated {demo.createdAt}</span>
-              <Link href={`/edit?id=${demo.id}`} className="font-semibold text-[#5B5CE2] hover:underline">
+              <Link href={`/demos/${demo.id}`} className="font-medium text-[#5B5CE2] hover:underline">
                 Edit tour
               </Link>
             </div>

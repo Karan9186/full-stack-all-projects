@@ -2,16 +2,19 @@
 
 import React, { useState, useRef, useEffect, useLayoutEffect } from 'react';
 import { IDemoElement, HotspotConfig } from '@/types/demo';
-import { ArrowRight, ArrowLeft } from 'lucide-react';
+import { ArrowRight, ArrowLeft, ChevronRight } from 'lucide-react';
 import {
   calculateHotspotPosition,
   HOTSPOT_WIDTH_TOKENS,
 } from '@/lib/runtime/hotspotPositioningEngine';
+import { PointerRenderer } from './PointerRenderer';
 
 interface HotspotMarkerProps {
   element: IDemoElement;
   isSelected?: boolean;
   isEditor?: boolean;
+  stepNumber?: number;
+  totalSteps?: number;
   onSelect?: () => void;
   onMove?: (x: number, y: number) => void;
   onResize?: (width: number, height: number, x: number, y: number) => void;
@@ -23,6 +26,8 @@ export const HotspotMarker: React.FC<HotspotMarkerProps> = ({
   element,
   isSelected = false,
   isEditor = false,
+  stepNumber,
+  totalSteps,
   onSelect,
   onMove,
   onResize,
@@ -34,6 +39,23 @@ export const HotspotMarker: React.FC<HotspotMarkerProps> = ({
   const [isResizing, setIsResizing] = useState<string | null>(null);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [isOpen, setIsOpen] = useState(true);
+  const [isCardRevealed, setIsCardRevealed] = useState(isEditor ? true : false);
+
+  // Synchronize card entrance with pointer animation phase in preview
+  useEffect(() => {
+    if (isEditor) {
+      setIsCardRevealed(true);
+      return;
+    }
+    // In preview mode: reset card to entrance state then reveal on pointer click or fallback timeout
+    setIsCardRevealed(false);
+    const pointerStyle = element.hotspotConfig?.appearance?.pointerStyle || 'beacon';
+    const fallbackDelay = pointerStyle === 'beacon' || pointerStyle === 'target' ? 280 : 640;
+    const timer = setTimeout(() => {
+      setIsCardRevealed(true);
+    }, fallbackDelay);
+    return () => clearTimeout(timer);
+  }, [element.id, (element as any)._id, stepNumber, element.hotspotConfig?.appearance?.pointerStyle, isEditor]);
 
   // Measure container dimensions for boundary engine
   const [containerSize, setContainerSize] = useState({ width: 800, height: 500 });
@@ -55,6 +77,7 @@ export const HotspotMarker: React.FC<HotspotMarkerProps> = ({
       borderRadius: 'rounded',
       width: 'medium',
       animation: 'ping',
+      pointerStyle: 'beacon',
     },
     visibility: 'always',
     navigation: {
@@ -379,30 +402,82 @@ export const HotspotMarker: React.FC<HotspotMarkerProps> = ({
         </div>
       )}
 
-      {/* 1. AREA HOTSPOT MODE */}
+      {/* 1. AREA HOTSPOT MODE (Supademo Precision Viewfinder Styling) */}
       {isArea && (
         <div
-          onMouseDown={handleMouseDown}
+          onMouseDown={isEditor ? handleMouseDown : undefined}
+          onClick={(e) => {
+            e.stopPropagation();
+            if (!isEditor) {
+              const targetAction = config.navigation.nextButton?.action || 'nextStep';
+              const targetTarget = config.navigation.nextButton?.target;
+              onAction?.(targetAction, targetTarget);
+              onSelect?.();
+            } else {
+              onSelect?.();
+            }
+          }}
           style={{
-            backgroundColor: `${config.appearance.background}25`,
+            backgroundColor: isEditor
+              ? `${config.appearance.background}18`
+              : `${config.appearance.background}15`,
             borderColor: config.appearance.background,
           }}
-          className={`w-full h-full border-2 border-dashed relative rounded-xl transition-all ${
-            isSelected
-              ? 'ring-2 ring-[#5B5CE2] shadow-lg'
-              : 'hover:border-solid hover:bg-black/10'
+          className={`w-full h-full relative rounded-2xl transition-all ${
+            isEditor
+              ? isSelected
+                ? 'border-2 border-[#5B5CE2] ring-3 ring-[#5B5CE2]/35 shadow-xl cursor-grab active:cursor-grabbing backdrop-blur-[1px]'
+                : 'border-2 border-dashed border-[#5B5CE2]/65 hover:border-solid hover:bg-[#5B5CE2]/20 cursor-grab active:cursor-grabbing'
+              : 'border-2 border-[#5B5CE2] bg-[#5B5CE2]/15 hover:bg-[#5B5CE2]/25 animate-area-glow shadow-[0_0_24px_rgba(91,92,226,0.3)] hover:shadow-[0_0_36px_rgba(91,92,226,0.55)] cursor-pointer group backdrop-blur-[1px]'
           }`}
         >
-          {/* Label Tag */}
-          <div
-            style={{
-              backgroundColor: config.appearance.background,
-              color: config.appearance.textColor,
-            }}
-            className="absolute top-2 left-2 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider shadow-xs pointer-events-none"
-          >
-            {config.content.text || 'Hotspot Area'}
-          </div>
+          {/* Viewfinder precision corner brackets matching Supademo/Storylane */}
+          <div className="absolute -top-1 -left-1 w-2.5 h-2.5 border-t-2 border-l-2 border-white rounded-tl-sm pointer-events-none drop-shadow-sm" />
+          <div className="absolute -top-1 -right-1 w-2.5 h-2.5 border-t-2 border-r-2 border-white rounded-tr-sm pointer-events-none drop-shadow-sm" />
+          <div className="absolute -bottom-1 -left-1 w-2.5 h-2.5 border-b-2 border-l-2 border-white rounded-bl-sm pointer-events-none drop-shadow-sm" />
+          <div className="absolute -bottom-1 -right-1 w-2.5 h-2.5 border-b-2 border-r-2 border-white rounded-br-sm pointer-events-none drop-shadow-sm" />
+
+          {/* Label Tag (Editor only) */}
+          {isEditor && (
+            <div
+              style={{
+                backgroundColor: config.appearance.background,
+                color: config.appearance.textColor,
+              }}
+              className="absolute top-2 left-2 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider shadow-md pointer-events-none flex items-center gap-1.5"
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-white" />
+              <span>{config.content.text || 'Hotspot Area'}</span>
+            </div>
+          )}
+
+          {/* Centered Beacon in Preview / Viewer mode (Supademo aesthetic) */}
+          {!isEditor && (
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+              <span
+                style={{ backgroundColor: config.appearance.background }}
+                className="w-10 h-10 rounded-full animate-hotspot-radar-1 opacity-40 absolute"
+              />
+              <span
+                style={{ backgroundColor: config.appearance.background }}
+                className="w-8 h-8 rounded-full animate-hotspot-radar-2 opacity-30 absolute"
+              />
+              <div
+                style={{
+                  backgroundColor: config.appearance.background,
+                  boxShadow: `0 0 0 2px #ffffff, 0 3px 12px ${config.appearance.background}60`,
+                }}
+                className="w-5 h-5 rounded-full flex items-center justify-center relative z-10 group-hover:scale-115 transition-transform"
+              >
+                <span className="w-1.5 h-1.5 rounded-full bg-white pointer-events-none" />
+              </div>
+
+              {/* Hover guidance tooltip badge */}
+              <div className="absolute -bottom-7 px-2.5 py-0.5 rounded-full bg-[#0f0f1a]/90 backdrop-blur-md text-white text-[10px] font-semibold opacity-0 group-hover:opacity-100 transition-opacity shadow-lg flex items-center gap-1">
+                <span>Click here</span>
+              </div>
+            </div>
+          )}
 
           {/* Area Resize Handles (Editor only) */}
           {isEditor && isSelected && (
@@ -448,17 +523,22 @@ export const HotspotMarker: React.FC<HotspotMarkerProps> = ({
                 width: `${adjustedContentSize.width}px`,
                 maxWidth: 'calc(100vw - 32px)',
                 backgroundColor: config.appearance.background,
-                color: config.appearance.textColor,
-                transform: `scale(${isDragging ? 0.92 : 1})`,
-                opacity: isDragging ? 0 : 1,
-                pointerEvents: isDragging ? 'none' : 'auto',
+                color: config.appearance.textColor || '#ffffff',
+                border: 'none',
+                transform: isDragging
+                  ? 'scale(0.92)'
+                  : !isCardRevealed && !isEditor
+                  ? 'scale(0.92) translateY(6px)'
+                  : 'scale(1) translateY(0)',
+                opacity: isDragging ? 0 : !isCardRevealed && !isEditor ? 0 : 1,
+                pointerEvents: isDragging || (!isCardRevealed && !isEditor) ? 'none' : 'auto',
                 transition: isDragging
                   ? 'opacity 0.15s ease-out, transform 0.15s ease-out'
-                  : 'left 0.35s cubic-bezier(0.16, 1, 0.3, 1), top 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1), transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s ease',
+                  : 'left 0.35s cubic-bezier(0.16, 1, 0.3, 1), top 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.38s cubic-bezier(0.16, 1, 0.3, 1), transform 0.38s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s ease',
               }}
-              className={`p-4 sm:p-5 shadow-2xl ${radiusClasses} ${
-                isSelected ? 'ring-2 ring-white/80 ring-offset-2' : ''
-              } ${justDropped ? 'animate-in fade-in zoom-in-95 duration-300' : ''}`}
+              className={`p-5 sm:p-6 shadow-[0_20px_50px_rgba(0,0,0,0.55)] ${radiusClasses} border-0 border-none outline-none select-none text-left ${
+                isSelected && isEditor ? 'ring-2 ring-white/60 shadow-2xl' : ''
+              } ${isCardRevealed && !isEditor ? 'animate-hotspot-card-spring' : ''}`}
             >
               {/* Dynamic Callout Arrow Pointer connecting to anchor dot */}
               {isPointer && (
@@ -466,6 +546,7 @@ export const HotspotMarker: React.FC<HotspotMarkerProps> = ({
                   style={{
                     position: 'absolute',
                     pointerEvents: 'none',
+                    border: 'none',
                     ...(arrowDirection === 'up'
                       ? {
                           top: '-9px',
@@ -494,37 +575,66 @@ export const HotspotMarker: React.FC<HotspotMarkerProps> = ({
                 >
                   {arrowDirection === 'up' && (
                     <svg width="18" height="10" viewBox="0 0 18 10" fill="none">
-                      <path d="M0 10 L9 1 L18 10 Z" fill={config.appearance.background} />
+                      <polygon points="0,10 9,0 18,10" fill={config.appearance.background} />
                     </svg>
                   )}
                   {arrowDirection === 'down' && (
                     <svg width="18" height="10" viewBox="0 0 18 10" fill="none">
-                      <path d="M0 0 L9 9 L18 0 Z" fill={config.appearance.background} />
+                      <polygon points="0,0 9,10 18,0" fill={config.appearance.background} />
                     </svg>
                   )}
                   {arrowDirection === 'left' && (
                     <svg width="10" height="18" viewBox="0 0 10 18" fill="none">
-                      <path d="M10 0 L1 9 L10 18 Z" fill={config.appearance.background} />
+                      <polygon points="10,0 0,9 10,18" fill={config.appearance.background} />
                     </svg>
                   )}
                   {arrowDirection === 'right' && (
                     <svg width="10" height="18" viewBox="0 0 10 18" fill="none">
-                      <path d="M0 0 L9 9 L0 18 Z" fill={config.appearance.background} />
+                      <polygon points="0,0 10,9 0,18" fill={config.appearance.background} />
                     </svg>
                   )}
                 </div>
               )}
 
-              {/* Text Content */}
-              <p
-                className={`text-[13.5px] sm:text-[14.5px] font-bold leading-relaxed mb-3.5 select-text break-words overflow-wrap-anywhere ${textAlignClasses}`}
-              >
-                {config.content.text || 'Add some hotspot text here.'}
-              </p>
+              {/* STEP 2 OF 12 Label (Reference UI) */}
+              <div className="flex items-center justify-between gap-2 mb-2 select-none">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-[#9394f8] select-none">
+                  {config.content.badge ||
+                    `STEP ${stepNumber || 1}${totalSteps ? ` OF ${totalSteps}` : ''}`}
+                </span>
+                {isEditor && (
+                  <span className="text-[10px] text-white/50 font-mono">
+                    {Math.round(position.x)}%, {Math.round(position.y)}%
+                  </span>
+                )}
+              </div>
+
+              {/* Headline Title */}
+              <h4 className="text-[17px] sm:text-[18px] font-extrabold text-white tracking-[-0.015em] leading-snug mb-2 select-text break-words">
+                {config.content.title ||
+                  (config.content.text?.includes('\n')
+                    ? config.content.text.split('\n')[0]
+                    : config.content.text || element.content || 'Everything, at a glance')}
+              </h4>
+
+              {/* Subtitle Description */}
+              {(() => {
+                const desc =
+                  config.content.description ||
+                  (config.content.text?.includes('\n')
+                    ? config.content.text.split('\n').slice(1).join('\n')
+                    : '');
+                if (!desc) return <div className="mb-4" />;
+                return (
+                  <p className="text-[13px] sm:text-[13.5px] text-white/80 leading-relaxed font-normal mb-5 select-text break-words">
+                    {desc}
+                  </p>
+                );
+              })()}
 
               {/* Action Buttons Row */}
-              <div className="flex items-center justify-between gap-2 pt-1">
-                {/* Left: Edit (in editor) or Back button */}
+              <div className="flex items-center justify-end gap-3 pt-1 mt-auto">
+                {/* Secondary / Skip button */}
                 {config.navigation.backButton?.enabled ? (
                   <button
                     type="button"
@@ -535,31 +645,24 @@ export const HotspotMarker: React.FC<HotspotMarkerProps> = ({
                         config.navigation.backButton?.target
                       );
                     }}
-                    style={{
-                      backgroundColor: config.navigation.backButton.background,
-                      color: config.navigation.backButton.textColor,
-                    }}
-                    className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-bold shadow-xs hover:opacity-90 transition-opacity cursor-pointer"
+                    className="text-white/70 hover:text-white text-xs font-semibold px-2 py-1.5 transition-colors cursor-pointer mr-1"
                   >
-                    <ArrowLeft className="w-3.5 h-3.5" />
-                    <span>{config.navigation.backButton.text || 'Back'}</span>
+                    {config.navigation.backButton.text || 'Back'}
                   </button>
-                ) : isEditor ? (
+                ) : (
                   <button
                     type="button"
                     onClick={(e) => {
                       e.stopPropagation();
-                      onSelect?.();
+                      onAction?.('nextStep');
                     }}
-                    className="text-white/90 hover:text-white text-[13px] font-semibold underline underline-offset-2 cursor-pointer transition-colors"
+                    className="text-white/70 hover:text-white text-xs font-semibold px-2 py-1.5 transition-colors cursor-pointer mr-1"
                   >
-                    Edit
+                    Skip
                   </button>
-                ) : (
-                  <span />
                 )}
 
-                {/* Right: Next / Continue CTA Button */}
+                {/* Primary Next > button */}
                 {config.navigation.showNext && (
                   <button
                     type="button"
@@ -575,28 +678,41 @@ export const HotspotMarker: React.FC<HotspotMarkerProps> = ({
                         config.navigation.nextButton?.background &&
                         config.navigation.nextButton.background !== '#ffffff'
                           ? config.navigation.nextButton.background
-                          : 'rgba(255, 255, 255, 0.22)',
+                          : '#5B5CE2',
                       color: config.navigation.nextButton?.textColor || '#ffffff',
                     }}
-                    className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold shadow-sm hover:bg-white/30 transition-all active:scale-95 cursor-pointer ml-auto min-w-[34px]"
-                    title={config.navigation.nextButton?.text || 'Continue'}
+                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold shadow-md hover:brightness-110 active:scale-95 transition-all cursor-pointer"
                   >
-                    {config.navigation.nextButton?.text &&
-                    config.navigation.nextButton.text !== 'Continue' &&
-                    config.navigation.nextButton.text !== '' ? (
-                      <span>{config.navigation.nextButton.text}</span>
-                    ) : null}
-                    <ArrowRight className="w-4 h-4" />
+                    <span>
+                      {config.navigation.nextButton?.text &&
+                      config.navigation.nextButton.text !== 'Continue'
+                        ? config.navigation.nextButton.text
+                        : 'Next'}
+                    </span>
+                    <ChevronRight className="w-3.5 h-3.5" />
                   </button>
                 )}
               </div>
             </div>
           )}
 
-          {/* Target Pointer Circle Dot (●) - Centered precisely on Anchor (0, 0) */}
+          {/* Target Pointer Anchor Marker - Centered precisely on Anchor (0, 0) */}
           {isPointer && (
             <div
-              onMouseDown={handleMouseDown}
+              onMouseDown={isEditor ? handleMouseDown : undefined}
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsCardRevealed(true);
+                if (!isEditor) {
+                  onAction?.(
+                    config.navigation.nextButton?.action || 'nextStep',
+                    config.navigation.nextButton?.target
+                  );
+                  onSelect?.();
+                } else {
+                  onSelect?.();
+                }
+              }}
               style={{
                 position: 'absolute',
                 left: '0px',
@@ -605,26 +721,20 @@ export const HotspotMarker: React.FC<HotspotMarkerProps> = ({
               }}
               className="cursor-pointer group flex items-center justify-center z-30"
             >
-              {/* Animation Ping Ring */}
-              {config.appearance.animation === 'ping' && !isDragging && (
-                <span
-                  style={{ backgroundColor: config.appearance.background }}
-                  className="absolute -inset-2.5 rounded-full animate-ping opacity-60 pointer-events-none"
-                />
-              )}
-
-              {/* Target Circle Dot */}
-              <div
-                style={{
-                  backgroundColor: config.appearance.background,
+              <PointerRenderer
+                style={config.appearance.pointerStyle || 'beacon'}
+                color={config.appearance.background || '#5B5CE2'}
+                size={config.appearance.pointerAnimation?.size || 'md'}
+                isEditor={isEditor}
+                isDragging={isDragging}
+                isSelected={isSelected}
+                stepNumber={stepNumber}
+                autoPlayMotion={!isEditor || isSelected}
+                animationSettings={config.appearance.pointerAnimation}
+                onPointerClick={() => setIsCardRevealed(true)}
+                onActionComplete={() => {
+                  setIsCardRevealed(true);
                 }}
-                className={`w-6 h-6 rounded-full flex items-center justify-center shadow-lg border-2 border-white text-white transition-transform duration-150 ${
-                  isDragging
-                    ? 'scale-125 ring-4 ring-[#5B5CE2]/50 shadow-2xl'
-                    : isSelected
-                    ? 'scale-115 ring-4 ring-[#5B5CE2]/40'
-                    : 'group-hover:scale-110'
-                } ${config.appearance.animation !== 'ping' && !isDragging ? getAnimationClass() : ''}`}
               />
             </div>
           )}

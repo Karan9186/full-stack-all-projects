@@ -19,11 +19,11 @@ export const WorkspaceNavbar: React.FC<WorkspaceNavbarProps> = ({
       <div>
         <div className="flex items-center gap-1.5">
           <span className="w-1.5 h-1.5 rounded-full bg-[#f87171]" />
-          <span className="text-[10.5px] font-bold uppercase tracking-[0.15em] text-[#9ca3af]">
+          <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#6b7280]">
             MARKETING WORKSPACE
           </span>
         </div>
-        <h1 className="text-[19px] font-extrabold tracking-tight text-[#0f0f1a] leading-tight mt-0.5">
+        <h1 className="text-[19px] sm:text-[20px] font-bold tracking-[-0.02em] text-[#0f0f1a] leading-tight mt-0.5">
           {pageTitle}
         </h1>
       </div>

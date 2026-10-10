@@ -70,7 +70,7 @@ function DemoEditorContent({
     );
   }
 
-  return <PreveuoStudioEditor initialData={fullData} />;
+  return <PreveuoStudioEditor key={demoId} initialData={fullData} />;
 }
 
 export default function DemoEditorPage(props: {

@@ -18,7 +18,7 @@ export const EditorPropertiesPanel: React.FC<EditorPropertiesPanelProps> = ({
     <aside className="w-80 border-l border-[#e5e7eb] bg-white p-5 overflow-y-auto shrink-0 flex flex-col gap-5">
       <div className="flex items-center gap-2 pb-3 border-b border-[#f0f0f4]">
         <SlidersHorizontal className="w-4 h-4 text-[#5B5CE2]" />
-        <h3 className="text-xs font-bold uppercase tracking-wider text-[#0f0f1a]">
+        <h3 className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#5B5CE2]">
           Step Properties
         </h3>
       </div>
@@ -55,7 +55,7 @@ export const EditorPropertiesPanel: React.FC<EditorPropertiesPanelProps> = ({
 
         {/* Hotspot Coordinates (X, Y) */}
         <div>
-          <label className="block text-[13px] font-semibold text-[#0f0f1a] mb-1.5">
+          <label className="block text-[12.5px] font-medium text-[#374151] mb-1.5">
             Hotspot Position (% from top/left)
           </label>
           <div className="grid grid-cols-2 gap-3">

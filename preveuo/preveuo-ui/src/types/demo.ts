@@ -18,6 +18,9 @@ export interface DemoSettings {
   background?: string;
   defaultTransition?: 'fade' | 'slide' | 'zoom' | 'none';
   accentColor?: string;
+  aspectRatio?: string;
+  canonicalWidth?: number;
+  canonicalHeight?: number;
 }
 
 export type SceneSourceType = 'screenshot' | 'recording' | 'url' | 'upload' | 'custom';
@@ -113,6 +116,19 @@ export type HotspotAnimation = 'none' | 'ping' | 'pulse' | 'bounce';
 export type HotspotVisibility = 'always' | 'onHover' | 'onClick' | 'afterDelay';
 export type HotspotActionType = 'nextStep' | 'previousStep' | 'goToStep' | 'goToScene' | 'goToChapter' | 'externalUrl';
 
+export type HotspotPointerStyle = 'beacon' | 'cursor' | 'hand' | 'target' | 'bullseye' | 'number';
+
+export interface PointerAnimationSettings {
+  speed?: 'slow' | 'medium' | 'fast';
+  size?: 'sm' | 'md' | 'lg';
+  clickFeedback?: boolean;
+  autoPlayMotion?: boolean;
+  intensity?: 'subtle' | 'standard' | 'high';
+  startDelay?: number;
+  holdDuration?: number;
+  repeat?: boolean;
+}
+
 export interface HotspotButtonConfig {
   enabled: boolean;
   text: string;
@@ -126,6 +142,9 @@ export interface HotspotConfig {
   type: HotspotType;
   content: {
     text: string;
+    title?: string;
+    description?: string;
+    badge?: string;
     textAlign: HotspotTextAlign;
   };
   appearance: {
@@ -135,6 +154,8 @@ export interface HotspotConfig {
     borderRadius: HotspotBorderRadius;
     width: HotspotWidth;
     animation: HotspotAnimation;
+    pointerStyle?: HotspotPointerStyle;
+    pointerAnimation?: PointerAnimationSettings;
   };
   visibility: HotspotVisibility;
   delayMs?: number;

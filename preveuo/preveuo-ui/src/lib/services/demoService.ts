@@ -80,29 +80,58 @@ export class DemoService {
       Demo.countDocuments(filter),
     ]);
 
-    const formattedDemos: IDemo[] = demos.map((d: any) => ({
-      id: d._id.toString(),
-      _id: d._id.toString(),
-      workspaceId: d.workspaceId.toString(),
-      projectId: d.projectId?.toString(),
-      name: d.name,
-      slug: d.slug,
-      description: d.description || '',
-      type: d.type,
-      status: d.status,
-      thumbnail: d.thumbnail || '',
-      coverImage: d.coverImage || '',
-      publicId: d.publicId,
-      settings: d.settings || {},
-      activeVersionId: d.activeVersionId?.toString(),
-      publishedVersionId: d.publishedVersionId?.toString(),
-      scenesCount: d.scenesCount || 1,
-      stepsCount: d.stepsCount || 0,
-      viewsCount: d.viewsCount || 0,
-      completionsCount: d.completionsCount || 0,
-      createdAt: d.createdAt.toISOString(),
-      updatedAt: d.updatedAt.toISOString(),
-    }));
+    const formattedDemos: IDemo[] = await Promise.all(
+      demos.map(async (d: any) => {
+        // Resolve thumbnail from first step
+        let thumb = '';
+        const firstStep = await Step.findOne({ demoId: d._id }).sort({ order: 1 }).lean();
+        if (firstStep && (firstStep as any).sceneId) {
+          const stepScene = await Scene.findOne({ _id: (firstStep as any).sceneId }).lean();
+          if (stepScene && (stepScene as any).sourceAssetUrl) {
+            thumb = (stepScene as any).sourceAssetUrl;
+          }
+        }
+        if (!thumb) {
+          const firstScene = await Scene.findOne({ demoId: d._id, sourceAssetUrl: { $ne: '' } })
+            .sort({ order: 1 })
+            .lean();
+          if (firstScene && (firstScene as any).sourceAssetUrl) {
+            thumb = (firstScene as any).sourceAssetUrl;
+          }
+        }
+        if (!thumb && d.thumbnail) {
+          thumb = d.thumbnail;
+        }
+
+        if (thumb && thumb !== d.thumbnail) {
+          Demo.updateOne({ _id: d._id }, { $set: { thumbnail: thumb } }).exec().catch(() => {});
+        }
+
+        return {
+          id: d._id.toString(),
+          _id: d._id.toString(),
+          workspaceId: d.workspaceId.toString(),
+          projectId: d.projectId?.toString(),
+          name: d.name,
+          slug: d.slug,
+          description: d.description || '',
+          type: d.type,
+          status: d.status,
+          thumbnail: thumb,
+          coverImage: d.coverImage || '',
+          publicId: d.publicId,
+          settings: d.settings || {},
+          activeVersionId: d.activeVersionId?.toString(),
+          publishedVersionId: d.publishedVersionId?.toString(),
+          scenesCount: d.scenesCount || 1,
+          stepsCount: d.stepsCount || 0,
+          viewsCount: d.viewsCount || 0,
+          completionsCount: d.completionsCount || 0,
+          createdAt: d.createdAt.toISOString(),
+          updatedAt: d.updatedAt.toISOString(),
+        };
+      })
+    );
 
     return {
       demos: formattedDemos,
@@ -159,7 +188,6 @@ export class DemoService {
       updatedAt: d.updatedAt.toISOString(),
     };
 
-    // Load chapters, scenes, steps, elements, and interactions in parallel
     const [chapterDocs, sceneDocs, stepDocs, elementDocs, interactionDocs] = await Promise.all([
       Chapter.find({ demoId: d._id }).sort({ order: 1 }).lean(),
       Scene.find({ demoId: d._id }).sort({ order: 1 }).lean(),
@@ -167,6 +195,29 @@ export class DemoService {
       Element.find({ demoId: d._id }).sort({ order: 1 }).lean(),
       Interaction.find({ demoId: d._id }).lean(),
     ]);
+
+    const firstStepDoc = stepDocs[0];
+    let firstStepThumb = '';
+    if (firstStepDoc && (firstStepDoc as any).sceneId) {
+      const matchScene = sceneDocs.find(
+        (s: any) => s._id.toString() === (firstStepDoc as any).sceneId.toString()
+      );
+      if (matchScene && (matchScene as any).sourceAssetUrl) {
+        firstStepThumb = (matchScene as any).sourceAssetUrl;
+      }
+    }
+    if (!firstStepThumb && sceneDocs.length > 0) {
+      const firstWithAsset = sceneDocs.find((s: any) => s.sourceAssetUrl);
+      if (firstWithAsset) {
+        firstStepThumb = (firstWithAsset as any).sourceAssetUrl;
+      }
+    }
+    if (firstStepThumb) {
+      demo.thumbnail = firstStepThumb;
+      if (d.thumbnail !== firstStepThumb) {
+        Demo.updateOne({ _id: d._id }, { $set: { thumbnail: firstStepThumb } }).exec().catch(() => {});
+      }
+    }
 
     const chapters: IDemoChapter[] = chapterDocs.map((ch: any) => ({
       id: ch._id.toString(),
@@ -288,6 +339,8 @@ export class DemoService {
     const slug = generateRandomSlug(name);
     const publicId = generatePublicId();
 
+    const hasInitialImage = Boolean(payload.initialImageUrl);
+
     const demoDoc = await Demo.create({
       workspaceId: wId,
       name,
@@ -297,8 +350,8 @@ export class DemoService {
       status: 'draft',
       publicId,
       thumbnail: payload.initialImageUrl || '',
-      scenesCount: 1,
-      stepsCount: 1,
+      scenesCount: hasInitialImage ? 1 : 0,
+      stepsCount: hasInitialImage ? 1 : 0,
       createdBy: uId || undefined,
       updatedBy: uId || undefined,
       settings: {
@@ -321,156 +374,52 @@ export class DemoService {
 
     const demoId = (demoDoc as any)._id;
 
-    // 1. Starter Chapter
-    const chapterDoc = await Chapter.create({
-      demoId,
-      workspaceId: wId,
-      type: 'default',
-      title: 'Chapter 1: Getting Started',
-      order: 0,
-      description: 'Initial walkthrough and core capabilities.',
-      logo: {
-        visible: true,
-        assetUrl: '',
-        altText: 'Logo',
-      },
-      cover: {
-        type: 'none',
-      },
-      layout: 'center',
-      theme: 'dark',
-      opacity: 24,
-      blur: false,
-      buttons: [
-        {
-          id: `btn_${Date.now()}`,
-          label: 'Continue',
-          action: { type: 'next' },
-          style: 'primary',
-          visible: true,
-        },
-      ],
-    });
+    // Only create starter scene and step if initialImageUrl was explicitly provided
+    if (hasInitialImage) {
+      const sceneDoc = await Scene.create({
+        demoId,
+        workspaceId: wId,
+        name: 'Scene 1',
+        slug: 'scene-1',
+        order: 0,
+        sourceType: 'screenshot',
+        sourceAssetUrl: payload.initialImageUrl,
+        viewport: { width: 1920, height: 1080, aspectRatio: '16:9' },
+        background: '#f8f8fc',
+      });
 
-    // 2. Starter Scene
-    const sceneDoc = await Scene.create({
-      demoId,
-      workspaceId: wId,
-      name: 'Overview Dashboard',
-      slug: 'scene-1',
-      order: 0,
-      sourceType: 'screenshot',
-      sourceAssetUrl: payload.initialImageUrl || '/yaanna-webpage.png',
-      viewport: { width: 1920, height: 1080, aspectRatio: '16:9' },
-      background: '#f8f8fc',
-    });
-
-    // 3. Starter Hotspot Element (with complete data-driven HotspotConfig)
-    const elementDoc = await Element.create({
-      demoId,
-      workspaceId: wId,
-      sceneId: sceneDoc._id,
-      type: 'hotspot',
-      name: 'Explore Analytics Hotspot',
-      position: { x: 50, y: 46, width: 36, height: 36 },
-      style: {
-        backgroundColor: '#5B5CE2',
-        color: '#ffffff',
-        borderRadius: 9999,
-        pulseAnimation: true,
-      },
-      content: 'Add some hotspot text here.',
-      target: '',
-      visible: true,
-      locked: false,
-      order: 0,
-      hotspotConfig: {
-        type: 'pointer',
-        content: {
-          text: 'Add some hotspot text here.',
-          textAlign: 'left',
+      const stepDoc = await Step.create({
+        demoId,
+        workspaceId: wId,
+        sceneId: sceneDoc._id,
+        order: 0,
+        title: 'Step 1',
+        description: '',
+        targetElementId: '',
+        action: 'click',
+        tooltip: {
+          title: 'Step 1',
+          description: '',
+          position: 'bottom',
+          badge: 'Step 1',
+          buttonText: 'Next',
         },
-        appearance: {
-          background: '#5B5CE2',
-          textColor: '#ffffff',
-          backdrop: false,
-          borderRadius: 'rounded',
-          width: 'medium',
-          animation: 'ping',
+        spotlight: {
+          enabled: false,
+          shape: 'rectangle',
+          padding: 10,
+          borderRadius: 12,
         },
-        visibility: 'always',
         navigation: {
-          showNext: true,
-          nextButton: {
-            enabled: true,
-            text: 'Continue',
-            background: '#ffffff',
-            textColor: '#5B5CE2',
-            action: 'nextStep',
-          },
-          backButton: {
-            enabled: false,
-            text: 'Back',
-            background: '#ffffff',
-            textColor: '#6b7280',
-            action: 'previousStep',
-          },
+          canSkip: true,
+          autoAdvance: false,
+          delayMs: 3500,
         },
-      },
-    });
-
-    // 4. Starter Step
-    const stepDoc = await Step.create({
-      demoId,
-      workspaceId: wId,
-      sceneId: sceneDoc._id,
-      chapterId: chapterDoc._id,
-      order: 0,
-      title: 'Step 1: Explore Analytics',
-      description: 'Explore live revenue progression and cohort breakdowns with automated insights.',
-      targetElementId: elementDoc._id.toString(),
-      action: 'click',
-      tooltip: {
-        title: 'Add some hotspot text here.',
-        description: 'Explore key capabilities with interactive hotspots.',
-        position: 'bottom',
-        badge: 'Step 1',
-        buttonText: 'Next',
-      },
-      spotlight: {
-        enabled: true,
-        shape: 'rectangle',
-        padding: 12,
-        borderRadius: 12,
-      },
-      navigation: {
-        canSkip: true,
-        autoAdvance: false,
-        delayMs: 3500,
-      },
-      completion: {
-        type: 'click',
-      },
-    });
-
-    // Link element to step
-    elementDoc.stepId = stepDoc._id as any;
-    await elementDoc.save();
-
-    // 5. Starter Interaction
-    const interactionDoc = await Interaction.create({
-      demoId,
-      workspaceId: wId,
-      sceneId: sceneDoc._id,
-      elementId: elementDoc._id.toString(),
-      trigger: 'click',
-      actions: [
-        {
-          type: 'nextStep',
+        completion: {
+          type: 'click',
         },
-      ],
-      enabled: true,
-    });
+      });
+    }
 
     return (await this.getDemoById(workspaceId, demoId.toString()))!;
   }
@@ -484,6 +433,8 @@ export class DemoService {
     payload: {
       name?: string;
       description?: string;
+      thumbnail?: string;
+      coverImage?: string;
       status?: 'draft' | 'published' | 'archived';
       type?: 'interactive' | 'walkthrough' | 'presentation' | 'onboarding';
       settings?: any;
@@ -504,13 +455,27 @@ export class DemoService {
 
     if (payload.name) demoDoc.name = payload.name.trim();
     if (payload.description !== undefined) demoDoc.description = payload.description;
+    if (payload.thumbnail !== undefined) demoDoc.thumbnail = payload.thumbnail;
+    if (payload.coverImage !== undefined) demoDoc.coverImage = payload.coverImage;
     if (payload.status) demoDoc.status = payload.status;
     if (payload.type) demoDoc.type = payload.type;
     if (payload.settings) {
       demoDoc.settings = { ...demoDoc.settings, ...payload.settings };
     }
 
-    // Pre-calculate ID mappings to preserve relationships between chapters, steps, and elements
+    // Pre-calculate ID mappings to preserve relationships between scenes, chapters, steps, and elements
+    const sceneIdMap = new Map<string, mongoose.Types.ObjectId>();
+    if (payload.scenes) {
+      payload.scenes.forEach((s) => {
+        const sId = s.id || s._id;
+        const assigned = (sId && mongoose.Types.ObjectId.isValid(sId))
+          ? new mongoose.Types.ObjectId(sId)
+          : new mongoose.Types.ObjectId();
+        if (s.id) sceneIdMap.set(s.id, assigned);
+        if (s._id) sceneIdMap.set(s._id, assigned);
+      });
+    }
+
     const chapterIdMap = new Map<string, mongoose.Types.ObjectId>();
     if (payload.chapters) {
       payload.chapters.forEach((ch) => {
@@ -571,13 +536,14 @@ export class DemoService {
       }
     }
 
+    let insertedScenes: any[] = [];
     if (payload.scenes && payload.scenes.length > 0) {
       demoDoc.scenesCount = payload.scenes.length;
       await Scene.deleteMany({ demoId: dId });
       const newScenes = payload.scenes.map((s, idx) => {
         const sId = s.id || s._id;
         return {
-          _id: (sId && mongoose.Types.ObjectId.isValid(sId)) ? new mongoose.Types.ObjectId(sId) : new mongoose.Types.ObjectId(),
+          _id: (sId && sceneIdMap.get(sId)) || new mongoose.Types.ObjectId(),
           demoId: dId,
           workspaceId: wId,
           name: s.name || `Scene ${idx + 1}`,
@@ -590,7 +556,35 @@ export class DemoService {
           metadata: s.metadata || {},
         };
       });
-      await Scene.insertMany(newScenes);
+      insertedScenes = await Scene.insertMany(newScenes);
+      if (!demoDoc.thumbnail || demoDoc.thumbnail === '') {
+        const firstImg = insertedScenes.find((s) => s.sourceAssetUrl && s.sourceType !== 'recording');
+        demoDoc.thumbnail = firstImg?.sourceAssetUrl || insertedScenes[0]?.sourceAssetUrl || '';
+      }
+    }
+
+    // Determine fallback scene ID to ensure steps and elements always have a valid scene reference
+    let fallbackSceneId: mongoose.Types.ObjectId | null = null;
+    if (insertedScenes.length > 0) {
+      fallbackSceneId = insertedScenes[0]._id;
+    } else {
+      const existingScene = await Scene.findOne({ demoId: dId }).sort({ order: 1 });
+      if (existingScene) {
+        fallbackSceneId = existingScene._id;
+      } else if (payload.steps && payload.steps.length > 0) {
+        const defaultScene = await Scene.create({
+          demoId: dId,
+          workspaceId: wId,
+          name: 'Scene 1',
+          slug: 'scene-1',
+          order: 0,
+          sourceType: 'screenshot',
+          sourceAssetUrl: '',
+          viewport: { width: 1920, height: 1080 },
+          background: '#f8f8fc',
+        });
+        fallbackSceneId = defaultScene._id;
+      }
     }
 
     if (payload.steps && payload.steps.length > 0) {
@@ -603,13 +597,17 @@ export class DemoService {
         const mappedChapterId = st.chapterId
           ? chapterIdMap.get(st.chapterId) || (mongoose.Types.ObjectId.isValid(st.chapterId) ? new mongoose.Types.ObjectId(st.chapterId) : null)
           : null;
+        const mappedSceneId = st.sceneId
+          ? sceneIdMap.get(st.sceneId) || (mongoose.Types.ObjectId.isValid(st.sceneId) ? new mongoose.Types.ObjectId(st.sceneId) : null)
+          : null;
+        const finalSceneId = mappedSceneId || fallbackSceneId;
         const stId = st.id || st._id;
 
         return {
           _id: (stId && stepIdMap.get(stId)) || new mongoose.Types.ObjectId(),
           demoId: dId,
           workspaceId: wId,
-          sceneId: (st.sceneId && mongoose.Types.ObjectId.isValid(st.sceneId)) ? new mongoose.Types.ObjectId(st.sceneId) : null,
+          sceneId: finalSceneId,
           chapterId: mappedChapterId,
           order: idx,
           title: st.title || `Step ${idx + 1}`,
@@ -632,13 +630,17 @@ export class DemoService {
           const mappedStepId = el.stepId
             ? stepIdMap.get(el.stepId) || (mongoose.Types.ObjectId.isValid(el.stepId) ? new mongoose.Types.ObjectId(el.stepId) : null)
             : null;
+          const mappedSceneId = el.sceneId
+            ? sceneIdMap.get(el.sceneId) || (mongoose.Types.ObjectId.isValid(el.sceneId) ? new mongoose.Types.ObjectId(el.sceneId) : null)
+            : null;
+          const finalSceneId = mappedSceneId || fallbackSceneId;
           const elId = el.id || el._id;
 
           return {
             _id: (elId && elementIdMap.get(elId)) || new mongoose.Types.ObjectId(),
             demoId: dId,
             workspaceId: wId,
-            sceneId: (el.sceneId && mongoose.Types.ObjectId.isValid(el.sceneId)) ? new mongoose.Types.ObjectId(el.sceneId) : null,
+            sceneId: finalSceneId,
             stepId: mappedStepId,
             type: el.type || 'hotspot',
             name: el.name || `Element ${idx + 1}`,
@@ -660,18 +662,37 @@ export class DemoService {
     if (payload.interactions) {
       await Interaction.deleteMany({ demoId: dId });
       if (payload.interactions.length > 0) {
-        const newInteractions = payload.interactions.map((it) => ({
-          _id: mongoose.Types.ObjectId.isValid(it.id) ? new mongoose.Types.ObjectId(it.id) : new mongoose.Types.ObjectId(),
-          demoId: dId,
-          workspaceId: wId,
-          sceneId: mongoose.Types.ObjectId.isValid(it.sceneId) ? new mongoose.Types.ObjectId(it.sceneId) : null,
-          elementId: it.elementId,
-          trigger: it.trigger || 'click',
-          conditions: it.conditions || [],
-          actions: it.actions || [],
-          enabled: it.enabled ?? true,
-        }));
+        const newInteractions = payload.interactions.map((it) => {
+          const mappedSceneId = it.sceneId
+            ? sceneIdMap.get(it.sceneId) || (mongoose.Types.ObjectId.isValid(it.sceneId) ? new mongoose.Types.ObjectId(it.sceneId) : null)
+            : null;
+          return {
+            _id: mongoose.Types.ObjectId.isValid(it.id) ? new mongoose.Types.ObjectId(it.id) : new mongoose.Types.ObjectId(),
+            demoId: dId,
+            workspaceId: wId,
+            sceneId: mappedSceneId || fallbackSceneId,
+            elementId: it.elementId ? (elementIdMap.get(it.elementId)?.toString() || it.elementId) : undefined,
+            trigger: it.trigger || 'click',
+            conditions: it.conditions || [],
+            actions: it.actions || [],
+            enabled: it.enabled ?? true,
+          };
+        });
         await Interaction.insertMany(newInteractions);
+      }
+    }
+
+    // Ensure thumbnail is always the first step's scene image
+    const firstStepDoc = await Step.findOne({ demoId: dId }).sort({ order: 1 }).lean();
+    if (firstStepDoc && (firstStepDoc as any).sceneId) {
+      const matchScene = await Scene.findOne({ _id: (firstStepDoc as any).sceneId }).lean();
+      if (matchScene && (matchScene as any).sourceAssetUrl) {
+        demoDoc.thumbnail = (matchScene as any).sourceAssetUrl;
+      }
+    } else if (!demoDoc.thumbnail) {
+      const firstSceneDoc = await Scene.findOne({ demoId: dId, sourceAssetUrl: { $ne: '' } }).sort({ order: 1 }).lean();
+      if (firstSceneDoc && (firstSceneDoc as any).sourceAssetUrl) {
+        demoDoc.thumbnail = (firstSceneDoc as any).sourceAssetUrl;
       }
     }
 
@@ -1031,6 +1052,31 @@ export class DemoService {
   static async getPublicDemo(publicId: string): Promise<DemoRuntimeSnapshot | null> {
     await connectToDatabase();
 
+    // Check if demo exists directly by publicId (serves live up-to-date data for instant preview and share)
+    const demoDoc = await Demo.findOne({ publicId }).lean();
+    if (demoDoc) {
+      const fullData = await this.getDemoById(demoDoc.workspaceId.toString(), demoDoc._id.toString());
+      if (fullData) {
+        return {
+          demo: {
+            id: fullData.demo.id,
+            name: fullData.demo.name,
+            description: fullData.demo.description,
+            type: fullData.demo.type,
+            settings: fullData.demo.settings,
+            publicId,
+          },
+          chapters: fullData.chapters,
+          scenes: fullData.scenes,
+          steps: fullData.steps,
+          elements: fullData.elements,
+          interactions: fullData.interactions,
+          publishedAt: fullData.demo.updatedAt || new Date().toISOString(),
+        };
+      }
+    }
+
+    // Fallback: check immutable PublishVersion snapshot
     const versionDoc = await PublishVersion.findOne({
       publicId,
       status: 'active',
@@ -1038,33 +1084,11 @@ export class DemoService {
       .sort({ version: -1 })
       .lean();
 
-    if (!versionDoc) {
-      // Fallback: search demo by publicId directly if published
-      const demoDoc = await Demo.findOne({ publicId, status: 'published' }).lean();
-      if (!demoDoc) return null;
-
-      const fullData = await this.getDemoById(demoDoc.workspaceId.toString(), demoDoc._id.toString());
-      if (!fullData) return null;
-
-      return {
-        demo: {
-          id: fullData.demo.id,
-          name: fullData.demo.name,
-          description: fullData.demo.description,
-          type: fullData.demo.type,
-          settings: fullData.demo.settings,
-          publicId,
-        },
-        chapters: fullData.chapters,
-        scenes: fullData.scenes,
-        steps: fullData.steps,
-        elements: fullData.elements,
-        interactions: fullData.interactions,
-        publishedAt: fullData.demo.updatedAt || new Date().toISOString(),
-      };
+    if (versionDoc) {
+      return (versionDoc as any).snapshot as DemoRuntimeSnapshot;
     }
 
-    return (versionDoc as any).snapshot as DemoRuntimeSnapshot;
+    return null;
   }
 
   /**

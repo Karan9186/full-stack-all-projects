@@ -1,17 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAuthContext } from '@/lib/auth/getAuthSession';
 import { DemoService } from '@/lib/services/demoService';
-import { seedDefaultDemos } from '@/lib/db/seedDefaultData';
-
 export async function GET(req: NextRequest) {
   try {
     const auth = await getAuthContext(req);
     if (!auth) {
       return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
     }
-
-    // Ensure starter demos exist if workspace is brand new
-    await seedDefaultDemos(auth.workspaceId, auth.userId);
 
     const { searchParams } = new URL(req.url);
     const search = searchParams.get('search') || undefined;

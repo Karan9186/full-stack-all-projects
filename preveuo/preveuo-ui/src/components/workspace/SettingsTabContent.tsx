@@ -59,10 +59,10 @@ export const SettingsTabContent: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
-          <h2 className="text-[26px] sm:text-[30px] font-extrabold tracking-tight text-[#0f0f1a]">
+          <h2 className="text-[24px] sm:text-[28px] font-bold tracking-tight text-[#0f0f1a]">
             Workspace Settings
           </h2>
-          <p className="text-[14px] text-[#6b7280] mt-0.5">
+          <p className="text-[13.5px] text-[#6b7280] font-normal mt-0.5">
             Manage organization members, custom domains, branding, and billing plans.
           </p>
         </div>
@@ -82,10 +82,10 @@ export const SettingsTabContent: React.FC = () => {
         <button
           type="button"
           onClick={() => setActiveSubTab('general')}
-          className={`flex items-center gap-2 px-4 py-3 text-[13.5px] font-bold border-b-2 transition-all cursor-pointer whitespace-nowrap ${
+          className={`flex items-center gap-2 px-4 py-3 text-[13.5px] border-b-2 transition-all cursor-pointer whitespace-nowrap ${
             activeSubTab === 'general'
-              ? 'border-[#5B5CE2] text-[#5B5CE2]'
-              : 'border-transparent text-[#6b7280] hover:text-[#0f0f1a]'
+              ? 'border-[#5B5CE2] text-[#5B5CE2] font-semibold'
+              : 'border-transparent text-[#6b7280] font-medium hover:text-[#0f0f1a]'
           }`}
         >
           <Settings className="w-4 h-4" /> General
@@ -94,10 +94,10 @@ export const SettingsTabContent: React.FC = () => {
         <button
           type="button"
           onClick={() => setActiveSubTab('team')}
-          className={`flex items-center gap-2 px-4 py-3 text-[13.5px] font-bold border-b-2 transition-all cursor-pointer whitespace-nowrap ${
+          className={`flex items-center gap-2 px-4 py-3 text-[13.5px] border-b-2 transition-all cursor-pointer whitespace-nowrap ${
             activeSubTab === 'team'
-              ? 'border-[#5B5CE2] text-[#5B5CE2]'
-              : 'border-transparent text-[#6b7280] hover:text-[#0f0f1a]'
+              ? 'border-[#5B5CE2] text-[#5B5CE2] font-semibold'
+              : 'border-transparent text-[#6b7280] font-medium hover:text-[#0f0f1a]'
           }`}
         >
           <Users className="w-4 h-4" /> Team & Members ({members.length})
@@ -106,10 +106,10 @@ export const SettingsTabContent: React.FC = () => {
         <button
           type="button"
           onClick={() => setActiveSubTab('branding')}
-          className={`flex items-center gap-2 px-4 py-3 text-[13.5px] font-bold border-b-2 transition-all cursor-pointer whitespace-nowrap ${
+          className={`flex items-center gap-2 px-4 py-3 text-[13.5px] border-b-2 transition-all cursor-pointer whitespace-nowrap ${
             activeSubTab === 'branding'
-              ? 'border-[#5B5CE2] text-[#5B5CE2]'
-              : 'border-transparent text-[#6b7280] hover:text-[#0f0f1a]'
+              ? 'border-[#5B5CE2] text-[#5B5CE2] font-semibold'
+              : 'border-transparent text-[#6b7280] font-medium hover:text-[#0f0f1a]'
           }`}
         >
           <Palette className="w-4 h-4" /> Branding & Domains
@@ -118,10 +118,10 @@ export const SettingsTabContent: React.FC = () => {
         <button
           type="button"
           onClick={() => setActiveSubTab('billing')}
-          className={`flex items-center gap-2 px-4 py-3 text-[13.5px] font-bold border-b-2 transition-all cursor-pointer whitespace-nowrap ${
+          className={`flex items-center gap-2 px-4 py-3 text-[13.5px] border-b-2 transition-all cursor-pointer whitespace-nowrap ${
             activeSubTab === 'billing'
-              ? 'border-[#5B5CE2] text-[#5B5CE2]'
-              : 'border-transparent text-[#6b7280] hover:text-[#0f0f1a]'
+              ? 'border-[#5B5CE2] text-[#5B5CE2] font-semibold'
+              : 'border-transparent text-[#6b7280] font-medium hover:text-[#0f0f1a]'
           }`}
         >
           <CreditCard className="w-4 h-4" /> Plan & Billing
@@ -132,10 +132,10 @@ export const SettingsTabContent: React.FC = () => {
       {activeSubTab === 'general' && (
         <div className="space-y-6 max-w-3xl">
           <div className="p-6 rounded-2xl bg-white border border-[#e5e7eb] space-y-5">
-            <h3 className="text-[17px] font-bold text-[#0f0f1a]">Workspace Profile</h3>
+            <h3 className="text-[17px] font-semibold text-[#0f0f1a]">Workspace Profile</h3>
 
             <div className="flex items-center gap-4">
-              <div className="w-16 h-16 rounded-2xl bg-[#0f0f1a] text-white flex items-center justify-center font-black text-xl">
+              <div className="w-16 h-16 rounded-2xl bg-[#0f0f1a] text-white flex items-center justify-center font-bold text-xl">
                 A
               </div>
               <div>
@@ -148,7 +148,7 @@ export const SettingsTabContent: React.FC = () => {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-[#0f0f1a]">Workspace Name</label>
+                <label className="text-xs font-semibold text-[#0f0f1a]">Workspace Name</label>
                 <input
                   type="text"
                   value={workspaceName}
@@ -158,7 +158,7 @@ export const SettingsTabContent: React.FC = () => {
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-[#0f0f1a]">Workspace URL Slug</label>
+                <label className="text-xs font-semibold text-[#0f0f1a]">Workspace URL Slug</label>
                 <div className="flex items-center">
                   <span className="px-3 py-2.5 rounded-l-xl bg-[#f8f8fc] border border-r-0 border-[#e5e7eb] text-xs text-[#9ca3af] select-none">
                     preveuo.com/w/
@@ -174,7 +174,7 @@ export const SettingsTabContent: React.FC = () => {
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs font-bold text-[#0f0f1a]">Default Demo Privacy</label>
+              <label className="text-xs font-semibold text-[#0f0f1a]">Default Demo Privacy</label>
               <select className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-[#e5e7eb] text-[13px] text-[#0f0f1a] focus:outline-none focus:border-[#5B5CE2]">
                 <option value="public">Public (Anyone with link can view and interact)</option>
                 <option value="unlisted">Unlisted (Hidden from Google search indexing)</option>
@@ -184,8 +184,8 @@ export const SettingsTabContent: React.FC = () => {
           </div>
 
           <div className="p-6 rounded-2xl bg-white border border-[#e5e7eb] space-y-4">
-            <h3 className="text-[17px] font-bold text-red-600">Danger Zone</h3>
-            <p className="text-[13px] text-[#6b7280]">
+            <h3 className="text-[17px] font-semibold text-red-600">Danger Zone</h3>
+            <p className="text-[13px] text-[#6b7280] font-normal">
               Permanently delete this workspace and all associated interactive demos, captured leads, and analytics data.
             </p>
             <Button variant="danger" size="sm">
@@ -200,7 +200,7 @@ export const SettingsTabContent: React.FC = () => {
         <div className="space-y-6">
           {/* Invite Member Form */}
           <div className="p-6 rounded-2xl bg-white border border-[#e5e7eb]">
-            <h3 className="text-[17px] font-bold text-[#0f0f1a] mb-4">Invite Team Members</h3>
+            <h3 className="text-[17px] font-semibold text-[#0f0f1a] mb-4">Invite Team Members</h3>
             <form onSubmit={handleInvite} className="flex flex-col sm:flex-row gap-3">
               <input
                 type="email"
@@ -231,7 +231,7 @@ export const SettingsTabContent: React.FC = () => {
 
           {/* Members List Table */}
           <div className="p-6 rounded-2xl bg-white border border-[#e5e7eb]">
-            <h3 className="text-[17px] font-bold text-[#0f0f1a] mb-4">Current Team Members</h3>
+            <h3 className="text-[17px] font-semibold text-[#0f0f1a] mb-4">Current Team Members</h3>
 
             <div className="divide-y divide-[#f0f0f4]">
               {members.map((member) => (
@@ -244,10 +244,10 @@ export const SettingsTabContent: React.FC = () => {
                       {member.avatarInitials}
                     </div>
                     <div>
-                      <h4 className="text-[14px] font-bold text-[#0f0f1a] leading-tight">
+                      <h4 className="text-[14px] font-semibold text-[#0f0f1a] leading-tight">
                         {member.name}
                       </h4>
-                      <p className="text-[12px] text-[#6b7280] leading-tight mt-0.5">
+                      <p className="text-[12px] text-[#6b7280] font-normal leading-tight mt-0.5">
                         {member.email}
                       </p>
                     </div>
@@ -283,10 +283,10 @@ export const SettingsTabContent: React.FC = () => {
       {activeSubTab === 'branding' && (
         <div className="space-y-6 max-w-3xl">
           <div className="p-6 rounded-2xl bg-white border border-[#e5e7eb] space-y-5">
-            <h3 className="text-[17px] font-bold text-[#0f0f1a]">Brand Theme & Colors</h3>
+            <h3 className="text-[17px] font-semibold text-[#0f0f1a]">Brand Theme & Colors</h3>
 
             <div className="space-y-2">
-              <label className="text-xs font-bold text-[#0f0f1a]">Primary Brand Accent</label>
+              <label className="text-xs font-semibold text-[#0f0f1a]">Primary Brand Accent</label>
               <div className="flex items-center gap-3">
                 <input
                   type="color"
@@ -300,7 +300,7 @@ export const SettingsTabContent: React.FC = () => {
                   onChange={(e) => setBrandColor(e.target.value)}
                   className="w-32 px-3 py-2 rounded-xl bg-white border border-[#e5e7eb] font-mono text-xs uppercase"
                 />
-                <span className="text-xs text-[#6b7280]">
+                <span className="text-xs text-[#6b7280] font-normal">
                   Used for interactive hotspot pulses and CTA buttons in demo players.
                 </span>
               </div>
@@ -315,11 +315,11 @@ export const SettingsTabContent: React.FC = () => {
                   className="w-4 h-4 rounded text-[#5B5CE2] focus:ring-[#5B5CE2]"
                 />
                 <div>
-                  <span className="text-[13.5px] font-bold text-[#0f0f1a] block">
+                  <span className="text-[13.5px] font-semibold text-[#0f0f1a] block">
                     Remove Preveuo Branding (White-label)
                   </span>
-                  <span className="text-xs text-[#6b7280]">
-                    Hides the "Powered by Preveuo" footer watermark across all embedded demos.
+                  <span className="text-xs text-[#6b7280] font-normal">
+                    Hides the &quot;Powered by Preveuo&quot; footer watermark across all embedded demos.
                   </span>
                 </div>
               </label>
@@ -327,8 +327,8 @@ export const SettingsTabContent: React.FC = () => {
           </div>
 
           <div className="p-6 rounded-2xl bg-white border border-[#e5e7eb] space-y-4">
-            <h3 className="text-[17px] font-bold text-[#0f0f1a]">Custom CNAME Domain</h3>
-            <p className="text-[13px] text-[#6b7280]">
+            <h3 className="text-[17px] font-semibold text-[#0f0f1a]">Custom CNAME Domain</h3>
+            <p className="text-[13px] text-[#6b7280] font-normal">
               Host all public demos under your own corporate subdomain with automated SSL certificate provisioning.
             </p>
 
@@ -339,7 +339,7 @@ export const SettingsTabContent: React.FC = () => {
                 onChange={(e) => setCustomDomain(e.target.value)}
                 className="flex-1 px-3.5 py-2.5 rounded-xl bg-white border border-[#e5e7eb] text-[13px] text-[#0f0f1a] font-mono"
               />
-              <span className="px-3 py-1.5 rounded-xl bg-emerald-50 text-emerald-700 text-xs font-bold flex items-center gap-1.5">
+              <span className="px-3 py-1.5 rounded-xl bg-emerald-50 text-emerald-700 text-xs font-medium flex items-center gap-1.5">
                 <CheckCircle2 className="w-3.5 h-3.5" /> DNS Verified
               </span>
             </div>
@@ -358,13 +358,13 @@ export const SettingsTabContent: React.FC = () => {
           <div className="p-6 rounded-2xl bg-white border border-[#e5e7eb]">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
               <div>
-                <span className="text-xs font-bold uppercase tracking-wider text-[#5B5CE2] bg-[#5B5CE2]/10 px-2.5 py-1 rounded-full">
+                <span className="text-xs font-medium uppercase tracking-wider text-[#5B5CE2] bg-[#5B5CE2]/10 px-2.5 py-1 rounded-full">
                   Current Plan
                 </span>
-                <h3 className="text-2xl font-black text-[#0f0f1a] mt-2">
+                <h3 className="text-xl sm:text-2xl font-bold text-[#0f0f1a] mt-2">
                   Preveuo Pro Plan ($49 / month)
                 </h3>
-                <p className="text-xs text-[#6b7280] mt-1">
+                <p className="text-xs text-[#6b7280] font-normal mt-1">
                   Billed annually. Next renewal date is November 1, 2026.
                 </p>
               </div>
@@ -377,7 +377,7 @@ export const SettingsTabContent: React.FC = () => {
             {/* Usage Gauges */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 pt-4 border-t border-[#f0f0f4]">
               <div>
-                <div className="flex justify-between text-xs font-bold mb-1">
+                <div className="flex justify-between text-xs font-medium mb-1">
                   <span className="text-[#6b7280]">Team Seats</span>
                   <span className="text-[#0f0f1a]">4 of 10</span>
                 </div>
@@ -387,7 +387,7 @@ export const SettingsTabContent: React.FC = () => {
               </div>
 
               <div>
-                <div className="flex justify-between text-xs font-bold mb-1">
+                <div className="flex justify-between text-xs font-medium mb-1">
                   <span className="text-[#6b7280]">Interactive Demos</span>
                   <span className="text-[#0f0f1a]">6 / Unlimited</span>
                 </div>
@@ -397,7 +397,7 @@ export const SettingsTabContent: React.FC = () => {
               </div>
 
               <div>
-                <div className="flex justify-between text-xs font-bold mb-1">
+                <div className="flex justify-between text-xs font-medium mb-1">
                   <span className="text-[#6b7280]">Viewer Impressions</span>
                   <span className="text-[#0f0f1a]">18.4k / 50k</span>
                 </div>
@@ -410,13 +410,13 @@ export const SettingsTabContent: React.FC = () => {
 
           {/* Payment Method & Invoices */}
           <div className="p-6 rounded-2xl bg-white border border-[#e5e7eb]">
-            <h3 className="text-[17px] font-bold text-[#0f0f1a] mb-4">Payment Method</h3>
+            <h3 className="text-[17px] font-semibold text-[#0f0f1a] mb-4">Payment Method</h3>
             <div className="flex items-center justify-between p-4 rounded-xl border border-[#e5e7eb] mb-6">
               <div className="flex items-center gap-3">
                 <CreditCard className="w-6 h-6 text-[#5B5CE2]" />
                 <div>
-                  <span className="text-sm font-bold text-[#0f0f1a]">Visa ending in 4242</span>
-                  <p className="text-xs text-[#9ca3af]">Expires 08/2028 • Default payment card</p>
+                  <span className="text-sm font-semibold text-[#0f0f1a]">Visa ending in 4242</span>
+                  <p className="text-xs text-[#9ca3af] font-normal">Expires 08/2028 • Default payment card</p>
                 </div>
               </div>
               <Button variant="outline" size="sm">
@@ -424,15 +424,15 @@ export const SettingsTabContent: React.FC = () => {
               </Button>
             </div>
 
-            <h4 className="text-sm font-bold text-[#0f0f1a] mb-3">Invoice Receipts</h4>
+            <h4 className="text-sm font-semibold text-[#0f0f1a] mb-3">Invoice Receipts</h4>
             <div className="divide-y divide-[#f0f0f4] text-xs">
               <div className="py-2.5 flex items-center justify-between">
                 <span>Oct 1, 2026 • Pro Plan Annual Subscription</span>
-                <span className="font-bold text-[#0f0f1a]">$588.00 • <button className="text-[#5B5CE2] underline">Download PDF</button></span>
+                <span className="font-semibold text-[#0f0f1a]">$588.00 • <button className="text-[#5B5CE2] underline">Download PDF</button></span>
               </div>
               <div className="py-2.5 flex items-center justify-between">
                 <span>Oct 1, 2025 • Pro Plan Annual Subscription</span>
-                <span className="font-bold text-[#0f0f1a]">$588.00 • <button className="text-[#5B5CE2] underline">Download PDF</button></span>
+                <span className="font-semibold text-[#0f0f1a]">$588.00 • <button className="text-[#5B5CE2] underline">Download PDF</button></span>
               </div>
             </div>
           </div>

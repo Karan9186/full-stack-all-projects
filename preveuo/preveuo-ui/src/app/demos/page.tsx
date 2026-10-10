@@ -104,13 +104,13 @@ export default function DemosDashboardPage() {
         <div className="flex items-center gap-4">
           <Link
             href="/workspace"
-            className="flex items-center gap-2 text-xs font-semibold text-[#6b7280] hover:text-[#0f0f1a] transition-colors"
+            className="flex items-center gap-1.5 text-xs font-medium text-[#6b7280] hover:text-[#0f0f1a] transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
             <span>Workspace</span>
           </Link>
           <span className="text-[#d1d5db]">/</span>
-          <h1 className="text-lg font-extrabold text-[#0f0f1a] tracking-tight">
+          <h1 className="text-[16px] font-semibold text-[#0f0f1a] tracking-tight">
             Interactive Demos & Tours
           </h1>
         </div>
@@ -128,10 +128,10 @@ export default function DemosDashboardPage() {
       <main className="max-w-7xl mx-auto p-6 lg:p-10">
         {/* Banner Section */}
         <div className="mb-8">
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-[#0f0f1a] tracking-tight mb-1">
+          <h2 className="text-2xl sm:text-[26px] font-bold text-[#0f0f1a] tracking-[-0.025em] mb-1 leading-tight">
             Demo Management Studio
           </h2>
-          <p className="text-sm text-[#6b7280]">
+          <p className="text-[13.5px] sm:text-[14px] text-[#6b7280] leading-relaxed">
             Create, edit, personalize, and publish interactive walkthroughs with real-time viewer tracking.
           </p>
         </div>
@@ -145,10 +145,10 @@ export default function DemosDashboardPage() {
                 key={tab}
                 type="button"
                 onClick={() => setFilterTab(tab)}
-                className={`px-3.5 py-1.5 rounded-xl text-xs font-bold capitalize transition-all cursor-pointer ${
+                className={`px-3.5 py-1.5 rounded-xl text-xs capitalize transition-all cursor-pointer ${
                   filterTab === tab
-                    ? 'bg-[#5B5CE2] text-white shadow-xs'
-                    : 'bg-white border border-[#e5e7eb] text-[#6b7280] hover:text-[#0f0f1a]'
+                    ? 'font-semibold bg-[#5B5CE2] text-white shadow-xs'
+                    : 'font-medium bg-white border border-[#e5e7eb] text-[#6b7280] hover:text-[#0f0f1a]'
                 }`}
               >
                 {tab === 'all' ? `All Demos (${demos.length})` : tab}
@@ -164,7 +164,7 @@ export default function DemosDashboardPage() {
               placeholder="Search demos..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 rounded-xl text-xs bg-white border border-[#e5e7eb] text-[#0f0f1a] placeholder-[#9ca3af] focus:outline-none focus:border-[#5B5CE2] shadow-2xs"
+              className="w-full pl-9 pr-4 py-2 rounded-xl text-[13px] bg-white border border-[#e5e7eb] text-[#0f0f1a] placeholder-[#9ca3af] focus:outline-none focus:border-[#5B5CE2] shadow-2xs"
             />
           </div>
         </div>
@@ -184,8 +184,8 @@ export default function DemosDashboardPage() {
             <div className="w-16 h-16 rounded-2xl bg-[#5B5CE2]/10 text-[#5B5CE2] flex items-center justify-center mx-auto mb-4">
               <Layers className="w-8 h-8" />
             </div>
-            <h3 className="text-lg font-extrabold text-[#0f0f1a] mb-2">No Demos Found</h3>
-            <p className="text-xs text-[#6b7280] mb-6 leading-relaxed">
+            <h3 className="text-base font-semibold text-[#0f0f1a] mb-1.5">No Demos Found</h3>
+            <p className="text-[13px] text-[#6b7280] mb-6 leading-relaxed max-w-sm mx-auto">
               {searchTerm
                 ? `No demos matched "${searchTerm}". Try another search keyword.`
                 : 'Get started by creating your first interactive product tour or guided walkthrough.'}
@@ -206,7 +206,7 @@ export default function DemosDashboardPage() {
                   hoverEffect
                   className="group flex flex-col justify-between overflow-hidden bg-white"
                 >
-                  <div>
+                  <Link href={`/demos/${demoId}`} className="block flex-1 cursor-pointer">
                     {/* Thumbnail / Header Stage */}
                     <div className="h-44 relative bg-[#0f0f1a] overflow-hidden flex items-center justify-center border-b border-[#f0f0f4]">
                       {demo.thumbnail ? (
@@ -224,10 +224,10 @@ export default function DemosDashboardPage() {
 
                       {/* Top Pill Overlay */}
                       <div className="absolute top-3 left-3 flex items-center gap-1.5">
-                        <span className="text-[10px] font-bold text-white bg-black/60 backdrop-blur-md px-2 py-0.5 rounded-full border border-white/10 uppercase tracking-wider">
+                        <span className="text-[10px] font-medium text-white bg-black/60 backdrop-blur-md px-2 py-0.5 rounded-full border border-white/10 uppercase tracking-wider">
                           {demo.type}
                         </span>
-                        <span className="text-[10px] font-bold text-white bg-black/60 backdrop-blur-md px-2 py-0.5 rounded-full border border-white/10">
+                        <span className="text-[10px] font-medium text-white bg-black/60 backdrop-blur-md px-2 py-0.5 rounded-full border border-white/10">
                           {demo.stepsCount || 1} steps
                         </span>
                       </div>
@@ -235,12 +235,12 @@ export default function DemosDashboardPage() {
                       {/* Status Badge */}
                       <div className="absolute top-3 right-3">
                         {demo.status === 'published' ? (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-500/90 text-white font-bold text-[10px] shadow-sm backdrop-blur-xs">
+                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-500/90 text-white font-medium text-[10px] shadow-sm backdrop-blur-xs">
                             <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
                             Live
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-black/60 text-white/80 font-bold text-[10px] border border-white/10">
+                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-black/60 text-white/80 font-medium text-[10px] border border-white/10">
                             Draft
                           </span>
                         )}
@@ -249,20 +249,20 @@ export default function DemosDashboardPage() {
 
                     {/* Details Body */}
                     <div className="p-5">
-                      <h3 className="font-extrabold text-[15px] text-[#0f0f1a] group-hover:text-[#5B5CE2] transition-colors truncate mb-1">
+                      <h3 className="font-semibold text-[15px] text-[#0f0f1a] group-hover:text-[#5B5CE2] transition-colors truncate mb-1">
                         {demo.name}
                       </h3>
-                      <p className="text-[12.5px] text-[#6b7280] line-clamp-2 mb-4 leading-relaxed">
+                      <p className="text-[12.5px] text-[#6b7280] font-normal line-clamp-2 mb-4 leading-relaxed">
                         {demo.description || 'Interactive product tour created in Preveuo Studio.'}
                       </p>
 
                       {/* Metrics Row */}
                       <div className="flex items-center gap-4 text-xs text-[#6b7280] pt-1">
-                        <span className="inline-flex items-center gap-1">
+                        <span className="inline-flex items-center gap-1 font-normal tabular-nums">
                           <Eye className="w-3.5 h-3.5 text-[#9ca3af]" />
                           {(demo.viewsCount || 0).toLocaleString()} views
                         </span>
-                        <span className="inline-flex items-center gap-1">
+                        <span className="inline-flex items-center gap-1 font-normal tabular-nums">
                           <TrendingUp className="w-3.5 h-3.5 text-[#9ca3af]" />
                           {demo.viewsCount && demo.viewsCount > 0
                             ? `${Math.round(((demo.completionsCount || 0) / demo.viewsCount) * 100)}% completed`
@@ -270,13 +270,13 @@ export default function DemosDashboardPage() {
                         </span>
                       </div>
                     </div>
-                  </div>
+                  </Link>
 
                   {/* Card Bottom Actions */}
                   <div className="px-5 py-3.5 border-t border-[#f0f0f4] bg-[#fafafc] flex items-center justify-between">
                     <Link
                       href={`/demos/${demoId}`}
-                      className="inline-flex items-center gap-1.5 text-xs font-bold text-[#5B5CE2] hover:text-[#4a4bd4] transition-colors"
+                      className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#5B5CE2] hover:text-[#4a4bd4] transition-colors"
                     >
                       <Edit3 className="w-3.5 h-3.5" />
                       <span>Open Studio</span>

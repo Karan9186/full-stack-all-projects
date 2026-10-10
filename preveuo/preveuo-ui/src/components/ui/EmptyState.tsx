@@ -43,12 +43,12 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
         )}
       </div>
 
-      <h4 className="text-[16px] sm:text-[18px] font-bold text-[#0f0f1a] tracking-tight">
+      <h4 className="text-[15px] sm:text-[16px] font-semibold text-[#0f0f1a] tracking-tight">
         {title}
       </h4>
 
       {description && (
-        <p className="text-[13.5px] sm:text-[14px] text-[#6b7280] max-w-sm mt-1.5 leading-relaxed">
+        <p className="text-[13px] sm:text-[13.5px] text-[#6b7280] font-normal max-w-sm mt-1.5 leading-relaxed">
           {description}
         </p>
       )}

@@ -12,6 +12,7 @@ import {
   InteractionAction,
   DemoAnalyticsEventType,
 } from '@/types/demo';
+import { getCanonicalDemoAspectRatio } from '@/lib/utils/aspectRatio';
 import { DemoEventBus } from '@/lib/runtime/interactionEngine';
 import { interpolateVariables } from '@/lib/runtime/variableEngine';
 import {
@@ -40,6 +41,7 @@ export interface DemoRuntimePlayerProps {
   elements: IDemoElement[];
   interactions?: IDemoInteraction[];
   initialVariables?: Record<string, unknown>;
+  initialStepIndex?: number;
   onTrackEvent?: (
     eventType: DemoAnalyticsEventType,
     payload: {
@@ -61,11 +63,28 @@ export const DemoRuntimePlayer: React.FC<DemoRuntimePlayerProps> = ({
   elements = [],
   interactions = [],
   initialVariables = { viewer: { name: 'Sarah', role: 'Product Leader', company: 'Acme' } },
+  initialStepIndex,
   onTrackEvent,
   isEmbedded = false,
 }) => {
-  const [currentSceneIndex, setCurrentSceneIndex] = useState(0);
-  const [currentStepIndex, setCurrentStepIndex] = useState(0);
+  const [currentStepIndex, setCurrentStepIndex] = useState(() =>
+    typeof initialStepIndex === 'number' && initialStepIndex >= 0 && initialStepIndex < steps.length
+      ? initialStepIndex
+      : 0
+  );
+
+  const currentStep = steps[currentStepIndex] || steps[0];
+
+  const [currentSceneIndex, setCurrentSceneIndex] = useState(() => {
+    if (currentStep?.sceneId) {
+      const matchIdx = scenes.findIndex(
+        (s) => s.id === currentStep.sceneId || (s as any)._id === currentStep.sceneId
+      );
+      if (matchIdx !== -1) return matchIdx;
+    }
+    return 0;
+  });
+
   const [isPlaying, setIsPlaying] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
@@ -76,7 +95,17 @@ export const DemoRuntimePlayer: React.FC<DemoRuntimePlayerProps> = ({
   const [activeChapterId, setActiveChapterId] = useState<string | null>(
     chapters && chapters.length > 0 ? chapters[0].id : null
   );
-  const [isAtChapter, setIsAtChapter] = useState<boolean>(Boolean(chapters && chapters.length > 0));
+  const [isAtChapter, setIsAtChapter] = useState<boolean>(
+    typeof initialStepIndex === 'number' ? false : Boolean(chapters && chapters.length > 0)
+  );
+
+  // Sync initialStepIndex prop changes
+  useEffect(() => {
+    if (typeof initialStepIndex === 'number' && initialStepIndex >= 0 && initialStepIndex < steps.length) {
+      setCurrentStepIndex(initialStepIndex);
+      setIsAtChapter(false);
+    }
+  }, [initialStepIndex, steps.length]);
 
   const activeChapter = useMemo(() => {
     if (!activeChapterId) return chapters[0] || null;
@@ -102,16 +131,49 @@ export const DemoRuntimePlayer: React.FC<DemoRuntimePlayerProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-  const currentScene = scenes[currentSceneIndex] || scenes[0];
-  const currentStep = steps[currentStepIndex] || steps[0];
+  // Dynamically resolve currentScene based on currentStep.sceneId
+  const currentScene = useMemo(() => {
+    if (currentStep?.sceneId) {
+      const matched = scenes.find(
+        (s) => s.id === currentStep.sceneId || (s as any)._id === currentStep.sceneId
+      );
+      if (matched) return matched;
+    }
+    return scenes[currentSceneIndex] || scenes[0];
+  }, [scenes, currentStep, currentSceneIndex]);
 
-  // Filter elements belonging to active scene
+  // Keep scene index in sync when step switches
+  useEffect(() => {
+    if (currentStep?.sceneId) {
+      const idx = scenes.findIndex(
+        (s) => s.id === currentStep.sceneId || (s as any)._id === currentStep.sceneId
+      );
+      if (idx !== -1 && idx !== currentSceneIndex) {
+        setCurrentSceneIndex(idx);
+      }
+    }
+  }, [currentStep, scenes, currentSceneIndex]);
+
+  // Filter elements belonging to active scene and active step
   const sceneElements = useMemo(() => {
     if (!currentScene) return [];
-    return elements.filter(
-      (el) => !el.sceneId || el.sceneId === currentScene.id || el.sceneId === currentScene._id
-    );
-  }, [elements, currentScene]);
+    return elements.filter((el) => {
+      const matchScene =
+        !el.sceneId ||
+        el.sceneId === currentScene.id ||
+        (el as any)._id === currentScene.id ||
+        el.sceneId === (currentScene as any)._id;
+
+      if (el.stepId && currentStep) {
+        return (
+          el.stepId === currentStep.id ||
+          (el as any)._id === currentStep.id ||
+          el.stepId === (currentStep as any)._id
+        );
+      }
+      return matchScene;
+    });
+  }, [elements, currentScene, currentStep]);
 
   // Find target element for current walkthrough step
   const targetElement = useMemo(() => {
@@ -165,6 +227,14 @@ export const DemoRuntimePlayer: React.FC<DemoRuntimePlayerProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [scenes, steps, currentStepIndex]
   );
+
+  // Canonical Aspect Ratio single source of truth driving runtime playback stage
+  const canonicalRatioInfo = useMemo(() => {
+    return getCanonicalDemoAspectRatio(
+      { settings: demoSettings } as any,
+      scenes
+    );
+  }, [demoSettings, scenes]);
 
   const eventBus = useMemo(() => {
     const bus = new DemoEventBus(interactions, variables);
@@ -444,8 +514,13 @@ export const DemoRuntimePlayer: React.FC<DemoRuntimePlayerProps> = ({
         isFullscreen ? 'fixed inset-0 z-50' : 'rounded-2xl shadow-2xl'
       }`}
     >
-      {/* Main 16:9 Aspect Ratio Canvas Stage */}
-      <div className="relative w-full h-full max-w-[1920px] max-h-[1080px] flex items-center justify-center overflow-hidden">
+      {/* Main Canonical Aspect Ratio Canvas Stage */}
+      <div
+        style={{
+          aspectRatio: canonicalRatioInfo.cssRatio,
+        }}
+        className="relative w-full h-full max-w-[1920px] max-h-[1080px] flex items-center justify-center overflow-hidden transition-all duration-300 mx-auto"
+      >
         {isAtChapter && activeChapter ? (
           <div className="w-full h-full flex items-center justify-center animate-fade-in">
             <ChapterRenderer
@@ -529,9 +604,11 @@ export const DemoRuntimePlayer: React.FC<DemoRuntimePlayerProps> = ({
             if (element.type === 'hotspot' || element.hotspotConfig) {
               return (
                 <HotspotMarker
-                  key={element.id || element._id}
+                  key={`${element.id || element._id}-step-${currentStepIndex}`}
                   element={element}
                   isEditor={false}
+                  stepNumber={currentStepIndex + 1}
+                  totalSteps={steps.length}
                   containerRef={containerRef}
                   onAction={(action, target) => handleHotspotAction(action, target)}
                   onSelect={() => {
@@ -554,26 +631,35 @@ export const DemoRuntimePlayer: React.FC<DemoRuntimePlayerProps> = ({
                   transform: 'translate(-50%, -50%)',
                 }}
                 onClick={() => handleElementClick(element)}
-                className="absolute z-20 cursor-pointer group"
+                className="absolute z-20 cursor-pointer group flex items-center justify-center"
               >
-                {/* Hotspot Outer Pulsing Ring */}
+                {/* Hotspot Dual Radar Pulse Waves */}
                 {element.style?.pulseAnimation !== false && (
-                  <span
-                    className={`absolute -inset-2.5 rounded-full animate-ping opacity-75 ${
-                      isTarget ? 'bg-[#5B5CE2]' : 'bg-[#5B5CE2]/50'
-                    }`}
-                  />
+                  <>
+                    <span
+                      className={`absolute w-10 h-10 rounded-full animate-hotspot-radar-1 opacity-70 pointer-events-none ${
+                        isTarget ? 'bg-[#5B5CE2]' : 'bg-[#5B5CE2]/60'
+                      }`}
+                    />
+                    <span
+                      className={`absolute w-8 h-8 rounded-full animate-hotspot-radar-2 opacity-50 pointer-events-none ${
+                        isTarget ? 'bg-[#5B5CE2]' : 'bg-[#5B5CE2]/40'
+                      }`}
+                    />
+                  </>
                 )}
 
-                {/* Hotspot Core Pill */}
+                {/* Hotspot Core Beacon - Supademo polished proportion */}
                 <div
-                  className={`relative flex items-center justify-center rounded-full shadow-lg border-2 transition-all duration-200 hover:scale-115 ${
-                    isTarget
-                      ? 'w-9 h-9 bg-[#5B5CE2] border-white text-white shadow-[#5B5CE2]/50'
-                      : 'w-7 h-7 bg-white/95 border-[#5B5CE2] text-[#5B5CE2] shadow-black/20'
-                  }`}
+                  style={{
+                    backgroundColor: '#5B5CE2',
+                    boxShadow: isTarget
+                      ? '0 0 0 2.5px #ffffff, 0 4px 16px rgba(91,92,226,0.65)'
+                      : '0 0 0 2.5px #ffffff, 0 3px 12px rgba(91,92,226,0.4)',
+                  }}
+                  className="w-[20px] h-[20px] rounded-full flex items-center justify-center text-white transition-all duration-150 group-hover:scale-115"
                 >
-                  <Sparkles className="w-4 h-4 animate-spin-slow" />
+                  <span className="w-2 h-2 rounded-full bg-white shadow-xs pointer-events-none animate-pulse" />
                 </div>
               </div>
             );

@@ -113,10 +113,10 @@ export const DemosTabContent: React.FC<DemosTabContentProps> = ({ onCreateDemo }
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
-          <h2 className="text-[26px] sm:text-[30px] font-extrabold tracking-tight text-[#0f0f1a]">
+          <h2 className="text-[24px] sm:text-[28px] font-bold tracking-tight text-[#0f0f1a]">
             Your demos
           </h2>
-          <p className="text-[14px] text-[#6b7280] mt-0.5">
+          <p className="text-[13.5px] text-[#6b7280] font-normal mt-0.5">
             Create, organize, and share interactive product stories.
           </p>
         </div>
@@ -143,8 +143,8 @@ export const DemosTabContent: React.FC<DemosTabContentProps> = ({ onCreateDemo }
               key={tab.id}
               type="button"
               onClick={() => setFilterTab(tab.id as typeof filterTab)}
-              className={`pb-3 text-[13.5px] font-semibold transition-all relative whitespace-nowrap cursor-pointer ${
-                isActive ? 'text-[#0f0f1a]' : 'text-[#6b7280] hover:text-[#0f0f1a]'
+              className={`pb-3 text-[13.5px] transition-all relative whitespace-nowrap cursor-pointer ${
+                isActive ? 'text-[#0f0f1a] font-semibold' : 'text-[#6b7280] font-medium hover:text-[#0f0f1a]'
               }`}
             >
               <span>{tab.label}</span>
@@ -234,7 +234,7 @@ export const DemosTabContent: React.FC<DemosTabContentProps> = ({ onCreateDemo }
                 hoverEffect
                 className="group flex flex-col justify-between overflow-hidden bg-white"
               >
-                <div>
+                <Link href={`/demos/${demoId}`} className="block flex-1 cursor-pointer">
                   {/* Preview Banner */}
                   <div className="h-40 relative flex overflow-hidden border-b border-[#f0f0f4] bg-[#12121e]">
                     {demo.thumbnail ? (
@@ -242,17 +242,17 @@ export const DemosTabContent: React.FC<DemosTabContentProps> = ({ onCreateDemo }
                       <img
                         src={demo.thumbnail}
                         alt={demo.name}
-                        className="w-full h-full object-cover opacity-85 group-hover:scale-105 transition-transform duration-300"
+                        className="w-full h-full object-cover opacity-90 group-hover:scale-105 transition-transform duration-300"
                       />
                     ) : (
-                      <div className="w-full h-full bg-[#181824] flex items-center justify-center text-white/30 text-xs">
+                      <div className="w-full h-full bg-[#181824] flex items-center justify-center text-white/30 text-xs font-medium">
                         No Preview
                       </div>
                     )}
 
                     {/* Step pill */}
                     <div className="absolute bottom-2 left-2">
-                      <span className="text-[10px] font-bold text-white bg-black/70 backdrop-blur-md px-2 py-0.5 rounded border border-white/10">
+                      <span className="text-[10px] font-bold text-white bg-black/70 backdrop-blur-md px-2 py-0.5 rounded border border-white/10 tracking-wide">
                         {demo.stepsCount || 1} steps
                       </span>
                     </div>
@@ -260,12 +260,12 @@ export const DemosTabContent: React.FC<DemosTabContentProps> = ({ onCreateDemo }
                     {/* Status pill */}
                     <div className="absolute top-2 right-2">
                       {demo.status === 'published' ? (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500 text-white font-bold text-[10px] shadow-sm">
-                          <span className="w-1.5 h-1.5 rounded-full bg-white" />
+                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-500 text-white font-bold text-[10px] shadow-sm">
+                          <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
                           Published
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-black/60 text-white/80 font-bold text-[10px]">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-black/60 text-white/80 font-bold text-[10px] border border-white/10">
                           Draft
                         </span>
                       )}
@@ -275,20 +275,17 @@ export const DemosTabContent: React.FC<DemosTabContentProps> = ({ onCreateDemo }
                   {/* Card Details */}
                   <div className="p-5">
                     <div className="flex items-start justify-between gap-2 mb-1.5">
-                      <Link
-                        href={`/demos/${demoId}`}
-                        className="font-bold text-[15px] text-[#0f0f1a] group-hover:text-[#5B5CE2] transition-colors truncate"
-                      >
+                      <h4 className="font-semibold text-[15px] tracking-tight text-[#0f0f1a] group-hover:text-[#5B5CE2] transition-colors truncate">
                         {demo.name}
-                      </Link>
+                      </h4>
                     </div>
 
-                    <p className="text-[12.5px] text-[#6b7280] line-clamp-1 mb-4">
+                    <p className="text-[12.5px] font-normal text-[#6b7280] line-clamp-1 mb-4 leading-relaxed">
                       {demo.description || 'Guided product tour created with Preveuo Studio.'}
                     </p>
 
                     {/* Metrics */}
-                    <div className="flex items-center gap-3 text-xs text-[#6b7280] pt-1">
+                    <div className="flex items-center gap-3 text-xs font-normal text-[#6b7280] pt-1">
                       <span className="flex items-center gap-1">
                         <Eye className="w-3.5 h-3.5 text-[#9ca3af]" />
                         {(demo.viewsCount || 0).toLocaleString()}
@@ -302,13 +299,13 @@ export const DemosTabContent: React.FC<DemosTabContentProps> = ({ onCreateDemo }
                       </span>
                     </div>
                   </div>
-                </div>
+                </Link>
 
                 {/* Card Footer */}
-                <div className="px-5 py-3 border-t border-[#f0f0f4] bg-[#fafafc] flex items-center justify-between text-[11px] text-[#9ca3af]">
+                <div className="px-5 py-3 border-t border-[#f0f0f4] bg-[#fafafc] flex items-center justify-between text-[11px] text-[#9ca3af] font-normal">
                   <Link
                     href={`/demos/${demoId}`}
-                    className="inline-flex items-center gap-1 font-bold text-xs text-[#5B5CE2] hover:underline"
+                    className="inline-flex items-center gap-1 font-medium text-xs text-[#5B5CE2] hover:underline"
                   >
                     <Edit3 className="w-3.5 h-3.5" />
                     <span>Open Studio</span>

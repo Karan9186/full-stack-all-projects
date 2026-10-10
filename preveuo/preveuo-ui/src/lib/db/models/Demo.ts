@@ -96,6 +96,9 @@ const DemoSchema = new Schema<IDemoDoc>(
       background: { type: String, default: '#0f0f1a' },
       defaultTransition: { type: String, enum: ['fade', 'slide', 'zoom', 'none'], default: 'fade' },
       accentColor: { type: String, default: '#5B5CE2' },
+      aspectRatio: { type: String, default: '16:9' },
+      canonicalWidth: { type: Number, default: 1920 },
+      canonicalHeight: { type: Number, default: 1080 },
     },
     activeVersionId: {
       type: Schema.Types.ObjectId,
