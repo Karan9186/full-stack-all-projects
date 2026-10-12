@@ -87,6 +87,8 @@ const DemoSchema = new Schema<IDemoDoc>(
       progressBar: { type: Boolean, default: true },
       autoplay: { type: Boolean, default: false },
       autoplayDelay: { type: Number, default: 3500 },
+      autoplayProgressionPolicy: { type: String, enum: ['auto', 'requireInteraction'], default: 'auto' },
+      loop: { type: Boolean, default: false },
       showBranding: { type: Boolean, default: true },
       allowRestart: { type: Boolean, default: true },
       allowSkip: { type: Boolean, default: true },

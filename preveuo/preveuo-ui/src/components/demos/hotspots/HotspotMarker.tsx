@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef, useEffect, useLayoutEffect } from 'react';
+import React, { useState, useRef, useEffect, useLayoutEffect, useCallback } from 'react';
 import { IDemoElement, HotspotConfig } from '@/types/demo';
 import { ArrowRight, ArrowLeft, ChevronRight } from 'lucide-react';
 import {
@@ -57,6 +57,14 @@ export const HotspotMarker: React.FC<HotspotMarkerProps> = ({
     return () => clearTimeout(timer);
   }, [element.id, (element as any)._id, stepNumber, element.hotspotConfig?.appearance?.pointerStyle, isEditor]);
 
+  const handlePointerClick = useCallback(() => {
+    setIsCardRevealed(true);
+  }, []);
+
+  const handleActionComplete = useCallback(() => {
+    setIsCardRevealed(true);
+  }, []);
+
   // Measure container dimensions for boundary engine
   const [containerSize, setContainerSize] = useState({ width: 800, height: 500 });
 
@@ -100,8 +108,8 @@ export const HotspotMarker: React.FC<HotspotMarkerProps> = ({
   };
 
   const { position } = element;
-  const isPointer = config.type === 'pointer';
   const isArea = config.type === 'area';
+  const isPointer = !isArea;
   const isCallout = config.type === 'callout';
 
   // Keep container dimensions updated via ResizeObserver
@@ -538,7 +546,7 @@ export const HotspotMarker: React.FC<HotspotMarkerProps> = ({
               }}
               className={`p-5 sm:p-6 shadow-[0_20px_50px_rgba(0,0,0,0.55)] ${radiusClasses} border-0 border-none outline-none select-none text-left ${
                 isSelected && isEditor ? 'ring-2 ring-white/60 shadow-2xl' : ''
-              } ${isCardRevealed && !isEditor ? 'animate-hotspot-card-spring' : ''}`}
+              }`}
             >
               {/* Dynamic Callout Arrow Pointer connecting to anchor dot */}
               {isPointer && (
@@ -731,10 +739,8 @@ export const HotspotMarker: React.FC<HotspotMarkerProps> = ({
                 stepNumber={stepNumber}
                 autoPlayMotion={!isEditor || isSelected}
                 animationSettings={config.appearance.pointerAnimation}
-                onPointerClick={() => setIsCardRevealed(true)}
-                onActionComplete={() => {
-                  setIsCardRevealed(true);
-                }}
+                onPointerClick={handlePointerClick}
+                onActionComplete={handleActionComplete}
               />
             </div>
           )}

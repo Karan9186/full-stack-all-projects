@@ -13,24 +13,28 @@ import {
   DemoAnalyticsEventType,
 } from '@/types/demo';
 import { getCanonicalDemoAspectRatio } from '@/lib/utils/aspectRatio';
+import {
+  calculateZoomPanTotalDuration,
+  getEasingCss,
+  getStepDwellDuration,
+  doesStepRequireInteraction,
+} from '@/lib/utils/cameraTransform';
 import { DemoEventBus } from '@/lib/runtime/interactionEngine';
 import { interpolateVariables } from '@/lib/runtime/variableEngine';
-import {
-  Play,
-  Pause,
-  RotateCcw,
-  Maximize2,
-  Minimize2,
-  ChevronRight,
-  ChevronLeft,
-  X,
-  CheckCircle2,
-  ExternalLink,
-  Sparkles,
-  Layers,
-} from 'lucide-react';
-import { HotspotMarker } from '@/components/demos/hotspots';
-import { ChapterRenderer } from '@/components/demos/chapters';
+import { PlayerControls } from './PlayerControls';
+import { PlayerChapterMenu } from './PlayerChapterMenu';
+import { PlayerCompletion } from './PlayerCompletion';
+import { PlayerViewport } from './PlayerViewport';
+
+export type PlaybackStatus =
+  | 'loading'
+  | 'ready'
+  | 'playing'
+  | 'animating'
+  | 'waiting'
+  | 'transitioning'
+  | 'completed'
+  | 'error';
 
 export interface DemoRuntimePlayerProps {
   demoName: string;
@@ -67,6 +71,10 @@ export const DemoRuntimePlayer: React.FC<DemoRuntimePlayerProps> = ({
   onTrackEvent,
   isEmbedded = false,
 }) => {
+  // 1. Playback State Machine
+  const [playbackStatus, setPlaybackStatus] = useState<PlaybackStatus>('ready');
+
+  // Step & Scene state
   const [currentStepIndex, setCurrentStepIndex] = useState(() =>
     typeof initialStepIndex === 'number' && initialStepIndex >= 0 && initialStepIndex < steps.length
       ? initialStepIndex
@@ -85,38 +93,51 @@ export const DemoRuntimePlayer: React.FC<DemoRuntimePlayerProps> = ({
     return 0;
   });
 
-  const [isPlaying, setIsPlaying] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(() => Boolean(demoSettings.autoplay));
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
+  const [isChapterMenuOpen, setIsChapterMenuOpen] = useState(false);
   const [variables, setVariables] = useState(initialVariables);
-  const [rippleTarget, setRippleTarget] = useState<{ x: number; y: number } | null>(null);
+
+  // Sync isPlaying if demoSettings.autoplay prop updates
+  useEffect(() => {
+    if (demoSettings.autoplay !== undefined) {
+      setIsPlaying(Boolean(demoSettings.autoplay));
+    }
+  }, [demoSettings.autoplay]);
 
   // Chapter state in runtime
-  const [activeChapterId, setActiveChapterId] = useState<string | null>(
-    chapters && chapters.length > 0 ? chapters[0].id : null
-  );
+  const [activeChapterId, setActiveChapterId] = useState<string | null>(() => {
+    if (typeof initialStepIndex === 'number' && steps[initialStepIndex]?.chapterId) {
+      return steps[initialStepIndex].chapterId!;
+    }
+    return chapters && chapters.length > 0 ? chapters[0].id : null;
+  });
+
   const [isAtChapter, setIsAtChapter] = useState<boolean>(
     typeof initialStepIndex === 'number' ? false : Boolean(chapters && chapters.length > 0)
   );
 
-  // Sync initialStepIndex prop changes
+  // Sync initialStepIndex prop changes from editor
   useEffect(() => {
     if (typeof initialStepIndex === 'number' && initialStepIndex >= 0 && initialStepIndex < steps.length) {
       setCurrentStepIndex(initialStepIndex);
       setIsAtChapter(false);
+      setIsCompleted(false);
+      setPlaybackStatus('ready');
     }
   }, [initialStepIndex, steps.length]);
 
   const activeChapter = useMemo(() => {
     if (!activeChapterId) return chapters[0] || null;
     return (
-      chapters.find((ch) => ch.id === activeChapterId || ch._id === activeChapterId) ||
+      chapters.find((ch) => ch.id === activeChapterId || (ch as any)._id === activeChapterId) ||
       chapters[0] ||
       null
     );
   }, [chapters, activeChapterId]);
 
-  // Track chapter view once per chapter entry
+  // Track chapter view
   useEffect(() => {
     if (isAtChapter && activeChapter) {
       onTrackEvent?.('CHAPTER_VIEW', {
@@ -129,7 +150,30 @@ export const DemoRuntimePlayer: React.FC<DemoRuntimePlayerProps> = ({
   }, [isAtChapter, activeChapter, onTrackEvent]);
 
   const containerRef = useRef<HTMLDivElement>(null);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Authoritative Camera and Playback Lifecycle State
+  const [cameraScale, setCameraScale] = useState(1.0);
+  const [cameraTransition, setCameraTransition] = useState('none');
+  const stepPhaseRef = useRef<'init' | 'animating' | 'holding' | 'waiting' | 'done'>('init');
+  const isPlayingRef = useRef(isPlaying);
+  isPlayingRef.current = isPlaying;
+
+  const lifecycleTimersRef = useRef<{
+    delay?: NodeJS.Timeout;
+    camera?: NodeJS.Timeout;
+    pointer?: NodeJS.Timeout;
+    hold?: NodeJS.Timeout;
+    advance?: NodeJS.Timeout;
+  }>({});
+
+  const cancelPlaybackLifecycle = useCallback(() => {
+    if (lifecycleTimersRef.current.delay) clearTimeout(lifecycleTimersRef.current.delay);
+    if (lifecycleTimersRef.current.camera) clearTimeout(lifecycleTimersRef.current.camera);
+    if (lifecycleTimersRef.current.pointer) clearTimeout(lifecycleTimersRef.current.pointer);
+    if (lifecycleTimersRef.current.hold) clearTimeout(lifecycleTimersRef.current.hold);
+    if (lifecycleTimersRef.current.advance) clearTimeout(lifecycleTimersRef.current.advance);
+    lifecycleTimersRef.current = {};
+  }, []);
 
   // Dynamically resolve currentScene based on currentStep.sceneId
   const currentScene = useMemo(() => {
@@ -179,9 +223,181 @@ export const DemoRuntimePlayer: React.FC<DemoRuntimePlayerProps> = ({
   const targetElement = useMemo(() => {
     if (!currentStep?.targetElementId) return null;
     return sceneElements.find(
-      (el) => el.id === currentStep.targetElementId || el._id === currentStep.targetElementId
+      (el) => el.id === currentStep.targetElementId || (el as any)._id === currentStep.targetElementId
     );
   }, [currentStep, sceneElements]);
+
+  // Canonical Aspect Ratio single source of truth
+  const canonicalRatioInfo = useMemo(() => {
+    return getCanonicalDemoAspectRatio(
+      { settings: demoSettings } as any,
+      scenes
+    );
+  }, [demoSettings, scenes]);
+
+  const handleComplete = useCallback(() => {
+    cancelPlaybackLifecycle();
+    setIsCompleted(true);
+    setIsPlaying(false);
+    setPlaybackStatus('completed');
+    onTrackEvent?.('DEMO_COMPLETE', {
+      sceneId: currentScene?.id,
+      stepId: currentStep?.id,
+    });
+  }, [cancelPlaybackLifecycle, currentScene, currentStep, onTrackEvent]);
+
+  const handleRestart = useCallback(() => {
+    cancelPlaybackLifecycle();
+    setCameraScale(1.0);
+    setCameraTransition('none');
+    stepPhaseRef.current = 'init';
+    setCurrentSceneIndex(0);
+    setCurrentStepIndex(0);
+    setIsCompleted(false);
+    setIsPlaying(Boolean(demoSettings.autoplay));
+    setIsChapterMenuOpen(false);
+    setPlaybackStatus('ready');
+
+    if (chapters && chapters.length > 0) {
+      setActiveChapterId(chapters[0].id);
+      setIsAtChapter(true);
+    } else {
+      setIsAtChapter(false);
+    }
+
+    onTrackEvent?.('REPLAY', {
+      sceneId: scenes[0]?.id,
+      stepId: steps[0]?.id,
+    });
+  }, [cancelPlaybackLifecycle, chapters, scenes, steps, demoSettings.autoplay, onTrackEvent]);
+
+  // Step Navigation Functions with explicit destination & loop support
+  const goToNextStep = useCallback(() => {
+    cancelPlaybackLifecycle();
+    setCameraScale(1.0);
+    setCameraTransition('none');
+    stepPhaseRef.current = 'init';
+
+    if (currentStep) {
+      onTrackEvent?.('STEP_COMPLETE', {
+        sceneId: currentScene?.id,
+        stepId: currentStep?.id,
+      });
+    }
+
+    // Check completion explicit nextStepId
+    if (currentStep?.completion) {
+      const comp = currentStep.completion;
+      if (comp.nextStepId) {
+        const targetIdx = steps.findIndex(
+          (s) => s.id === comp.nextStepId || (s as any)._id === comp.nextStepId
+        );
+        if (targetIdx !== -1) {
+          setPlaybackStatus('transitioning');
+          setCurrentStepIndex(targetIdx);
+          const nextStep = steps[targetIdx];
+          if (nextStep?.sceneId) {
+            const sceneIdx = scenes.findIndex(
+              (s) => s.id === nextStep.sceneId || (s as any)._id === nextStep.sceneId
+            );
+            if (sceneIdx !== -1 && sceneIdx !== currentSceneIndex) {
+              setCurrentSceneIndex(sceneIdx);
+            }
+          }
+          if (nextStep?.chapterId && nextStep.chapterId !== activeChapterId) {
+            setActiveChapterId(nextStep.chapterId);
+          }
+          setTimeout(() => setPlaybackStatus('ready'), 200);
+          return;
+        }
+      }
+    }
+
+    if (currentStepIndex < steps.length - 1) {
+      const nextIndex = currentStepIndex + 1;
+      setPlaybackStatus('transitioning');
+      setCurrentStepIndex(nextIndex);
+
+      const nextStep = steps[nextIndex];
+      if (nextStep?.sceneId) {
+        const sceneIdx = scenes.findIndex(
+          (s) => s.id === nextStep.sceneId || (s as any)._id === nextStep.sceneId
+        );
+        if (sceneIdx !== -1 && sceneIdx !== currentSceneIndex) {
+          setCurrentSceneIndex(sceneIdx);
+        }
+      }
+
+      if (nextStep?.chapterId && nextStep.chapterId !== activeChapterId) {
+        setActiveChapterId(nextStep.chapterId);
+      }
+
+      setTimeout(() => setPlaybackStatus('ready'), 200);
+    } else {
+      const shouldLoop = Boolean(demoSettings.loop || demoSettings.autoplayLoop);
+      if (shouldLoop && isPlayingRef.current) {
+        // Continuous looping restart
+        setPlaybackStatus('transitioning');
+        setCurrentStepIndex(0);
+        const firstStep = steps[0];
+        if (firstStep?.sceneId) {
+          const scIdx = scenes.findIndex(
+            (s) => s.id === firstStep.sceneId || (s as any)._id === firstStep.sceneId
+          );
+          if (scIdx !== -1) setCurrentSceneIndex(scIdx);
+        }
+        if (firstStep?.chapterId && firstStep.chapterId !== activeChapterId) {
+          setActiveChapterId(firstStep.chapterId);
+        }
+        setTimeout(() => setPlaybackStatus('ready'), 200);
+      } else {
+        handleComplete();
+      }
+    }
+  }, [
+    cancelPlaybackLifecycle,
+    currentStep,
+    currentStepIndex,
+    steps,
+    currentScene,
+    scenes,
+    currentSceneIndex,
+    activeChapterId,
+    demoSettings.loop,
+    demoSettings.autoplayLoop,
+    handleComplete,
+    handleRestart,
+    onTrackEvent,
+  ]);
+
+  const goToPrevStep = useCallback(() => {
+    cancelPlaybackLifecycle();
+    setCameraScale(1.0);
+    setCameraTransition('none');
+    stepPhaseRef.current = 'init';
+
+    if (currentStepIndex > 0) {
+      const prevIndex = currentStepIndex - 1;
+      setPlaybackStatus('transitioning');
+      setCurrentStepIndex(prevIndex);
+
+      const prevStep = steps[prevIndex];
+      if (prevStep?.sceneId) {
+        const sceneIdx = scenes.findIndex(
+          (s) => s.id === prevStep.sceneId || (s as any)._id === prevStep.sceneId
+        );
+        if (sceneIdx !== -1 && sceneIdx !== currentSceneIndex) {
+          setCurrentSceneIndex(sceneIdx);
+        }
+      }
+
+      if (prevStep?.chapterId && prevStep.chapterId !== activeChapterId) {
+        setActiveChapterId(prevStep.chapterId);
+      }
+
+      setTimeout(() => setPlaybackStatus('ready'), 200);
+    }
+  }, [cancelPlaybackLifecycle, currentStepIndex, steps, scenes, currentSceneIndex, activeChapterId]);
 
   // Event bus & action handling
   const handleAction = useCallback(
@@ -196,7 +412,7 @@ export const DemoRuntimePlayer: React.FC<DemoRuntimePlayerProps> = ({
         case 'openScene':
           if (action.targetSceneId) {
             const idx = scenes.findIndex(
-              (s) => s.id === action.targetSceneId || s._id === action.targetSceneId
+              (s) => s.id === action.targetSceneId || (s as any)._id === action.targetSceneId
             );
             if (idx !== -1) {
               setCurrentSceneIndex(idx);
@@ -224,17 +440,8 @@ export const DemoRuntimePlayer: React.FC<DemoRuntimePlayerProps> = ({
           break;
       }
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [scenes, steps, currentStepIndex]
+    [goToNextStep, goToPrevStep, handleComplete, scenes, onTrackEvent]
   );
-
-  // Canonical Aspect Ratio single source of truth driving runtime playback stage
-  const canonicalRatioInfo = useMemo(() => {
-    return getCanonicalDemoAspectRatio(
-      { settings: demoSettings } as any,
-      scenes
-    );
-  }, [demoSettings, scenes]);
 
   const eventBus = useMemo(() => {
     const bus = new DemoEventBus(interactions, variables);
@@ -256,14 +463,17 @@ export const DemoRuntimePlayer: React.FC<DemoRuntimePlayerProps> = ({
       if (action.type === 'next') {
         if (activeChapter) {
           const firstStepIdx = steps.findIndex(
-            (s) => s.chapterId === activeChapter.id || s.chapterId === activeChapter._id
+            (s) =>
+              s.chapterId === activeChapter.id ||
+              s.chapterId === (activeChapter as any)._id ||
+              String(s.chapterId) === String(activeChapter.id)
           );
           if (firstStepIdx !== -1) {
             setCurrentStepIndex(firstStepIdx);
             const targetStep = steps[firstStepIdx];
             if (targetStep?.sceneId) {
               const scIdx = scenes.findIndex(
-                (sc) => sc.id === targetStep.sceneId || sc._id === targetStep.sceneId
+                (sc) => sc.id === targetStep.sceneId || (sc as any)._id === targetStep.sceneId
               );
               if (scIdx !== -1) setCurrentSceneIndex(scIdx);
             }
@@ -275,14 +485,14 @@ export const DemoRuntimePlayer: React.FC<DemoRuntimePlayerProps> = ({
       } else if (action.type === 'go_to_step') {
         if (action.targetId) {
           const sIdx = steps.findIndex(
-            (s) => s.id === action.targetId || s._id === action.targetId
+            (s) => s.id === action.targetId || (s as any)._id === action.targetId
           );
           if (sIdx !== -1) {
             setCurrentStepIndex(sIdx);
             const targetStep = steps[sIdx];
             if (targetStep?.sceneId) {
               const scIdx = scenes.findIndex(
-                (sc) => sc.id === targetStep.sceneId || sc._id === targetStep.sceneId
+                (sc) => sc.id === targetStep.sceneId || (sc as any)._id === targetStep.sceneId
               );
               if (scIdx !== -1) setCurrentSceneIndex(scIdx);
             }
@@ -292,7 +502,7 @@ export const DemoRuntimePlayer: React.FC<DemoRuntimePlayerProps> = ({
       } else if (action.type === 'go_to_chapter') {
         if (action.targetId) {
           const ch = chapters.find(
-            (c) => c.id === action.targetId || c._id === action.targetId
+            (c) => c.id === action.targetId || (c as any)._id === action.targetId
           );
           if (ch) {
             setActiveChapterId(ch.id);
@@ -305,8 +515,7 @@ export const DemoRuntimePlayer: React.FC<DemoRuntimePlayerProps> = ({
         }
       }
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [activeChapter, chapters, steps, scenes]
+    [activeChapter, chapters, steps, scenes, goToPrevStep, onTrackEvent]
   );
 
   // Hotspot action handler for interactive runtime
@@ -323,24 +532,50 @@ export const DemoRuntimePlayer: React.FC<DemoRuntimePlayerProps> = ({
         goToPrevStep();
       } else if (actionType === 'goToStep') {
         if (target) {
-          const idx = steps.findIndex((s) => s.id === target || s._id === target);
+          const idx = steps.findIndex((s) => s.id === target || (s as any)._id === target);
           if (idx !== -1) {
+            cancelPlaybackLifecycle();
+            setCameraScale(1.0);
+            setCameraTransition('none');
+            stepPhaseRef.current = 'init';
+            setPlaybackStatus('transitioning');
             setCurrentStepIndex(idx);
             setIsAtChapter(false);
+            const targetStep = steps[idx];
+            if (targetStep?.sceneId) {
+              const scIdx = scenes.findIndex(
+                (sc) => sc.id === targetStep.sceneId || (sc as any)._id === targetStep.sceneId
+              );
+              if (scIdx !== -1) setCurrentSceneIndex(scIdx);
+            }
+            if (targetStep?.chapterId && targetStep.chapterId !== activeChapterId) {
+              setActiveChapterId(targetStep.chapterId);
+            }
+            setTimeout(() => setPlaybackStatus('ready'), 200);
           }
         }
       } else if (actionType === 'goToChapter') {
         if (target) {
-          const ch = chapters.find((c) => c.id === target || c._id === target);
+          const ch = chapters.find((c) => c.id === target || (c as any)._id === target);
           if (ch) {
+            cancelPlaybackLifecycle();
+            setCameraScale(1.0);
+            setCameraTransition('none');
+            stepPhaseRef.current = 'init';
             setActiveChapterId(ch.id);
             setIsAtChapter(true);
           }
         }
       } else if (actionType === 'goToScene') {
         if (target) {
-          const idx = scenes.findIndex((s) => s.id === target || s._id === target);
-          if (idx !== -1) setCurrentSceneIndex(idx);
+          const idx = scenes.findIndex((s) => s.id === target || (s as any)._id === target);
+          if (idx !== -1) {
+            cancelPlaybackLifecycle();
+            setCameraScale(1.0);
+            setCameraTransition('none');
+            stepPhaseRef.current = 'init';
+            setCurrentSceneIndex(idx);
+          }
         }
       } else if (actionType === 'externalUrl') {
         if (target && (target.startsWith('http://') || target.startsWith('https://'))) {
@@ -348,27 +583,24 @@ export const DemoRuntimePlayer: React.FC<DemoRuntimePlayerProps> = ({
         }
       }
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [currentStep, steps, scenes, chapters, currentStepIndex]
+    [currentStep, goToNextStep, goToPrevStep, steps, chapters, scenes, cancelPlaybackLifecycle, activeChapterId, onTrackEvent]
   );
 
-  // Check if any active element requests a backdrop overlay
+  // Check if active elements request backdrop dimming
   const hasActiveBackdrop = useMemo(() => {
     return sceneElements.some(
       (el) => (el.type === 'hotspot' || el.hotspotConfig) && el.hotspotConfig?.appearance?.backdrop
     );
   }, [sceneElements]);
 
-  // Track initial demo view
+  // Track initial demo view & step view
   useEffect(() => {
     onTrackEvent?.('DEMO_VIEW', {
       sceneId: currentScene?.id,
       stepId: currentStep?.id,
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Track step view on step change
   useEffect(() => {
     if (currentStep) {
       onTrackEvent?.('STEP_VIEW', {
@@ -378,70 +610,6 @@ export const DemoRuntimePlayer: React.FC<DemoRuntimePlayerProps> = ({
     }
   }, [currentStepIndex, currentStep, currentScene, onTrackEvent]);
 
-  const goToNextStep = () => {
-    if (currentStep) {
-      onTrackEvent?.('STEP_COMPLETE', {
-        sceneId: currentScene?.id,
-        stepId: currentStep?.id,
-      });
-    }
-
-    if (currentStepIndex < steps.length - 1) {
-      const nextIndex = currentStepIndex + 1;
-      setCurrentStepIndex(nextIndex);
-
-      // If next step belongs to a different scene, switch scenes
-      const nextStep = steps[nextIndex];
-      if (nextStep?.sceneId) {
-        const sceneIdx = scenes.findIndex(
-          (s) => s.id === nextStep.sceneId || s._id === nextStep.sceneId
-        );
-        if (sceneIdx !== -1 && sceneIdx !== currentSceneIndex) {
-          setCurrentSceneIndex(sceneIdx);
-        }
-      }
-    } else {
-      handleComplete();
-    }
-  };
-
-  const goToPrevStep = () => {
-    if (currentStepIndex > 0) {
-      const prevIndex = currentStepIndex - 1;
-      setCurrentStepIndex(prevIndex);
-
-      const prevStep = steps[prevIndex];
-      if (prevStep?.sceneId) {
-        const sceneIdx = scenes.findIndex(
-          (s) => s.id === prevStep.sceneId || s._id === prevStep.sceneId
-        );
-        if (sceneIdx !== -1 && sceneIdx !== currentSceneIndex) {
-          setCurrentSceneIndex(sceneIdx);
-        }
-      }
-    }
-  };
-
-  const handleComplete = () => {
-    setIsCompleted(true);
-    setIsPlaying(false);
-    onTrackEvent?.('DEMO_COMPLETE', {
-      sceneId: currentScene?.id,
-      stepId: currentStep?.id,
-    });
-  };
-
-  const handleRestart = () => {
-    setCurrentSceneIndex(0);
-    setCurrentStepIndex(0);
-    setIsCompleted(false);
-    setIsPlaying(false);
-    onTrackEvent?.('REPLAY', {
-      sceneId: scenes[0]?.id,
-      stepId: steps[0]?.id,
-    });
-  };
-
   const handleElementClick = (element: IDemoElement) => {
     onTrackEvent?.('ELEMENT_CLICK', {
       sceneId: currentScene?.id,
@@ -449,17 +617,11 @@ export const DemoRuntimePlayer: React.FC<DemoRuntimePlayerProps> = ({
       elementId: element.id,
     });
 
-    // Trigger ripple visual
-    setRippleTarget({ x: element.position.x, y: element.position.y });
-    setTimeout(() => setRippleTarget(null), 700);
-
-    // Dispatch event to interaction bus
     eventBus.dispatch('click', currentScene?.id, element.id);
 
-    // If active walkthrough step targets this element and is click-action
     if (
       currentStep?.targetElementId === element.id ||
-      currentStep?.targetElementId === element._id ||
+      (currentStep?.targetElementId as any) === (element as any)._id ||
       currentStep?.action === 'click'
     ) {
       goToNextStep();
@@ -470,29 +632,204 @@ export const DemoRuntimePlayer: React.FC<DemoRuntimePlayerProps> = ({
   const toggleFullscreen = () => {
     if (!containerRef.current) return;
     if (!document.fullscreenElement) {
-      containerRef.current.requestFullscreen().then(() => setIsFullscreen(true));
+      containerRef.current.requestFullscreen().then(() => setIsFullscreen(true)).catch(() => {});
     } else {
-      document.exitFullscreen().then(() => setIsFullscreen(false));
+      document.exitFullscreen().then(() => setIsFullscreen(false)).catch(() => {});
     }
   };
 
-  // Autoplay progression
+  // Listen to fullscreen changes
   useEffect(() => {
-    if (!isPlaying || isCompleted) {
-      if (timerRef.current) clearInterval(timerRef.current);
+    const handleFsChange = () => {
+      setIsFullscreen(Boolean(document.fullscreenElement));
+    };
+    document.addEventListener('fullscreenchange', handleFsChange);
+    return () => document.removeEventListener('fullscreenchange', handleFsChange);
+  }, []);
+
+  // Keyboard navigation shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Ignore if user is typing in input or textarea
+      if (['INPUT', 'TEXTAREA'].includes((e.target as HTMLElement)?.tagName)) {
+        return;
+      }
+
+      if (e.key === 'ArrowRight' || e.key === 'Enter') {
+        e.preventDefault();
+        goToNextStep();
+      } else if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        goToPrevStep();
+      } else if (e.key === ' ') {
+        e.preventDefault();
+        setIsPlaying((prev) => !prev);
+      } else if (e.key === 'KeyR' || e.key === 'r') {
+        e.preventDefault();
+        handleRestart();
+      } else if (e.key === 'Escape') {
+        setIsChapterMenuOpen(false);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [goToNextStep, goToPrevStep, handleRestart]);
+
+  // Coordinated Deterministic Per-Step Playback & Camera Lifecycle
+  // Step Entrance & Camera Animation (Runs when step/chapter changes)
+  useEffect(() => {
+    cancelPlaybackLifecycle();
+
+    if (!currentStep || isAtChapter || isCompleted) {
+      setCameraScale(1.0);
+      setCameraTransition('none');
+      setPlaybackStatus('ready');
+      stepPhaseRef.current = 'done';
       return;
     }
 
-    const delay = demoSettings.autoplayDelay || currentStep?.navigation?.delayMs || 4000;
-    timerRef.current = setTimeout(() => {
-      goToNextStep();
-    }, delay);
+    const zoomConfig = currentStep.zoomPan;
+    const hasZoom = Boolean(zoomConfig?.enabled);
+    const prefersReducedMotion =
+      typeof window !== 'undefined' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    // Phase 1: Initialize Camera to fit baseline (1.0x)
+    setCameraScale(1.0);
+    setCameraTransition('none');
+    setPlaybackStatus('ready');
+    stepPhaseRef.current = 'init';
+
+    const delayMs = hasZoom ? Math.max(0, zoomConfig?.delayMs || 0) : 0;
+    const cameraDurationMs = hasZoom
+      ? (prefersReducedMotion ? 0 : Math.max(100, zoomConfig?.durationMs || 800))
+      : 0;
+    const easingCss = hasZoom ? getEasingCss(zoomConfig?.easing) : 'ease-out';
+    const holdDurationMs = hasZoom ? Math.max(0, zoomConfig?.holdDurationMs || 600) : 0;
+    const returnDurationMs =
+      hasZoom && zoomConfig?.endBehavior === 'returnToFit'
+        ? (prefersReducedMotion ? 0 : Math.max(100, zoomConfig?.returnDurationMs || 500))
+        : 0;
+
+    // Phase 2: Start Delay
+    lifecycleTimersRef.current.delay = setTimeout(() => {
+      // Phase 3: Camera Movement
+      if (hasZoom && cameraDurationMs > 0) {
+        setPlaybackStatus('animating');
+        stepPhaseRef.current = 'animating';
+        setCameraTransition(`transform ${cameraDurationMs}ms ${easingCss}`);
+        setCameraScale(zoomConfig?.zoomLevel || 1.5);
+      } else if (hasZoom) {
+        setCameraScale(zoomConfig?.zoomLevel || 1.5);
+        setCameraTransition('none');
+      }
+
+      lifecycleTimersRef.current.camera = setTimeout(() => {
+        // Phase 4: Pointer Animation Phase
+        const pointerWaitMs = 350;
+
+        lifecycleTimersRef.current.pointer = setTimeout(() => {
+          // Phase 5: Interaction Checkpoint
+          stepPhaseRef.current = 'holding';
+          const requiresInteraction = doesStepRequireInteraction(currentStep, demoSettings);
+
+          if (requiresInteraction) {
+            stepPhaseRef.current = 'waiting';
+            setPlaybackStatus('waiting');
+            // Halt automatic progression at this checkpoint; wait for viewer interaction!
+            return;
+          }
+
+          if (!isPlayingRef.current) {
+            setPlaybackStatus('ready');
+            return;
+          }
+
+          setPlaybackStatus('playing');
+
+          // Phase 6: Hold duration & safe automatic progression
+          const nominalDwell = getStepDwellDuration(currentStep, demoSettings);
+          const elapsedAnimationMs = delayMs + cameraDurationMs + pointerWaitMs;
+          const remainingDwell = Math.max(holdDurationMs, nominalDwell - elapsedAnimationMs);
+
+          lifecycleTimersRef.current.hold = setTimeout(() => {
+            if (hasZoom && zoomConfig?.endBehavior === 'returnToFit') {
+              setCameraTransition(`transform ${returnDurationMs}ms ${easingCss}`);
+              setCameraScale(1.0);
+
+              lifecycleTimersRef.current.advance = setTimeout(() => {
+                goToNextStep();
+              }, returnDurationMs);
+            } else {
+              goToNextStep();
+            }
+          }, remainingDwell);
+
+        }, pointerWaitMs);
+      }, cameraDurationMs);
+    }, delayMs);
 
     return () => {
-      if (timerRef.current) clearTimeout(timerRef.current);
+      cancelPlaybackLifecycle();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isPlaying, currentStepIndex, isCompleted]);
+  }, [
+    currentStep?.id,
+    currentStep?.zoomPan,
+    currentStepIndex,
+    isAtChapter,
+    isCompleted,
+    demoSettings.autoplayDelay,
+    demoSettings.autoplayProgressionPolicy,
+    cancelPlaybackLifecycle,
+    goToNextStep,
+  ]);
+
+  // Handle Play/Pause toggling without re-initializing camera transform
+  useEffect(() => {
+    if (!currentStep || isAtChapter || isCompleted) return;
+
+    if (!isPlaying) {
+      // Clear auto-advance hold and advance timers, but PRESERVE camera scale!
+      if (lifecycleTimersRef.current.hold) clearTimeout(lifecycleTimersRef.current.hold);
+      if (lifecycleTimersRef.current.advance) clearTimeout(lifecycleTimersRef.current.advance);
+      if (playbackStatus !== 'waiting') {
+        setPlaybackStatus('ready');
+      }
+    } else {
+      // Resumed playing
+      if (stepPhaseRef.current === 'waiting') {
+        // Step requires interaction, remain waiting
+        return;
+      }
+
+      if (stepPhaseRef.current === 'holding') {
+        // Animations have already completed, schedule remaining dwell & advance
+        setPlaybackStatus('playing');
+        const zoomConfig = currentStep.zoomPan;
+        const hasZoom = Boolean(zoomConfig?.enabled);
+        const holdDurationMs = hasZoom ? Math.max(0, zoomConfig?.holdDurationMs || 600) : 0;
+        const returnDurationMs =
+          hasZoom && zoomConfig?.endBehavior === 'returnToFit'
+            ? Math.max(100, zoomConfig?.returnDurationMs || 500)
+            : 0;
+        const easingCss = hasZoom ? getEasingCss(zoomConfig?.easing) : 'ease-out';
+
+        lifecycleTimersRef.current.hold = setTimeout(() => {
+          if (hasZoom && zoomConfig?.endBehavior === 'returnToFit') {
+            setCameraTransition(`transform ${returnDurationMs}ms ${easingCss}`);
+            setCameraScale(1.0);
+
+            lifecycleTimersRef.current.advance = setTimeout(() => {
+              goToNextStep();
+            }, returnDurationMs);
+          } else {
+            goToNextStep();
+          }
+        }, holdDurationMs);
+      }
+    }
+  }, [isPlaying, currentStep, isAtChapter, isCompleted, playbackStatus, goToNextStep]);
 
   // Interpolated step content
   const stepTitle = interpolateVariables(
@@ -504,358 +841,98 @@ export const DemoRuntimePlayer: React.FC<DemoRuntimePlayerProps> = ({
     variables
   );
 
-  const progressPercentage =
-    steps.length > 0 ? Math.round(((currentStepIndex + 1) / steps.length) * 100) : 100;
+  // Empty demo state guard
+  if (steps.length === 0 && (!chapters || chapters.length === 0)) {
+    return (
+      <div className="w-full h-full min-h-[400px] bg-[#0c0c14] rounded-2xl flex flex-col items-center justify-center p-8 text-center text-white select-none">
+        <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mb-3 text-[#5B5CE2]">
+          <span className="font-extrabold text-lg">P</span>
+        </div>
+        <h4 className="text-lg font-bold mb-1">No walkthrough steps yet</h4>
+        <p className="text-xs text-white/50 max-w-sm">
+          Add screenshots and interactive hotspot steps in the Studio Editor to preview your demo.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div
       ref={containerRef}
       className={`relative w-full h-full flex flex-col items-center justify-center overflow-hidden font-sans select-none bg-[#0a0a10] text-white ${
-        isFullscreen ? 'fixed inset-0 z-50' : 'rounded-2xl shadow-2xl'
+        isFullscreen ? 'fixed inset-0 z-50 rounded-0' : 'rounded-2xl shadow-2xl'
       }`}
     >
-      {/* Main Canonical Aspect Ratio Canvas Stage */}
-      <div
-        style={{
-          aspectRatio: canonicalRatioInfo.cssRatio,
-        }}
-        className="relative w-full h-full max-w-[1920px] max-h-[1080px] flex items-center justify-center overflow-hidden transition-all duration-300 mx-auto"
-      >
-        {isAtChapter && activeChapter ? (
-          <div className="w-full h-full flex items-center justify-center animate-fade-in">
-            <ChapterRenderer
-              chapter={activeChapter}
-              mode="runtime"
-              onAction={handleChapterAction}
-              steps={steps}
-              scenes={scenes}
-            />
-          </div>
-        ) : (
-          <>
-            {/* Background Media (Image or Video) */}
-            {currentScene?.sourceAssetUrl ? (
-              Boolean(currentScene.sourceAssetUrl.match(/\.(mp4|webm|mov)$/i)) ||
-              currentScene.sourceType === 'recording' ? (
-                <video
-                  key={currentScene.id || currentScene.sourceAssetUrl}
-                  src={currentScene.sourceAssetUrl}
-                  autoPlay
-                  loop
-                  muted
-                  playsInline
-                  className="w-full h-full object-cover transition-opacity duration-300"
-                />
-              ) : (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={currentScene.sourceAssetUrl}
-                  alt={currentScene.name}
-                  className="w-full h-full object-cover transition-opacity duration-300"
-                />
-              )
-            ) : (
-              <div className="w-full h-full bg-[#13131e] flex items-center justify-center text-[#6b7280]">
-                <span>No scene preview available</span>
-              </div>
-            )}
+      {/* Viewport Stage */}
+      <PlayerViewport
+        currentScene={currentScene}
+        currentStep={currentStep}
+        currentStepIndex={currentStepIndex}
+        totalSteps={steps.length}
+        sceneElements={sceneElements}
+        targetElement={targetElement}
+        canonicalAspectRatio={canonicalRatioInfo.cssRatio}
+        isAtChapter={isAtChapter}
+        activeChapter={activeChapter}
+        hasActiveBackdrop={hasActiveBackdrop}
+        transitionStyle={demoSettings.defaultTransition || 'fade'}
+        containerRef={containerRef}
+        onHotspotAction={handleHotspotAction}
+        onElementClick={handleElementClick}
+        onChapterAction={handleChapterAction}
+        onTrackEvent={onTrackEvent}
+        steps={steps}
+        scenes={scenes}
+        stepTitle={stepTitle}
+        stepDescription={stepDescription}
+        cameraScale={cameraScale}
+        cameraTransition={cameraTransition}
+        onNextStep={goToNextStep}
+        onPrevStep={goToPrevStep}
+      />
 
-        {/* Spotlight Cutout Mask Overlay */}
-        {currentStep?.spotlight?.enabled && targetElement && !isCompleted && (
-          <div className="absolute inset-0 pointer-events-none transition-all duration-300">
-            <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
-              <defs>
-                <mask id="spotlight-cutout-mask">
-                  {/* White background reveals mask */}
-                  <rect width="100%" height="100%" fill="white" />
-                  {/* Black cutout makes hole transparent */}
-                  <rect
-                    x={`calc(${targetElement.position.x}% - ${
-                      (targetElement.position.width || 36) / 2 + 10
-                    }px)`}
-                    y={`calc(${targetElement.position.y}% - ${
-                      (targetElement.position.height || 36) / 2 + 10
-                    }px)`}
-                    width={(targetElement.position.width || 36) + 20}
-                    height={(targetElement.position.height || 36) + 20}
-                    rx={currentStep.spotlight.borderRadius || 12}
-                    fill="black"
-                  />
-                </mask>
-              </defs>
-              <rect
-                width="100%"
-                height="100%"
-                fill="rgba(10, 10, 16, 0.65)"
-                mask="url(#spotlight-cutout-mask)"
-              />
-            </svg>
-          </div>
-        )}
-
-        {/* Dim Backdrop Overlay when requested by active hotspot */}
-        {hasActiveBackdrop && !isCompleted && (
-          <div className="absolute inset-0 bg-black/50 z-20 pointer-events-none transition-opacity duration-300" />
-        )}
-
-        {/* Interactive Elements / Hotspots */}
-        {!isCompleted &&
-          sceneElements.map((element) => {
-            if (element.type === 'hotspot' || element.hotspotConfig) {
-              return (
-                <HotspotMarker
-                  key={`${element.id || element._id}-step-${currentStepIndex}`}
-                  element={element}
-                  isEditor={false}
-                  stepNumber={currentStepIndex + 1}
-                  totalSteps={steps.length}
-                  containerRef={containerRef}
-                  onAction={(action, target) => handleHotspotAction(action, target)}
-                  onSelect={() => {
-                    onTrackEvent?.('HOTSPOT_CLICK', {
-                      stepId: currentStep?.id,
-                      elementId: element.id,
-                    });
-                  }}
-                />
-              );
-            }
-
-            const isTarget = targetElement?.id === element.id || targetElement?._id === element.id;
-            return (
-              <div
-                key={element.id || element._id}
-                style={{
-                  left: `${element.position.x}%`,
-                  top: `${element.position.y}%`,
-                  transform: 'translate(-50%, -50%)',
-                }}
-                onClick={() => handleElementClick(element)}
-                className="absolute z-20 cursor-pointer group flex items-center justify-center"
-              >
-                {/* Hotspot Dual Radar Pulse Waves */}
-                {element.style?.pulseAnimation !== false && (
-                  <>
-                    <span
-                      className={`absolute w-10 h-10 rounded-full animate-hotspot-radar-1 opacity-70 pointer-events-none ${
-                        isTarget ? 'bg-[#5B5CE2]' : 'bg-[#5B5CE2]/60'
-                      }`}
-                    />
-                    <span
-                      className={`absolute w-8 h-8 rounded-full animate-hotspot-radar-2 opacity-50 pointer-events-none ${
-                        isTarget ? 'bg-[#5B5CE2]' : 'bg-[#5B5CE2]/40'
-                      }`}
-                    />
-                  </>
-                )}
-
-                {/* Hotspot Core Beacon - Supademo polished proportion */}
-                <div
-                  style={{
-                    backgroundColor: '#5B5CE2',
-                    boxShadow: isTarget
-                      ? '0 0 0 2.5px #ffffff, 0 4px 16px rgba(91,92,226,0.65)'
-                      : '0 0 0 2.5px #ffffff, 0 3px 12px rgba(91,92,226,0.4)',
-                  }}
-                  className="w-[20px] h-[20px] rounded-full flex items-center justify-center text-white transition-all duration-150 group-hover:scale-115"
-                >
-                  <span className="w-2 h-2 rounded-full bg-white shadow-xs pointer-events-none animate-pulse" />
-                </div>
-              </div>
-            );
-          })}
-
-        {/* Click Ripple Effect */}
-        {rippleTarget && (
-          <div
-            style={{
-              left: `${rippleTarget.x}%`,
-              top: `${rippleTarget.y}%`,
-              transform: 'translate(-50%, -50%)',
-            }}
-            className="absolute z-30 pointer-events-none w-16 h-16 rounded-full border-2 border-[#5B5CE2] bg-[#5B5CE2]/20 animate-ping"
-          />
-        )}
-
-        {/* Guided Walkthrough Tooltip / Callout Card (if no hotspot with callout on step) */}
-        {currentStep && !isCompleted && !sceneElements.some((el) => (el.type === 'hotspot' || el.hotspotConfig) && el.hotspotConfig?.type !== 'area') && (
-          <div
-            style={{
-              left: targetElement ? `${Math.min(Math.max(targetElement.position.x, 22), 78)}%` : '50%',
-              top: targetElement
-                ? targetElement.position.y > 60
-                  ? `calc(${targetElement.position.y}% - 140px)`
-                  : `calc(${targetElement.position.y}% + 45px)`
-                : '80%',
-              transform: 'translate(-50%, 0)',
-            }}
-            className="absolute z-40 w-[90%] max-w-[360px] bg-white text-[#0f0f1a] rounded-2xl shadow-2xl border border-[#e5e7eb] p-5 animate-fade-in transition-all duration-300"
-          >
-            {/* Header pill */}
-            <div className="flex items-center justify-between mb-2.5">
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#5B5CE2]/10 text-[#5B5CE2] text-[11px] font-bold uppercase tracking-wider">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#5B5CE2]" />
-                {currentStep.tooltip?.badge || `Step ${currentStepIndex + 1} of ${steps.length}`}
-              </span>
-
-              {currentStep.navigation?.canSkip !== false && (
-                <button
-                  type="button"
-                  onClick={goToNextStep}
-                  className="text-[#9ca3af] hover:text-[#0f0f1a] p-1 rounded-md transition-colors cursor-pointer"
-                  title="Skip this step"
-                >
-                  <X className="w-3.5 h-3.5" />
-                </button>
-              )}
-            </div>
-
-            {/* Title & Description */}
-            <h4 className="font-extrabold text-[15px] leading-snug text-[#0f0f1a] mb-1.5">
-              {stepTitle}
-            </h4>
-            <p className="text-[13px] text-[#6b7280] leading-relaxed mb-4">
-              {stepDescription}
-            </p>
-
-            {/* Action Buttons */}
-            <div className="flex items-center justify-between pt-2 border-t border-[#f0f0f4]">
-              {currentStepIndex > 0 ? (
-                <button
-                  type="button"
-                  onClick={goToPrevStep}
-                  className="inline-flex items-center gap-1 text-[12.5px] font-semibold text-[#6b7280] hover:text-[#0f0f1a] transition-colors cursor-pointer"
-                >
-                  <ChevronLeft className="w-3.5 h-3.5" />
-                  Back
-                </button>
-              ) : (
-                <span />
-              )}
-
-              <button
-                type="button"
-                onClick={goToNextStep}
-                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#5B5CE2] hover:bg-[#4a4bd4] text-white text-[13px] font-bold shadow-md transition-all hover:-translate-y-0.5 cursor-pointer"
-              >
-                <span>
-                  {currentStepIndex === steps.length - 1
-                    ? 'Complete Tour'
-                    : currentStep.tooltip?.buttonText || 'Next'}
-                </span>
-                <ChevronRight className="w-3.5 h-3.5" />
-              </button>
-            </div>
-          </div>
-        )}
-          </>
-        )}
-
-        {/* Completion Modal */}
-        {isCompleted && (
-          <div className="absolute inset-0 z-50 bg-[#0a0a10]/85 backdrop-blur-md flex items-center justify-center p-6 animate-fade-in">
-            <div className="w-full max-w-md bg-white text-[#0f0f1a] rounded-3xl p-8 shadow-2xl border border-white/20 text-center flex flex-col items-center">
-              <div className="w-16 h-16 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center mb-4 shadow-sm">
-                <CheckCircle2 className="w-8 h-8" />
-              </div>
-
-              <span className="text-[11px] font-bold uppercase tracking-wider text-[#5B5CE2] mb-1">
-                Tour Completed
-              </span>
-              <h3 className="text-2xl font-extrabold text-[#0f0f1a] tracking-tight mb-2">
-                You’re Ready to Get Started!
-              </h3>
-              <p className="text-[14px] text-[#6b7280] leading-relaxed mb-6">
-                You’ve explored all key highlights of {demoName}. Ready to experience Preveuo in your own workspace?
-              </p>
-
-              <div className="flex flex-col sm:flex-row gap-3 w-full">
-                <button
-                  type="button"
-                  onClick={handleRestart}
-                  className="flex-1 inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl border border-[#d1d5db] text-[#0f0f1a] font-semibold text-[14px] hover:border-[#5B5CE2] hover:text-[#5B5CE2] transition-colors cursor-pointer"
-                >
-                  <RotateCcw className="w-4 h-4" />
-                  Replay Tour
-                </button>
-
-                <a
-                  href="/register"
-                  className="flex-1 inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-[#5B5CE2] hover:bg-[#4a4bd4] text-white font-bold text-[14px] shadow-md transition-transform hover:-translate-y-0.5"
-                >
-                  <span>Start Free Trial</span>
-                  <ExternalLink className="w-4 h-4" />
-                </a>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
+      {/* Completion Modal */}
+      {isCompleted && (
+        <PlayerCompletion
+          demoName={demoName}
+          onRestart={handleRestart}
+          ctaText="Start Free Trial"
+          ctaUrl="/register"
+        />
+      )}
 
       {/* Floating Bottom Control Bar */}
-      {demoSettings.showControls !== false && (
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-40 bg-[#12121a]/90 backdrop-blur-md border border-white/10 rounded-2xl px-4 py-2 flex items-center gap-4 shadow-2xl">
-          {/* Restart */}
-          {demoSettings.allowRestart !== false && (
-            <button
-              type="button"
-              onClick={handleRestart}
-              className="text-white/70 hover:text-white transition-colors p-1 rounded-lg"
-              title="Restart demo"
-            >
-              <RotateCcw className="w-4 h-4" />
-            </button>
-          )}
+      <PlayerControls
+        currentStepIndex={currentStepIndex}
+        totalSteps={steps.length}
+        isPlaying={isPlaying}
+        isCompleted={isCompleted}
+        isFullscreen={isFullscreen}
+        canGoPrev={currentStepIndex > 0 && !isAtChapter}
+        canGoNext={currentStepIndex < steps.length - 1}
+        onPrev={goToPrevStep}
+        onNext={goToNextStep}
+        onTogglePlay={() => setIsPlaying((p) => !p)}
+        onRestart={handleRestart}
+        onToggleFullscreen={toggleFullscreen}
+        activeChapterTitle={activeChapter?.title}
+        totalChapters={chapters.length}
+        onOpenChapterMenu={() => setIsChapterMenuOpen(true)}
+        demoSettings={demoSettings}
+      />
 
-          {/* Play / Pause Autoplay */}
-          <button
-            type="button"
-            onClick={() => setIsPlaying(!isPlaying)}
-            className="text-white/70 hover:text-white transition-colors p-1 rounded-lg"
-            title={isPlaying ? 'Pause autoplay' : 'Play tour automatically'}
-          >
-            {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
-          </button>
-
-          {/* Chapter / Step Progress Pill */}
-          {isAtChapter && activeChapter ? (
-            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/10 text-white text-[11px] font-semibold">
-              <span className="w-2 h-2 rounded-full bg-[#5B5CE2]" />
-              <span className="max-w-[120px] truncate">{activeChapter.title || 'Chapter'}</span>
-            </div>
-          ) : demoSettings.progressBar !== false && steps.length > 0 && (
-            <div className="flex items-center gap-2 px-2">
-              <div className="w-24 sm:w-32 h-1.5 bg-white/20 rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-[#5B5CE2] transition-all duration-300 rounded-full"
-                  style={{ width: `${progressPercentage}%` }}
-                />
-              </div>
-              <span className="text-[11px] font-mono font-medium text-white/70">
-                {currentStepIndex + 1}/{steps.length}
-              </span>
-            </div>
-          )}
-
-          {/* Fullscreen */}
-          <button
-            type="button"
-            onClick={toggleFullscreen}
-            className="text-white/70 hover:text-white transition-colors p-1 rounded-lg"
-            title="Toggle fullscreen"
-          >
-            {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
-          </button>
-
-          {/* Brand pill */}
-          {demoSettings.showBranding !== false && (
-            <div className="hidden sm:flex items-center gap-1.5 pl-2 border-l border-white/10 text-[10px] text-white/50 uppercase tracking-widest font-bold">
-              <span>Powered by</span>
-              <span className="text-[#5B5CE2] font-extrabold">Preveuo</span>
-            </div>
-          )}
-        </div>
-      )}
+      {/* Chapter Menu Drawer */}
+      <PlayerChapterMenu
+        isOpen={isChapterMenuOpen}
+        onClose={() => setIsChapterMenuOpen(false)}
+        chapters={chapters}
+        steps={steps}
+        activeChapterId={activeChapterId}
+        onSelectChapter={(chId) => {
+          setActiveChapterId(chId);
+          setIsAtChapter(true);
+        }}
+      />
     </div>
   );
 };

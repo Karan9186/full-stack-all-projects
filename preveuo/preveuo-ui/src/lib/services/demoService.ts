@@ -268,6 +268,7 @@ export class DemoService {
       tooltip: st.tooltip,
       spotlight: st.spotlight,
       navigation: st.navigation,
+      zoomPan: st.zoomPan || undefined,
       completion: st.completion,
       createdAt: st.createdAt.toISOString(),
       updatedAt: st.updatedAt.toISOString(),
@@ -617,6 +618,7 @@ export class DemoService {
           tooltip: st.tooltip || { title: 'Step', description: '', position: 'bottom' },
           spotlight: st.spotlight || { enabled: true },
           navigation: st.navigation || {},
+          zoomPan: st.zoomPan || null,
           completion: st.completion || {},
         };
       });
@@ -848,6 +850,7 @@ export class DemoService {
           tooltip: st.tooltip,
           spotlight: st.spotlight,
           navigation: st.navigation,
+          zoomPan: st.zoomPan || null,
           completion: st.completion,
         });
         stepIdMap.set(st.id, newStep._id.toString());

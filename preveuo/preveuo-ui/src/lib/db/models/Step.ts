@@ -14,6 +14,7 @@ export interface IStepDoc extends Document {
   tooltip: StepTooltip;
   spotlight: StepSpotlight;
   navigation: StepNavigation;
+  zoomPan?: any;
   completion?: {
     type: 'click' | 'delay' | 'button';
     nextStepId?: string;
@@ -99,6 +100,12 @@ const StepSchema = new Schema<IStepDoc>(
       canSkip: { type: Boolean, default: true },
       autoAdvance: { type: Boolean, default: false },
       delayMs: { type: Number, default: 3500 },
+      progressionPolicy: { type: String, enum: ['auto', 'requireInteraction'], default: 'auto' },
+      durationOverrideMs: { type: Number, default: null },
+    },
+    zoomPan: {
+      type: Schema.Types.Mixed,
+      default: null,
     },
     completion: {
       type: { type: String, enum: ['click', 'delay', 'button'], default: 'click' },

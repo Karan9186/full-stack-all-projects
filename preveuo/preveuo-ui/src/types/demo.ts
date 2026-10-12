@@ -9,6 +9,9 @@ export interface DemoSettings {
   progressBar?: boolean;
   autoplay?: boolean;
   autoplayDelay?: number;
+  autoplayProgressionPolicy?: 'auto' | 'requireInteraction';
+  loop?: boolean;
+  autoplayLoop?: boolean;
   showBranding?: boolean;
   allowRestart?: boolean;
   allowSkip?: boolean;
@@ -65,10 +68,46 @@ export interface StepSpotlight {
   borderRadius?: number;
 }
 
+export type StepProgressionPolicy = 'auto' | 'requireInteraction';
+
 export interface StepNavigation {
   canSkip?: boolean;
   autoAdvance?: boolean;
   delayMs?: number;
+  progressionPolicy?: StepProgressionPolicy;
+  durationOverrideMs?: number | null;
+}
+
+// Zoom & Pan Virtual Camera Domain Types
+export type ZoomPanAnimationType = 'zoomIn' | 'zoomOut' | 'pan' | 'zoomAndPan';
+export type ZoomPanEasing = 'linear' | 'easeIn' | 'easeOut' | 'easeInOut';
+export type ZoomPanEndBehavior = 'hold' | 'returnToFit' | 'continue' | 'resetOnNextStep';
+
+export interface ZoomPanFocusPoint {
+  x: number; // percentage (0 - 100)
+  y: number; // percentage (0 - 100)
+}
+
+export interface ZoomPanFocusRegion {
+  x: number; // percentage (0 - 100)
+  y: number; // percentage (0 - 100)
+  width: number; // percentage (0 - 100)
+  height: number; // percentage (0 - 100)
+}
+
+export interface ZoomPanConfig {
+  enabled: boolean;
+  animationType: ZoomPanAnimationType;
+  zoomLevel: number; // e.g. 1.50
+  focusPoint: ZoomPanFocusPoint;
+  focusRegion?: ZoomPanFocusRegion;
+  durationMs: number; // e.g. 800
+  delayMs: number; // e.g. 0
+  holdDurationMs: number; // e.g. 600
+  returnDurationMs?: number; // e.g. 500
+  easing: ZoomPanEasing; // e.g. 'easeOut'
+  endBehavior: ZoomPanEndBehavior; // e.g. 'hold' | 'returnToFit' | 'resetOnNextStep'
+  linkedHotspotId?: string | null;
 }
 
 export interface IDemoStep {
@@ -85,6 +124,7 @@ export interface IDemoStep {
   tooltip: StepTooltip;
   spotlight?: StepSpotlight;
   navigation?: StepNavigation;
+  zoomPan?: ZoomPanConfig;
   completion?: {
     type: 'click' | 'delay' | 'button';
     nextStepId?: string;

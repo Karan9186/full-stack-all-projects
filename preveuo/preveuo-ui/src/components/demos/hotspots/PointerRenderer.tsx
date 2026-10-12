@@ -12,6 +12,7 @@ export interface PointerRendererProps {
   isSelected?: boolean;
   stepNumber?: number;
   autoPlayMotion?: boolean;
+  replayTrigger?: number;
   animationSettings?: PointerAnimationSettings;
   onActionComplete?: () => void;
   onPointerClick?: () => void;
@@ -27,6 +28,7 @@ export const PointerRenderer: React.FC<PointerRendererProps> = ({
   isSelected = false,
   stepNumber,
   autoPlayMotion = false,
+  replayTrigger = 0,
   animationSettings,
   onActionComplete,
   onPointerClick,
@@ -46,12 +48,9 @@ export const PointerRenderer: React.FC<PointerRendererProps> = ({
     return () => mediaQuery.removeEventListener('change', handler);
   }, []);
 
-  // Motion lifecycle state: 'idle' | 'start' | 'moving' | 'clicking' | 'holding'
-  const [motionPhase, setMotionPhase] = useState<'idle' | 'start' | 'moving' | 'clicking' | 'holding'>(
-    autoPlayMotion ? 'start' : 'idle'
-  );
+  // Motion lifecycle state: starts at 'idle' so it is ALWAYS 100% visible immediately
+  const [motionPhase, setMotionPhase] = useState<'idle' | 'moving' | 'clicking' | 'holding'>('idle');
   const [showRipple, setShowRipple] = useState(false);
-  const [hasEntered, setHasEntered] = useState(false);
 
   // Speed mapping in milliseconds
   const speedMs =
@@ -68,155 +67,129 @@ export const PointerRenderer: React.FC<PointerRendererProps> = ({
     lg: { beacon: 26, icon: 28, dot: 8, target: 28 },
   }[size || animationSettings?.size || 'md'];
 
-  // Motion Sequence Runner
-  const timelineTimers = useRef<NodeJS.Timeout[]>([]);
+  // Keep stable callback refs so parent re-renders never re-trigger or cancel the animation
+  const onPointerClickRef = useRef(onPointerClick);
+  onPointerClickRef.current = onPointerClick;
 
-  const clearTimelines = () => {
-    timelineTimers.current.forEach((t) => clearTimeout(t));
-    timelineTimers.current = [];
-  };
+  const onActionCompleteRef = useRef(onActionComplete);
+  onActionCompleteRef.current = onActionComplete;
 
+  // Run the 1-time entrance sequence whenever style, step, or replay changes
   useEffect(() => {
     if (!autoPlayMotion || reducedMotion || isDragging) {
       setMotionPhase('idle');
-      setHasEntered(true);
-      clearTimelines();
       return;
     }
 
-    clearTimelines();
-    setHasEntered(false);
+    // Step 1: Start motion phase (cursor/hand glides in, beacon pops, target focuses)
+    setMotionPhase('moving');
 
-    const startDelay = animationSettings?.startDelay ?? 120;
-    const holdDuration = animationSettings?.holdDuration ?? 260;
-
-    // Phase 1: Start position
-    setMotionPhase('start');
-
-    // Phase 2: Begin movement / entrance toward target
-    const t1 = setTimeout(() => {
-      setMotionPhase('moving');
-    }, startDelay);
-
-    // Phase 3: Reach target & initiate click press or lock-in
-    const t2 = setTimeout(() => {
+    // Step 2: Reach target & click/tap
+    const tClick = setTimeout(() => {
       setMotionPhase('clicking');
-      setHasEntered(true);
       if (animationSettings?.clickFeedback !== false) {
         setShowRipple(true);
       }
-      onPointerClick?.();
-    }, startDelay + speedMs);
+      onPointerClickRef.current?.();
+    }, speedMs);
 
-    // Phase 4: Settle / hold after click
-    const t3 = setTimeout(() => {
+    // Step 3: Settle after click
+    const tHold = setTimeout(() => {
       setShowRipple(false);
       setMotionPhase('holding');
-      onActionComplete?.();
-    }, startDelay + speedMs + 180);
+      onActionCompleteRef.current?.();
+    }, speedMs + 180);
 
-    // Phase 5: Loop if repeat enabled
-    if (animationSettings?.repeat) {
-      const t4 = setTimeout(() => {
-        setMotionPhase('start');
-      }, startDelay + speedMs + 180 + holdDuration + 700);
-      timelineTimers.current.push(t4);
-    }
+    // Step 4: Settle into permanent resting state (never hidden, never re-triggered)
+    const tIdle = setTimeout(() => {
+      setMotionPhase('idle');
+    }, speedMs + 450);
 
-    timelineTimers.current.push(t1, t2, t3);
-
-    return () => clearTimelines();
+    return () => {
+      clearTimeout(tClick);
+      clearTimeout(tHold);
+      clearTimeout(tIdle);
+    };
   }, [
+    canonicalStyle,
+    stepNumber,
     autoPlayMotion,
+    replayTrigger,
+    speedMs,
     reducedMotion,
     isDragging,
-    speedMs,
-    animationSettings?.startDelay,
-    animationSettings?.holdDuration,
     animationSettings?.clickFeedback,
-    animationSettings?.repeat,
-    onPointerClick,
-    onActionComplete,
   ]);
 
-  // Movement transform for Cursor
+  // Movement transform for Cursor (always at target (0, 0) when idle/holding)
   const getCursorTransform = () => {
     if (reducedMotion || !autoPlayMotion) return 'translate(0, 0) scale(1)';
     switch (motionPhase) {
-      case 'start':
-        return 'translate(52px, 44px) scale(0.92)';
       case 'moving':
-        return 'translate(0, 0) scale(1)';
+        return 'translate(44px, 36px) scale(0.96)';
       case 'clicking':
         return 'translate(0, 0) scale(0.85)';
       case 'holding':
+      case 'idle':
       default:
         return 'translate(0, 0) scale(1)';
     }
   };
 
-  // Movement transform for Hand
+  // Movement transform for Hand (always at target (0, 0) when idle/holding)
   const getHandTransform = () => {
     if (reducedMotion || !autoPlayMotion) return 'translate(0, 0) rotate(0deg) scale(1)';
     switch (motionPhase) {
-      case 'start':
-        return 'translate(42px, 52px) rotate(-14deg) scale(0.92)';
       case 'moving':
-        return 'translate(0, 0) rotate(0deg) scale(1)';
+        return 'translate(36px, 44px) rotate(-12deg) scale(0.96)';
       case 'clicking':
         return 'translate(0, 2px) rotate(0deg) scale(0.85)';
       case 'holding':
+      case 'idle':
       default:
         return 'translate(0, 0) rotate(0deg) scale(1)';
     }
   };
 
-  // Movement transform for Beacon
+  // Movement transform for Beacon (always visible scale 1 when idle/holding)
   const getBeaconTransform = () => {
     if (reducedMotion || !autoPlayMotion) return 'scale(1)';
     switch (motionPhase) {
-      case 'start':
-        return 'scale(0)';
       case 'moving':
-        return 'scale(1.25)';
+        return 'scale(1.22)';
       case 'clicking':
         return 'scale(1.0)';
       case 'holding':
+      case 'idle':
       default:
         return 'scale(1)';
     }
   };
 
-  // Movement transform for Target
+  // Movement transform for Target (always visible scale 1 when idle/holding)
   const getTargetTransform = () => {
     if (reducedMotion || !autoPlayMotion) return 'scale(1)';
     switch (motionPhase) {
-      case 'start':
-        return 'scale(2.1)';
       case 'moving':
-        return 'scale(0.95)';
+        return 'scale(1.35)';
       case 'clicking':
         return 'scale(1.0)';
       case 'holding':
+      case 'idle':
       default:
         return 'scale(1)';
     }
-  };
-
-  const getMotionOpacity = () => {
-    if (reducedMotion || !autoPlayMotion) return 1;
-    return motionPhase === 'start' ? 0 : 1;
   };
 
   const motionTransition =
     motionPhase === 'moving'
-      ? `transform ${speedMs}ms cubic-bezier(0.22, 1, 0.36, 1), opacity ${Math.round(speedMs * 0.65)}ms ease-out`
+      ? `transform ${speedMs}ms cubic-bezier(0.22, 1, 0.36, 1)`
       : motionPhase === 'clicking'
-      ? 'transform 120ms ease-out, opacity 0.15s ease-out'
-      : 'transform 0.25s ease-out, opacity 0.25s ease-out';
+      ? 'transform 120ms ease-out'
+      : 'transform 0.25s ease-out';
 
   // =========================================================================
-  // 1. BEACON STYLE
+  // 1. BEACON STYLE — ALWAYS 100% VISIBLE
   // =========================================================================
   if (canonicalStyle === 'beacon') {
     return (
@@ -249,15 +222,14 @@ export const PointerRenderer: React.FC<PointerRendererProps> = ({
           />
         )}
 
-        {/* High-Contrast Beacon Center Disc with Entrance Pop */}
+        {/* High-Contrast Beacon Center Disc — fully visible */}
         <div
           style={{
             width: `${sizeConfig.beacon}px`,
             height: `${sizeConfig.beacon}px`,
             backgroundColor: color,
-            boxShadow: `0 0 0 2px #ffffff, 0 4px 14px ${color}85, 0 1px 3px rgba(0,0,0,0.35)`,
+            boxShadow: `0 0 0 2.5px #ffffff, 0 4px 14px ${color}85, 0 1px 4px rgba(0,0,0,0.4)`,
             transform: getBeaconTransform(),
-            opacity: getMotionOpacity(),
             transition: motionTransition,
           }}
           className={`rounded-full flex items-center justify-center text-white origin-center ${
@@ -266,7 +238,7 @@ export const PointerRenderer: React.FC<PointerRendererProps> = ({
               : isSelected
               ? 'scale-115 ring-2 ring-[#5B5CE2]/40'
               : 'group-hover:scale-115'
-          } ${!isDragging && !reducedMotion && (motionPhase === 'holding' || motionPhase === 'idle') ? 'animate-hotspot-breathe' : ''}`}
+          } ${!isDragging && !reducedMotion ? 'animate-hotspot-breathe' : ''}`}
         >
           <span
             style={{ width: `${sizeConfig.dot}px`, height: `${sizeConfig.dot}px` }}
@@ -278,7 +250,7 @@ export const PointerRenderer: React.FC<PointerRendererProps> = ({
   }
 
   // =========================================================================
-  // 2. CURSOR STYLE
+  // 2. CURSOR STYLE — ALWAYS 100% VISIBLE
   // =========================================================================
   if (canonicalStyle === 'cursor') {
     return (
@@ -291,11 +263,10 @@ export const PointerRenderer: React.FC<PointerRendererProps> = ({
           />
         )}
 
-        {/* Realistic Simulated Vector Mouse Pointer Arrow */}
+        {/* Realistic Simulated Vector Mouse Pointer Arrow — fully visible */}
         <div
           style={{
             transform: getCursorTransform(),
-            opacity: getMotionOpacity(),
             transition: motionTransition,
           }}
           className={`relative filter drop-shadow-[0_4px_12px_rgba(0,0,0,0.45)] origin-top-left -translate-x-1 -translate-y-1 ${
@@ -329,7 +300,7 @@ export const PointerRenderer: React.FC<PointerRendererProps> = ({
   }
 
   // =========================================================================
-  // 3. HAND STYLE
+  // 3. HAND STYLE — ALWAYS 100% VISIBLE
   // =========================================================================
   if (canonicalStyle === 'hand') {
     return (
@@ -342,11 +313,10 @@ export const PointerRenderer: React.FC<PointerRendererProps> = ({
           />
         )}
 
-        {/* Hand Pointer with Touch Pose */}
+        {/* Hand Pointer with Touch Pose — fully visible */}
         <div
           style={{
             transform: getHandTransform(),
-            opacity: getMotionOpacity(),
             transition: motionTransition,
           }}
           className={`relative filter drop-shadow-[0_4px_12px_rgba(0,0,0,0.38)] origin-bottom-right -translate-x-2 -translate-y-2.5 ${
@@ -356,7 +326,7 @@ export const PointerRenderer: React.FC<PointerRendererProps> = ({
           <div
             style={{
               backgroundColor: color,
-              boxShadow: `0 0 0 2px #ffffff, 0 4px 14px ${color}70`,
+              boxShadow: `0 0 0 2.5px #ffffff, 0 4px 14px ${color}70`,
             }}
             className="w-7 h-7 rounded-full flex items-center justify-center text-white"
           >
@@ -382,7 +352,7 @@ export const PointerRenderer: React.FC<PointerRendererProps> = ({
   }
 
   // =========================================================================
-  // 4. TARGET STYLE
+  // 4. TARGET STYLE — ALWAYS 100% VISIBLE
   // =========================================================================
   return (
     <div className={`relative flex items-center justify-center select-none ${className}`}>
@@ -390,15 +360,11 @@ export const PointerRenderer: React.FC<PointerRendererProps> = ({
       <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
         <span
           style={{ backgroundColor: color }}
-          className={`absolute w-7 h-[1.5px] rounded-full transition-all duration-300 ${
-            motionPhase === 'start' ? 'scale-x-0 opacity-0' : 'scale-x-100 opacity-60'
-          }`}
+          className="absolute w-7 h-[1.5px] rounded-full opacity-60"
         />
         <span
           style={{ backgroundColor: color }}
-          className={`absolute h-7 w-[1.5px] rounded-full transition-all duration-300 ${
-            motionPhase === 'start' ? 'scale-y-0 opacity-0' : 'scale-y-100 opacity-60'
-          }`}
+          className="absolute h-7 w-[1.5px] rounded-full opacity-60"
         />
       </div>
 
@@ -418,15 +384,14 @@ export const PointerRenderer: React.FC<PointerRendererProps> = ({
         />
       )}
 
-      {/* Reticle Focus Ring that Locks Down onto Target */}
+      {/* Reticle Focus Ring that Locks Down onto Target — fully visible */}
       <div
         style={{
           width: `${sizeConfig.target}px`,
           height: `${sizeConfig.target}px`,
           borderColor: color,
-          boxShadow: `0 0 0 2px #ffffff, 0 3px 12px ${color}60`,
+          boxShadow: `0 0 0 2.5px #ffffff, 0 3px 12px ${color}60`,
           transform: getTargetTransform(),
-          opacity: getMotionOpacity(),
           transition: motionTransition,
         }}
         className={`rounded-full border-2 bg-white flex items-center justify-center shadow-md origin-center ${

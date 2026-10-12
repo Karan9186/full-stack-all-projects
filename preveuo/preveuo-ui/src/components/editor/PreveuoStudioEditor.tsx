@@ -14,6 +14,8 @@ import {
 import { DemoRuntimePlayer } from '@/components/runtime/DemoRuntimePlayer';
 import { HotspotMarker, HotspotPropertiesPanel } from '@/components/demos/hotspots';
 import { ChapterRenderer, ChapterPropertiesPanel } from '@/components/demos/chapters';
+import { AnimationPropertiesPanel, FocusCrosshairOverlay } from '@/components/demos/animation';
+import { computeCameraTransform, getEasingCss, DEFAULT_ZOOM_PAN_CONFIG } from '@/lib/utils/cameraTransform';
 import { AddStepModal } from '@/components/demos/steps/AddStepModal';
 import { AspectRatioWarningModal } from '@/components/demos/AspectRatioWarningModal';
 import {
@@ -55,6 +57,9 @@ import {
   Image as ImageIcon,
   Command,
   X,
+  ChevronDown,
+  Maximize2,
+  Play,
 } from 'lucide-react';
 
 interface PreveuoStudioEditorProps {
@@ -111,7 +116,40 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
     }
     return 0;
   });
-  const [activeTab, setActiveTab] = useState<'step' | 'interactions' | 'settings'>('step');
+  const [activeTab, setActiveTab] = useState<'step' | 'interactions' | 'animation' | 'settings'>('step');
+
+  // Animation Top-bar Dropdown & Section State ('zoomPan' | 'autoplay')
+  const [isAnimationMenuOpen, setIsAnimationMenuOpen] = useState(false);
+  const [activeAnimationSection, setActiveAnimationSection] = useState<'zoomPan' | 'autoplay'>('zoomPan');
+  const animationMenuRef = useRef<HTMLDivElement>(null);
+
+  // Close animation dropdown menu on outside click or Escape
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (animationMenuRef.current && !animationMenuRef.current.contains(e.target as Node)) {
+        setIsAnimationMenuOpen(false);
+      }
+    };
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsAnimationMenuOpen(false);
+      }
+    };
+    if (isAnimationMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('keydown', handleKeyDown);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isAnimationMenuOpen]);
+
+  // Studio Virtual Camera Preview State
+  const [isStudioAnimationPreviewing, setIsStudioAnimationPreviewing] = useState(false);
+  const [studioCameraScale, setStudioCameraScale] = useState(1.0);
+  const [studioCameraTransition, setStudioCameraTransition] = useState('none');
+  const studioAnimationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Direct media upload and drag & drop state
   const [isUploadingMedia, setIsUploadingMedia] = useState(false);
@@ -369,8 +407,17 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
     setSelectedElementId(null);
   };
 
-  // Select Step
+  // Select Step with clean camera state isolation
   const handleSelectStep = (idx: number) => {
+    // Cancel any running animation preview from the previous step
+    if (studioAnimationTimeoutRef.current) {
+      clearTimeout(studioAnimationTimeoutRef.current);
+      studioAnimationTimeoutRef.current = null;
+    }
+    setIsStudioAnimationPreviewing(false);
+    setStudioCameraScale(1.0);
+    setStudioCameraTransition('none');
+
     setSelectedNodeType('step');
     setActiveStepIndex(idx);
     const targetStep = steps[idx];
@@ -988,10 +1035,18 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
     }
   };
 
-  // Duplicate Step
+  // Duplicate Step with independent camera & hotspot configuration
   const handleDuplicateStep = (idx: number) => {
     const sourceStep = steps[idx];
     if (!sourceStep) return;
+
+    if (studioAnimationTimeoutRef.current) {
+      clearTimeout(studioAnimationTimeoutRef.current);
+      studioAnimationTimeoutRef.current = null;
+    }
+    setIsStudioAnimationPreviewing(false);
+    setStudioCameraScale(1.0);
+    setStudioCameraTransition('none');
 
     const newStepId = `st_${Date.now()}`;
     const newElementId = `el_${Date.now()}`;
@@ -1018,6 +1073,21 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
       title: `${sourceStep.title} (Copy)`,
       targetElementId: newElementId,
       order: idx + 1,
+      zoomPan: sourceStep.zoomPan
+        ? {
+            ...sourceStep.zoomPan,
+            focusPoint: { ...sourceStep.zoomPan.focusPoint },
+            focusRegion: sourceStep.zoomPan.focusRegion
+              ? { ...sourceStep.zoomPan.focusRegion }
+              : undefined,
+            linkedHotspotId:
+              sourceStep.zoomPan.linkedHotspotId === sourceStep.targetElementId ||
+              sourceStep.zoomPan.linkedHotspotId === sourceElement?.id
+                ? newElementId
+                : sourceStep.zoomPan.linkedHotspotId,
+          }
+        : undefined,
+      navigation: sourceStep.navigation ? { ...sourceStep.navigation } : undefined,
     };
 
     const nextSteps = [...steps];
@@ -1031,11 +1101,31 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
     triggerAutosave(demo, scenes, nextSteps, nextElements, interactions, chapters);
   };
 
-  // Delete Step
+  // Delete Step and repair references
   const handleDeleteStep = (idx: number) => {
     if (steps.length <= 1) return;
     const stepToDelete = steps[idx];
-    const nextSteps = steps.filter((_, i) => i !== idx);
+
+    if (studioAnimationTimeoutRef.current) {
+      clearTimeout(studioAnimationTimeoutRef.current);
+      studioAnimationTimeoutRef.current = null;
+    }
+    setIsStudioAnimationPreviewing(false);
+    setStudioCameraScale(1.0);
+    setStudioCameraTransition('none');
+
+    const nextSteps = steps
+      .filter((_, i) => i !== idx)
+      .map((st) => {
+        if (st.completion?.nextStepId === stepToDelete.id) {
+          return {
+            ...st,
+            completion: { ...st.completion, nextStepId: undefined },
+          };
+        }
+        return st;
+      });
+
     const nextElements = elements.filter(
       (el) => el.stepId !== stepToDelete.id && el.id !== stepToDelete.targetElementId
     );
@@ -1065,6 +1155,23 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
 
     const clampedX = Math.min(98.5, Math.max(1.5, rawX));
     const clampedY = Math.min(98.5, Math.max(1.5, rawY));
+
+    // Canvas click in Animation tab sets or updates focus point when in Zoom & Pan mode
+    if (activeTab === 'animation' && activeAnimationSection === 'zoomPan') {
+      const existingConfig = currentStep?.zoomPan || DEFAULT_ZOOM_PAN_CONFIG;
+      handleUpdateStep({
+        zoomPan: {
+          ...existingConfig,
+          enabled: true,
+          linkedHotspotId: null,
+          focusPoint: {
+            x: Math.round(clampedX * 10) / 10,
+            y: Math.round(clampedY * 10) / 10,
+          },
+        },
+      });
+      return;
+    }
 
     if (isPlacingHotspot) {
       // Create new hotspot at clicked point
@@ -1140,6 +1247,21 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
         : el
     );
     setElements(nextElements);
+
+    // If current step's zoomPan is linked to this hotspot, synchronize focusPoint
+    if (
+      currentStep?.zoomPan?.linkedHotspotId &&
+      (currentStep.zoomPan.linkedHotspotId === elementId ||
+        (currentStep as any)._id === elementId)
+    ) {
+      handleUpdateStep({
+        zoomPan: {
+          ...currentStep.zoomPan,
+          focusPoint: { x, y },
+        },
+      });
+    }
+
     triggerAutosave(demo, scenes, steps, nextElements, interactions, chapters);
   };
 
@@ -1177,14 +1299,93 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
     const nextElements = elements.filter(
       (el) => el.id !== elementId && el._id !== elementId
     );
-    const nextSteps = steps.map((st) =>
-      st.targetElementId === elementId ? { ...st, targetElementId: '' } : st
-    );
+    const nextSteps = steps.map((st) => {
+      let updatedSt = st.targetElementId === elementId ? { ...st, targetElementId: '' } : st;
+      if (updatedSt.zoomPan?.linkedHotspotId === elementId) {
+        updatedSt = {
+          ...updatedSt,
+          zoomPan: { ...updatedSt.zoomPan, linkedHotspotId: null },
+        };
+      }
+      return updatedSt;
+    });
     setElements(nextElements);
     setSteps(nextSteps);
     setSelectedElementId(null);
     triggerAutosave(demo, scenes, nextSteps, nextElements, interactions, chapters);
   };
+
+  // Studio Virtual Camera Animation Preview
+  const handlePreviewStudioAnimation = () => {
+    let zoomConfig = currentStep?.zoomPan;
+    if (!zoomConfig) {
+      zoomConfig = DEFAULT_ZOOM_PAN_CONFIG;
+    }
+    if (!zoomConfig.enabled) {
+      zoomConfig = { ...zoomConfig, enabled: true };
+      handleUpdateStep({ zoomPan: zoomConfig });
+    }
+
+    if (studioAnimationTimeoutRef.current) {
+      clearTimeout(studioAnimationTimeoutRef.current);
+    }
+
+    setIsStudioAnimationPreviewing(true);
+    setStudioCameraScale(1.0);
+    setStudioCameraTransition('none');
+
+    const durationMs = Math.max(100, zoomConfig.durationMs || 800);
+    const holdMs = Math.max(0, zoomConfig.holdDurationMs || 600);
+    const returnMs = Math.max(100, zoomConfig.returnDurationMs || 500);
+    const easingCss = getEasingCss(zoomConfig.easing);
+
+    setTimeout(() => {
+      setStudioCameraTransition(`transform ${durationMs}ms ${easingCss}`);
+      setStudioCameraScale(zoomConfig.zoomLevel || 1.5);
+
+      studioAnimationTimeoutRef.current = setTimeout(() => {
+        if (zoomConfig.endBehavior === 'returnToFit') {
+          setTimeout(() => {
+            setStudioCameraTransition(`transform ${returnMs}ms ${easingCss}`);
+            setStudioCameraScale(1.0);
+            setIsStudioAnimationPreviewing(false);
+          }, holdMs);
+        } else {
+          setIsStudioAnimationPreviewing(false);
+        }
+      }, durationMs);
+    }, 50);
+  };
+
+  const handleResetStudioCamera = () => {
+    if (studioAnimationTimeoutRef.current) {
+      clearTimeout(studioAnimationTimeoutRef.current);
+    }
+    setStudioCameraTransition('transform 300ms ease-out');
+    setStudioCameraScale(1.0);
+    setIsStudioAnimationPreviewing(false);
+  };
+
+  // Compute studio camera transform
+  const studioCameraState = useMemo(() => {
+    const zoomConfig = currentStep?.zoomPan;
+    let effectiveFocus = zoomConfig?.focusPoint || { x: 50, y: 50 };
+    if (zoomConfig?.linkedHotspotId) {
+      const linked = stepElements.find(
+        (el) =>
+          el.id === zoomConfig.linkedHotspotId ||
+          (el as any)._id === zoomConfig.linkedHotspotId
+      );
+      if (linked) {
+        effectiveFocus = { x: linked.position.x, y: linked.position.y };
+      }
+    }
+    return computeCameraTransform({
+      scale: studioCameraScale,
+      focusPoint: effectiveFocus,
+      active: studioCameraScale > 1.001,
+    });
+  }, [currentStep?.zoomPan, studioCameraScale, stepElements]);
 
   // Keyboard positioning & deletion for selected hotspot with focus safety
   useEffect(() => {
@@ -1435,6 +1636,130 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
               <Radio className="w-3.5 h-3.5" />
               <span>Hotspot</span>
             </button>
+
+            {/* Animation Toggle & Dropdown Menu */}
+            <div ref={animationMenuRef} className="relative inline-block">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsAnimationMenuOpen((prev) => !prev);
+                  if (activeTab !== 'animation') {
+                    setSelectedElementId(null);
+                    setSelectedNodeType('step');
+                    setIsPlacingHotspot(false);
+                    setActiveTab('animation');
+                  }
+                }}
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs transition-all cursor-pointer ${
+                  activeTab === 'animation' && !selectedElementId && selectedNodeType === 'step'
+                    ? 'font-semibold bg-[#5B5CE2] text-white shadow-sm ring-2 ring-[#5B5CE2]/40'
+                    : 'font-medium bg-white hover:bg-[#f8f8fc] text-[#0f0f1a] border border-[#d1d5db]'
+                }`}
+                title="Animation options: Zoom & Pan and Autoplay"
+                aria-expanded={isAnimationMenuOpen}
+                aria-haspopup="true"
+              >
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>Animation</span>
+                <ChevronDown
+                  className={`w-3 h-3 transition-transform duration-150 ${
+                    isAnimationMenuOpen ? 'rotate-180' : ''
+                  }`}
+                />
+              </button>
+
+              {/* Animation Options Dropdown Menu */}
+              {isAnimationMenuOpen && (
+                <div className="absolute left-0 mt-2 w-72 bg-white rounded-2xl shadow-xl border border-[#e5e7eb] py-2 z-50 animate-in fade-in zoom-in-95 duration-150">
+                  <div className="px-3 py-1.5 border-b border-[#f0f0f4] flex items-center justify-between">
+                    <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-[#6b7280]">
+                      Animation Modes
+                    </span>
+                    <span className="text-[10px] font-medium text-[#9ca3af]">Select mode</span>
+                  </div>
+
+                  <div className="p-1.5 space-y-1">
+                    {/* Option 1: Zoom & Pan */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setActiveAnimationSection('zoomPan');
+                        setSelectedElementId(null);
+                        setSelectedNodeType('step');
+                        setIsPlacingHotspot(false);
+                        setActiveTab('animation');
+                        setIsAnimationMenuOpen(false);
+                      }}
+                      className={`w-full flex items-start gap-3 p-2.5 rounded-xl text-left transition-colors cursor-pointer ${
+                        activeTab === 'animation' && activeAnimationSection === 'zoomPan'
+                          ? 'bg-[#5B5CE2]/10 text-[#5B5CE2]'
+                          : 'hover:bg-[#f8f8fc] text-[#0f0f1a]'
+                      }`}
+                    >
+                      <div className="w-8 h-8 rounded-lg bg-[#5B5CE2]/10 text-[#5B5CE2] flex items-center justify-center shrink-0 mt-0.5">
+                        <Maximize2 className="w-4 h-4" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-bold text-[#0f0f1a]">Zoom & Pan</span>
+                          {currentStep?.zoomPan?.enabled ? (
+                            <span className="text-[9.5px] font-semibold bg-[#10b981]/15 text-[#059669] px-1.5 py-0.5 rounded-full">
+                              Active
+                            </span>
+                          ) : (
+                            <span className="text-[9.5px] font-medium text-[#9ca3af]">
+                              Off
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-[11px] text-[#6b7280] leading-snug mt-0.5">
+                          Focal camera magnification & cinematic glide
+                        </p>
+                      </div>
+                    </button>
+
+                    {/* Option 2: Autoplay */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setActiveAnimationSection('autoplay');
+                        setSelectedElementId(null);
+                        setSelectedNodeType('step');
+                        setIsPlacingHotspot(false);
+                        setActiveTab('animation');
+                        setIsAnimationMenuOpen(false);
+                      }}
+                      className={`w-full flex items-start gap-3 p-2.5 rounded-xl text-left transition-colors cursor-pointer ${
+                        activeTab === 'animation' && activeAnimationSection === 'autoplay'
+                          ? 'bg-[#5B5CE2]/10 text-[#5B5CE2]'
+                          : 'hover:bg-[#f8f8fc] text-[#0f0f1a]'
+                      }`}
+                    >
+                      <div className="w-8 h-8 rounded-lg bg-[#5B5CE2]/10 text-[#5B5CE2] flex items-center justify-center shrink-0 mt-0.5">
+                        <Play className="w-4 h-4 fill-current" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-bold text-[#0f0f1a]">Autoplay</span>
+                          {demo.settings?.autoplay ? (
+                            <span className="text-[9.5px] font-semibold bg-[#10b981]/15 text-[#059669] px-1.5 py-0.5 rounded-full">
+                              Active
+                            </span>
+                          ) : (
+                            <span className="text-[9.5px] font-medium text-[#9ca3af]">
+                              Off
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-[11px] text-[#6b7280] leading-snug mt-0.5">
+                          Continuous walkthrough step dwell & progression
+                        </p>
+                      </div>
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
 
             {/* Blur & Annotate */}
             <button
@@ -2163,62 +2488,98 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
                     aspectRatio: canonicalRatioInfo.cssRatio,
                   }}
                   className={`relative w-full max-h-[75vh] bg-[#0a0a10] overflow-hidden select-none transition-all duration-300 mx-auto ${
-                    isPlacingHotspot ? 'cursor-crosshair' : 'cursor-default'
+                    isPlacingHotspot || (activeTab === 'animation' && activeAnimationSection === 'zoomPan')
+                      ? 'cursor-crosshair'
+                      : 'cursor-default'
                   }`}
                 >
-                  {/* Scene Media (Image or Video) */}
-                  {currentScene?.sourceAssetUrl ? (
-                    Boolean(currentScene.sourceAssetUrl.match(/\.(mp4|webm|mov)$/i)) ||
-                    currentScene.sourceType === 'recording' ? (
-                      <video
-                        key={currentScene.id || currentScene.sourceAssetUrl}
-                        src={currentScene.sourceAssetUrl}
-                        autoPlay
-                        loop
-                        muted
-                        playsInline
-                        className="w-full h-full object-cover pointer-events-none"
-                      />
-                    ) : (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={currentScene.sourceAssetUrl}
-                        alt={currentScene.name}
-                        className="w-full h-full object-cover pointer-events-none"
-                      />
-                    )
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-white/40 text-xs">
-                      No scene image
-                    </div>
-                  )}
-
-                  {/* Dim Backdrop Overlay if requested by active hotspot */}
-                  {isBackdropActive && (
-                    <div className="absolute inset-0 bg-black/50 z-20 pointer-events-none transition-opacity duration-300" />
-                  )}
-
-                  {/* Render Hotspots for the active step */}
-                  {stepElements.map((element) => {
-                    if (element.type === 'hotspot' || element.hotspotConfig) {
-                      return (
-                        <HotspotMarker
-                          key={element.id || element._id}
-                          element={element}
-                          isSelected={selectedElementId === element.id || selectedElementId === element._id}
-                          isEditor={true}
-                          stepNumber={activeStepIndex + 1}
-                          totalSteps={steps.length}
-                          containerRef={canvasRef}
-                          onSelect={() => setSelectedElementId(element.id)}
-                          onMove={(x, y) => handleMoveHotspot(element.id, x, y)}
-                          onResize={(w, h, x, y) => handleResizeHotspot(element.id, w, h, x, y)}
-                          onAction={(action, target) => handleHotspotAction(action, target)}
+                  {/* Virtual Camera Transformed Stage Container */}
+                  <div
+                    className="relative w-full h-full will-change-transform"
+                    style={{
+                      transform: studioCameraState.transform,
+                      transformOrigin: studioCameraState.transformOrigin,
+                      transition: studioCameraTransition,
+                    }}
+                  >
+                    {/* Scene Media (Image or Video) */}
+                    {currentScene?.sourceAssetUrl ? (
+                      Boolean(currentScene.sourceAssetUrl.match(/\.(mp4|webm|mov)$/i)) ||
+                      currentScene.sourceType === 'recording' ? (
+                        <video
+                          key={currentScene.id || currentScene.sourceAssetUrl}
+                          src={currentScene.sourceAssetUrl}
+                          autoPlay
+                          loop
+                          muted
+                          playsInline
+                          className="w-full h-full object-cover pointer-events-none"
                         />
-                      );
-                    }
-                    return null;
-                  })}
+                      ) : (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={currentScene.sourceAssetUrl}
+                          alt={currentScene.name}
+                          className="w-full h-full object-cover pointer-events-none"
+                        />
+                      )
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-white/40 text-xs">
+                        No scene image
+                      </div>
+                    )}
+
+                    {/* Dim Backdrop Overlay if requested by active hotspot */}
+                    {isBackdropActive && (
+                      <div className="absolute inset-0 bg-black/50 z-20 pointer-events-none transition-opacity duration-300" />
+                    )}
+
+                    {/* Render Hotspots for the active step */}
+                    {stepElements.map((element) => {
+                      if (element.type === 'hotspot' || element.hotspotConfig) {
+                        return (
+                          <HotspotMarker
+                            key={element.id || element._id}
+                            element={element}
+                            isSelected={selectedElementId === element.id || selectedElementId === element._id}
+                            isEditor={true}
+                            stepNumber={activeStepIndex + 1}
+                            totalSteps={steps.length}
+                            containerRef={canvasRef}
+                            onSelect={() => setSelectedElementId(element.id)}
+                            onMove={(x, y) => handleMoveHotspot(element.id, x, y)}
+                            onResize={(w, h, x, y) => handleResizeHotspot(element.id, w, h, x, y)}
+                            onAction={(action, target) => handleHotspotAction(action, target)}
+                          />
+                        );
+                      }
+                      return null;
+                    })}
+                  </div>
+
+                  {/* Interactive Focal Crosshair Overlay when configuring Zoom & Pan */}
+                  {activeTab === 'animation' && activeAnimationSection === 'zoomPan' && !isStudioAnimationPreviewing && (
+                    <FocusCrosshairOverlay
+                      config={currentStep?.zoomPan || DEFAULT_ZOOM_PAN_CONFIG}
+                      containerRef={canvasRef}
+                      linkedElement={stepElements.find(
+                        (el) =>
+                          el.id === currentStep?.zoomPan?.linkedHotspotId ||
+                          (el as any)._id === currentStep?.zoomPan?.linkedHotspotId
+                      )}
+                      onUpdateFocusPoint={(x, y) => {
+                        const existing = currentStep?.zoomPan || DEFAULT_ZOOM_PAN_CONFIG;
+                        handleUpdateStep({
+                          zoomPan: {
+                            ...existing,
+                            enabled: true,
+                            linkedHotspotId: null,
+                            focusPoint: { x, y },
+                          },
+                        });
+                      }}
+                    />
+                  )}
                 </div>
               </div>
             </>
@@ -2254,22 +2615,22 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
         ) : (
           <aside className="w-80 border-l border-[#e5e7eb] bg-white flex flex-col shrink-0">
             {/* Tabs Header */}
-            <div className="flex border-b border-[#f0f0f4] px-2 pt-2">
+            <div className="flex border-b border-[#f0f0f4] px-1 pt-2">
               <button
                 type="button"
                 onClick={() => setActiveTab('step')}
-                className={`flex-1 pb-2.5 text-xs transition-colors cursor-pointer border-b-2 ${
+                className={`flex-1 pb-2 text-[11.5px] transition-colors cursor-pointer border-b-2 text-center ${
                   activeTab === 'step'
                     ? 'font-semibold border-[#5B5CE2] text-[#5B5CE2]'
                     : 'font-medium border-transparent text-[#6b7280] hover:text-[#0f0f1a]'
                 }`}
               >
-                Step Details
+                Step
               </button>
               <button
                 type="button"
                 onClick={() => setActiveTab('interactions')}
-                className={`flex-1 pb-2.5 text-xs transition-colors cursor-pointer border-b-2 ${
+                className={`flex-1 pb-2 text-[11.5px] transition-colors cursor-pointer border-b-2 text-center ${
                   activeTab === 'interactions'
                     ? 'font-semibold border-[#5B5CE2] text-[#5B5CE2]'
                     : 'font-medium border-transparent text-[#6b7280] hover:text-[#0f0f1a]'
@@ -2279,8 +2640,19 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
               </button>
               <button
                 type="button"
+                onClick={() => setActiveTab('animation')}
+                className={`flex-1 pb-2 text-[11.5px] transition-colors cursor-pointer border-b-2 text-center ${
+                  activeTab === 'animation'
+                    ? 'font-semibold border-[#5B5CE2] text-[#5B5CE2]'
+                    : 'font-medium border-transparent text-[#6b7280] hover:text-[#0f0f1a]'
+                }`}
+              >
+                Animation
+              </button>
+              <button
+                type="button"
                 onClick={() => setActiveTab('settings')}
-                className={`flex-1 pb-2.5 text-xs transition-colors cursor-pointer border-b-2 ${
+                className={`flex-1 pb-2 text-[11.5px] transition-colors cursor-pointer border-b-2 text-center ${
                   activeTab === 'settings'
                     ? 'font-semibold border-[#5B5CE2] text-[#5B5CE2]'
                     : 'font-medium border-transparent text-[#6b7280] hover:text-[#0f0f1a]'
@@ -2394,6 +2766,28 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
                     </p>
                   </div>
                 </div>
+              )}
+
+              {activeTab === 'animation' && (
+                <AnimationPropertiesPanel
+                  currentStep={currentStep}
+                  demoSettings={demo.settings || {}}
+                  stepElements={stepElements}
+                  activeSection={activeAnimationSection}
+                  onSectionChange={setActiveAnimationSection}
+                  onUpdateStep={(updates) => handleUpdateStep(updates)}
+                  onUpdateDemoSettings={(patch) => {
+                    const updated = {
+                      ...demo,
+                      settings: { ...demo.settings, ...patch },
+                    };
+                    setDemo(updated);
+                    triggerAutosave(updated, scenes, steps, elements, interactions, chapters);
+                  }}
+                  onPreviewAnimation={handlePreviewStudioAnimation}
+                  onResetCamera={handleResetStudioCamera}
+                  isPreviewing={isStudioAnimationPreviewing}
+                />
               )}
 
               {activeTab === 'settings' && (
