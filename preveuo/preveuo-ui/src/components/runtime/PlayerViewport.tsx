@@ -86,12 +86,20 @@ export const PlayerViewport: React.FC<PlayerViewportProps> = ({
   }, [currentStep?.zoomPan, sceneElements]);
 
   const cameraState = useMemo(() => {
+    const hasLinkedHotspot = Boolean(currentStep?.zoomPan?.linkedHotspotId);
     return computeCameraTransform({
       scale: cameraScale,
       focusPoint: effectiveFocusPoint,
-      active: Boolean(currentStep?.zoomPan?.enabled),
+      focusRegion: hasLinkedHotspot ? undefined : currentStep?.zoomPan?.focusRegion,
+      active: Boolean(currentStep?.zoomPan?.enabled) && cameraScale > 1.001,
     });
-  }, [cameraScale, effectiveFocusPoint, currentStep?.zoomPan?.enabled]);
+  }, [
+    cameraScale,
+    effectiveFocusPoint,
+    currentStep?.zoomPan?.focusRegion,
+    currentStep?.zoomPan?.linkedHotspotId,
+    currentStep?.zoomPan?.enabled,
+  ]);
 
   // Transition classes
   const getTransitionClass = () => {
@@ -111,7 +119,7 @@ export const PlayerViewport: React.FC<PlayerViewportProps> = ({
       style={{
         aspectRatio: canonicalAspectRatio,
       }}
-      className="relative w-full h-full max-w-[1920px] max-h-[1080px] flex items-center justify-center overflow-hidden transition-all duration-300 mx-auto select-none"
+      className="relative w-full max-w-full max-h-full flex items-center justify-center overflow-hidden transition-all duration-300 mx-auto select-none"
     >
       {/* 1. CHAPTER VIEW (Intro / Form / Password / Embed) */}
       {isAtChapter && activeChapter ? (
@@ -146,10 +154,10 @@ export const PlayerViewport: React.FC<PlayerViewportProps> = ({
                 loop
                 muted
                 playsInline
-                className="w-full h-full object-contain"
+                className="w-full h-full object-cover pointer-events-none"
               />
             ) : (
-              <div className="relative w-full h-full flex items-center justify-center">
+              <>
                 {/* Image Loading Skeleton */}
                 {!imageLoaded && !imageError && (
                   <div className="absolute inset-0 bg-[#12121a] animate-pulse flex items-center justify-center">
@@ -164,7 +172,7 @@ export const PlayerViewport: React.FC<PlayerViewportProps> = ({
                   alt={currentScene.name || 'Demo Screenshot'}
                   onLoad={() => setImageLoaded(true)}
                   onError={() => setImageError(true)}
-                  className={`w-full h-full object-contain transition-opacity duration-300 ${
+                  className={`w-full h-full object-cover pointer-events-none transition-opacity duration-300 ${
                     imageLoaded ? 'opacity-100' : 'opacity-0'
                   }`}
                 />
@@ -186,7 +194,7 @@ export const PlayerViewport: React.FC<PlayerViewportProps> = ({
                     </button>
                   </div>
                 )}
-              </div>
+              </>
             )
           ) : (
             <div className="w-full h-full bg-[#111119] flex items-center justify-center text-[#6b7280]">

@@ -25,6 +25,7 @@ import { PlayerControls } from './PlayerControls';
 import { PlayerChapterMenu } from './PlayerChapterMenu';
 import { PlayerCompletion } from './PlayerCompletion';
 import { PlayerViewport } from './PlayerViewport';
+import { ExternalLink } from 'lucide-react';
 
 export type PlaybackStatus =
   | 'loading'
@@ -647,9 +648,46 @@ export const DemoRuntimePlayer: React.FC<DemoRuntimePlayerProps> = ({
     return () => document.removeEventListener('fullscreenchange', handleFsChange);
   }, []);
 
+  // Background Music Playback Engine
+  const bgMusicRef = useRef<HTMLAudioElement | null>(null);
+  useEffect(() => {
+    const music = demoSettings.music;
+    if (music?.enabled && music.trackUrl && !isCompleted) {
+      if (!bgMusicRef.current) {
+        const audio = new Audio(music.trackUrl);
+        audio.loop = music.loop !== false;
+        audio.volume = Math.max(0, Math.min(1, (music.volume ?? 50) / 100));
+        bgMusicRef.current = audio;
+      } else {
+        bgMusicRef.current.src = music.trackUrl;
+        bgMusicRef.current.volume = Math.max(0, Math.min(1, (music.volume ?? 50) / 100));
+        bgMusicRef.current.loop = music.loop !== false;
+      }
+
+      if (isPlaying) {
+        bgMusicRef.current.play().catch(() => {});
+      } else {
+        bgMusicRef.current.pause();
+      }
+    } else if (bgMusicRef.current) {
+      bgMusicRef.current.pause();
+    }
+
+    return () => {
+      if (bgMusicRef.current) {
+        bgMusicRef.current.pause();
+      }
+    };
+  }, [demoSettings.music, isPlaying, isCompleted]);
+
   // Keyboard navigation shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Ignore if keyboard navigation is disabled in Accessibility settings
+      if (demoSettings.accessibility?.disableKeyboardNavigation) {
+        return;
+      }
+
       // Ignore if user is typing in input or textarea
       if (['INPUT', 'TEXTAREA'].includes((e.target as HTMLElement)?.tagName)) {
         return;
@@ -674,7 +712,7 @@ export const DemoRuntimePlayer: React.FC<DemoRuntimePlayerProps> = ({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [goToNextStep, goToPrevStep, handleRestart]);
+  }, [goToNextStep, goToPrevStep, handleRestart, demoSettings.accessibility?.disableKeyboardNavigation]);
 
   // Coordinated Deterministic Per-Step Playback & Camera Lifecycle
   // Step Entrance & Camera Animation (Runs when step/chapter changes)
@@ -701,27 +739,34 @@ export const DemoRuntimePlayer: React.FC<DemoRuntimePlayerProps> = ({
     setPlaybackStatus('ready');
     stepPhaseRef.current = 'init';
 
-    const delayMs = hasZoom ? Math.max(0, zoomConfig?.delayMs || 0) : 0;
+    // Must have at least 60ms delay before animating to allow browser to commit 1.0 baseline paint
+    const userDelayMs = Math.max(0, zoomConfig?.delayMs || 0);
+    const delayMs = hasZoom ? Math.max(60, userDelayMs) : 0;
     const cameraDurationMs = hasZoom
-      ? (prefersReducedMotion ? 0 : Math.max(100, zoomConfig?.durationMs || 800))
+      ? (prefersReducedMotion ? 0 : Math.max(200, zoomConfig?.durationMs || 800))
       : 0;
     const easingCss = hasZoom ? getEasingCss(zoomConfig?.easing) : 'ease-out';
-    const holdDurationMs = hasZoom ? Math.max(0, zoomConfig?.holdDurationMs || 600) : 0;
+    const holdDurationMs = hasZoom ? Math.max(200, zoomConfig?.holdDurationMs || 1000) : 0;
     const returnDurationMs =
       hasZoom && zoomConfig?.endBehavior === 'returnToFit'
-        ? (prefersReducedMotion ? 0 : Math.max(100, zoomConfig?.returnDurationMs || 500))
+        ? (prefersReducedMotion ? 0 : Math.max(200, zoomConfig?.returnDurationMs || 600))
         : 0;
 
-    // Phase 2: Start Delay
+    // Target scale calculation: strictly aligns with studio editor bounding box
+    const targetScale = zoomConfig?.focusRegion?.width
+      ? Math.max(1.1, Math.min(3.5, 100 / zoomConfig.focusRegion.width))
+      : (zoomConfig?.zoomLevel || 1.5);
+
+    // Phase 2: Start Delay (guaranteeing 1.0x baseline is painted before transition starts)
     lifecycleTimersRef.current.delay = setTimeout(() => {
       // Phase 3: Camera Movement
       if (hasZoom && cameraDurationMs > 0) {
         setPlaybackStatus('animating');
         stepPhaseRef.current = 'animating';
         setCameraTransition(`transform ${cameraDurationMs}ms ${easingCss}`);
-        setCameraScale(zoomConfig?.zoomLevel || 1.5);
+        setCameraScale(targetScale);
       } else if (hasZoom) {
-        setCameraScale(zoomConfig?.zoomLevel || 1.5);
+        setCameraScale(targetScale);
         setCameraTransition('none');
       }
 
@@ -733,6 +778,34 @@ export const DemoRuntimePlayer: React.FC<DemoRuntimePlayerProps> = ({
           // Phase 5: Interaction Checkpoint
           stepPhaseRef.current = 'holding';
           const requiresInteraction = doesStepRequireInteraction(currentStep, demoSettings);
+
+          // Handle Return to Fit behavior
+          if (hasZoom && zoomConfig?.endBehavior === 'returnToFit') {
+            lifecycleTimersRef.current.hold = setTimeout(() => {
+              setCameraTransition(`transform ${returnDurationMs}ms cubic-bezier(0.16, 1, 0.3, 1)`);
+              setCameraScale(1.0);
+
+              lifecycleTimersRef.current.advance = setTimeout(() => {
+                if (requiresInteraction) {
+                  stepPhaseRef.current = 'waiting';
+                  setPlaybackStatus('waiting');
+                  return;
+                }
+
+                if (!isPlayingRef.current) {
+                  setPlaybackStatus('ready');
+                  return;
+                }
+
+                setPlaybackStatus('playing');
+                const transitionDelayMs = Math.max(0, demoSettings?.transitionDelayMs ?? 500);
+                setTimeout(() => {
+                  goToNextStep();
+                }, transitionDelayMs);
+              }, returnDurationMs);
+            }, holdDurationMs);
+            return;
+          }
 
           if (requiresInteraction) {
             stepPhaseRef.current = 'waiting';
@@ -750,20 +823,13 @@ export const DemoRuntimePlayer: React.FC<DemoRuntimePlayerProps> = ({
 
           // Phase 6: Hold duration & safe automatic progression
           const nominalDwell = getStepDwellDuration(currentStep, demoSettings);
-          const elapsedAnimationMs = delayMs + cameraDurationMs + pointerWaitMs;
-          const remainingDwell = Math.max(holdDurationMs, nominalDwell - elapsedAnimationMs);
+          const remainingDwell = Math.max(holdDurationMs, nominalDwell);
+          const transitionDelayMs = Math.max(0, demoSettings?.transitionDelayMs ?? 500);
 
           lifecycleTimersRef.current.hold = setTimeout(() => {
-            if (hasZoom && zoomConfig?.endBehavior === 'returnToFit') {
-              setCameraTransition(`transform ${returnDurationMs}ms ${easingCss}`);
-              setCameraScale(1.0);
-
-              lifecycleTimersRef.current.advance = setTimeout(() => {
-                goToNextStep();
-              }, returnDurationMs);
-            } else {
+            lifecycleTimersRef.current.advance = setTimeout(() => {
               goToNextStep();
-            }
+            }, transitionDelayMs);
           }, remainingDwell);
 
         }, pointerWaitMs);
@@ -779,7 +845,12 @@ export const DemoRuntimePlayer: React.FC<DemoRuntimePlayerProps> = ({
     currentStepIndex,
     isAtChapter,
     isCompleted,
+    demoSettings.autoplay,
     demoSettings.autoplayDelay,
+    demoSettings.autoplayMode,
+    demoSettings.autoplayLoop,
+    demoSettings.loop,
+    demoSettings.transitionDelayMs,
     demoSettings.autoplayProgressionPolicy,
     cancelPlaybackLifecycle,
     goToNextStep,
@@ -804,16 +875,17 @@ export const DemoRuntimePlayer: React.FC<DemoRuntimePlayerProps> = ({
       }
 
       if (stepPhaseRef.current === 'holding') {
-        // Animations have already completed, schedule remaining dwell & advance
+        // Schedule nominal dwell & advance only after camera animation has already completed
         setPlaybackStatus('playing');
         const zoomConfig = currentStep.zoomPan;
         const hasZoom = Boolean(zoomConfig?.enabled);
-        const holdDurationMs = hasZoom ? Math.max(0, zoomConfig?.holdDurationMs || 600) : 0;
+        const nominalDwell = getStepDwellDuration(currentStep, demoSettings);
         const returnDurationMs =
           hasZoom && zoomConfig?.endBehavior === 'returnToFit'
             ? Math.max(100, zoomConfig?.returnDurationMs || 500)
             : 0;
         const easingCss = hasZoom ? getEasingCss(zoomConfig?.easing) : 'ease-out';
+        const transitionDelayMs = Math.max(0, demoSettings?.transitionDelayMs ?? 500);
 
         lifecycleTimersRef.current.hold = setTimeout(() => {
           if (hasZoom && zoomConfig?.endBehavior === 'returnToFit') {
@@ -822,14 +894,16 @@ export const DemoRuntimePlayer: React.FC<DemoRuntimePlayerProps> = ({
 
             lifecycleTimersRef.current.advance = setTimeout(() => {
               goToNextStep();
-            }, returnDurationMs);
+            }, returnDurationMs + transitionDelayMs);
           } else {
-            goToNextStep();
+            lifecycleTimersRef.current.advance = setTimeout(() => {
+              goToNextStep();
+            }, transitionDelayMs);
           }
-        }, holdDurationMs);
+        }, nominalDwell);
       }
     }
-  }, [isPlaying, currentStep, isAtChapter, isCompleted, playbackStatus, goToNextStep]);
+  }, [isPlaying, currentStep, isAtChapter, isCompleted, demoSettings, goToNextStep]);
 
   // Interpolated step content
   const stepTitle = interpolateVariables(
@@ -933,6 +1007,31 @@ export const DemoRuntimePlayer: React.FC<DemoRuntimePlayerProps> = ({
           setIsAtChapter(true);
         }}
       />
+
+      {/* Watermark CTA Badge (Appearance -> Branding) */}
+      {demoSettings.branding?.watermarkEnabled !== false && (
+        <a
+          href={demoSettings.branding?.ctaButtonUrl || 'https://preveuo.com'}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="absolute bottom-4 left-4 z-40 px-2.5 py-1 rounded-xl bg-white/90 hover:bg-white text-[#0f0f1a] text-[10px] font-bold shadow-md border border-[#e5e7eb] flex items-center gap-1.5 transition-all hover:scale-105"
+        >
+          <span className="w-1.5 h-1.5 rounded-full bg-[#5B5CE2]" />
+          <span>{demoSettings.branding?.watermarkText || 'Created on Preveuo'}</span>
+        </a>
+      )}
+
+      {/* Embed Open in New Tab Button (Appearance -> Demo) */}
+      {demoSettings.openInNewTab && (
+        <button
+          type="button"
+          onClick={() => window.open(window.location.href, '_blank')}
+          className="absolute top-3 right-3 z-40 p-1.5 rounded-xl bg-black/60 hover:bg-black/80 text-white shadow-md backdrop-blur-xs transition-all hover:scale-105 cursor-pointer"
+          title="Open in new tab"
+        >
+          <ExternalLink className="w-3.5 h-3.5" />
+        </button>
+      )}
     </div>
   );
 };

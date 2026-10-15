@@ -3,15 +3,112 @@
 export type DemoType = 'interactive' | 'walkthrough' | 'presentation' | 'onboarding';
 export type DemoStatus = 'draft' | 'published' | 'archived';
 
+export type HotspotTransparency = '50%' | '60%' | '70%' | '80%' | '90%' | '100%';
+export type BrowserBarStyle = 'light' | 'dark' | 'none';
+export type AutoplayTimingMode = 'uniform' | 'custom';
+
+export interface DemoBrandingSettings {
+  watermarkEnabled?: boolean;
+  watermarkText?: string;
+  useWorkspaceDefault?: boolean;
+  sharePageLogoUrl?: string;
+  ctaButtonText?: string;
+  ctaButtonUrl?: string;
+  ctaButtonBgColor?: string;
+  ctaButtonTextColor?: string;
+}
+
+export interface DemoMusicSettings {
+  enabled?: boolean;
+  trackUrl?: string;
+  trackName?: string;
+  volume?: number; // 0 to 100
+  loop?: boolean;
+}
+
+export interface DemoAccessibilitySettings {
+  showCcButton?: boolean;
+  captionControlsAtTop?: boolean;
+  disableKeyboardNavigation?: boolean;
+}
+
+export interface DemoTranslationsSettings {
+  autoDetectBrowserLanguage?: boolean;
+  defaultLocale?: string;
+  availableLocales?: string[];
+}
+
+export interface DemoShareSettings {
+  fullWidthPage?: boolean;
+  allowDuplication?: boolean;
+  showAuthor?: boolean;
+  showDescriptionsAndSteps?: boolean;
+  enableComments?: boolean;
+  emailOnComment?: boolean;
+}
+
+export interface DemoSeoSettings {
+  metaTitle?: string;
+  metaDescription?: string;
+  metaImageUrl?: string;
+  showDescriptionOnSharePage?: boolean;
+  showAuthorOnDemoPage?: boolean;
+  allowSearchEngineIndexing?: boolean;
+  customDomain?: string;
+  isDomainVerified?: boolean;
+}
+
 export interface DemoSettings {
-  theme?: 'light' | 'dark' | 'auto';
-  navigation?: boolean;
+  // Appearance: Demo
+  showBrowserBar?: boolean;
+  browserBarStyle?: BrowserBarStyle;
+  browserBarTitle?: string;
+  showVideoPlayBar?: boolean;
   progressBar?: boolean;
+  replayOnLastStep?: boolean;
+  allowFullscreen?: boolean;
+  fontFamily?: string;
+  showBorder?: boolean;
+  openInNewTab?: boolean;
+
+  // Appearance: Hotspots
+  showAnnotationsByDefault?: boolean;
+  showNextButton?: boolean;
+  showStepCount?: boolean;
+  hotspotTransparency?: HotspotTransparency;
+  mobileHotspotView?: boolean;
+  showHotspotAnimation?: boolean;
+
+  // Appearance: Branding
+  branding?: DemoBrandingSettings;
+
+  // Playback: Autoplay
   autoplay?: boolean;
+  autoplayMode?: AutoplayTimingMode;
   autoplayDelay?: number;
+  transitionDelayMs?: number;
+  voiceoverPriority?: boolean;
   autoplayProgressionPolicy?: 'auto' | 'requireInteraction';
   loop?: boolean;
   autoplayLoop?: boolean;
+
+  // Playback: Background Music
+  music?: DemoMusicSettings;
+
+  // Audience: Accessibility
+  accessibility?: DemoAccessibilitySettings;
+
+  // Audience: Translations
+  translations?: DemoTranslationsSettings;
+
+  // Sharing: Share
+  share?: DemoShareSettings;
+
+  // Sharing: SEO
+  seo?: DemoSeoSettings;
+
+  // General / Legacy
+  theme?: 'light' | 'dark' | 'auto';
   showBranding?: boolean;
   allowRestart?: boolean;
   allowSkip?: boolean;

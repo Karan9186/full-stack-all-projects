@@ -4,6 +4,7 @@ import {
   ZoomPanEasing,
   ZoomPanEndBehavior,
   ZoomPanFocusPoint,
+  ZoomPanFocusRegion,
 } from '@/types/demo';
 
 export interface CameraTransformState {
@@ -21,6 +22,7 @@ export const DEFAULT_ZOOM_PAN_CONFIG: ZoomPanConfig = {
   animationType: 'zoomIn',
   zoomLevel: 1.5,
   focusPoint: { x: 50, y: 50 },
+  focusRegion: { x: 20, y: 15, width: 60, height: 70 },
   durationMs: 800,
   delayMs: 0,
   holdDurationMs: 600,
@@ -93,13 +95,30 @@ export function calculateZoomPanTotalDuration(config?: ZoomPanConfig | null): nu
 export function computeCameraTransform({
   scale = 1.0,
   focusPoint = { x: 50, y: 50 },
+  focusRegion,
   active = true,
 }: {
   scale?: number;
   focusPoint?: ZoomPanFocusPoint;
+  focusRegion?: ZoomPanFocusRegion;
   active?: boolean;
 }): CameraTransformState {
-  const safeScale = active ? Math.max(1.0, Math.min(3.5, scale)) : 1.0;
+  // Authoritative target coordinates: focusPoint is always the exact zoom point
+  let targetX = focusPoint?.x ?? 50;
+  let targetY = focusPoint?.y ?? 50;
+
+  if (
+    (typeof focusPoint?.x !== 'number' || typeof focusPoint?.y !== 'number') &&
+    focusRegion &&
+    focusRegion.width > 0 &&
+    focusRegion.height > 0
+  ) {
+    targetX = focusRegion.x + focusRegion.width / 2;
+    targetY = focusRegion.y + focusRegion.height / 2;
+  }
+
+  // Safe camera scale: only zoom when active and scale is greater than 1.001
+  const safeScale = active && scale > 1.001 ? Math.max(1.0, Math.min(3.5, scale)) : 1.0;
 
   if (safeScale <= 1.001) {
     return {
@@ -114,8 +133,8 @@ export function computeCameraTransform({
   }
 
   // Normalized focus point in [0, 1]
-  const rawX = Math.max(0, Math.min(100, focusPoint.x)) / 100;
-  const rawY = Math.max(0, Math.min(100, focusPoint.y)) / 100;
+  const rawX = Math.max(0, Math.min(100, targetX)) / 100;
+  const rawY = Math.max(0, Math.min(100, targetY)) / 100;
 
   // Half-window visible at safeScale
   const halfWindow = 1 / (2 * safeScale);
@@ -144,18 +163,40 @@ export function computeCameraTransform({
  */
 export function getStepDwellDuration(
   step?: any,
-  demoSettings?: any
+  demoSettings?: any,
+  voiceoverDurationMs?: number
 ): number {
-  if (step?.navigation?.durationOverrideMs && step.navigation.durationOverrideMs > 0) {
-    return step.navigation.durationOverrideMs;
+  let dwell = 2000;
+
+  if (
+    demoSettings?.autoplayMode === 'custom' &&
+    typeof step?.navigation?.durationOverrideMs === 'number' &&
+    step.navigation.durationOverrideMs > 0
+  ) {
+    dwell = step.navigation.durationOverrideMs;
+  } else if (
+    typeof demoSettings?.autoplayDelay === 'number' &&
+    demoSettings.autoplayDelay > 0
+  ) {
+    dwell = demoSettings.autoplayDelay;
+  } else if (
+    typeof step?.navigation?.durationOverrideMs === 'number' &&
+    step.navigation.durationOverrideMs > 0
+  ) {
+    dwell = step.navigation.durationOverrideMs;
+  } else if (
+    typeof step?.navigation?.delayMs === 'number' &&
+    step.navigation.delayMs > 0
+  ) {
+    dwell = step.navigation.delayMs;
   }
-  if (typeof step?.navigation?.delayMs === 'number' && step.navigation.delayMs > 0) {
-    return step.navigation.delayMs;
+
+  // Voiceover priority rule: "If a voiceover is present, the longer of the step or voiceover duration is used."
+  if (voiceoverDurationMs && voiceoverDurationMs > 0) {
+    dwell = Math.max(dwell, voiceoverDurationMs);
   }
-  if (typeof demoSettings?.autoplayDelay === 'number' && demoSettings.autoplayDelay > 0) {
-    return demoSettings.autoplayDelay;
-  }
-  return 4000;
+
+  return dwell;
 }
 
 /**

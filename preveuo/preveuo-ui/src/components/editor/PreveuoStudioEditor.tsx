@@ -14,7 +14,8 @@ import {
 import { DemoRuntimePlayer } from '@/components/runtime/DemoRuntimePlayer';
 import { HotspotMarker, HotspotPropertiesPanel } from '@/components/demos/hotspots';
 import { ChapterRenderer, ChapterPropertiesPanel } from '@/components/demos/chapters';
-import { AnimationPropertiesPanel, FocusCrosshairOverlay } from '@/components/demos/animation';
+import { AnimationPropertiesPanel, FocusCrosshairOverlay, ZoomPanBoundingBox } from '@/components/demos/animation';
+import { DemoSettingsModal, SettingsModalTab } from '@/components/demos/settings';
 import { computeCameraTransform, getEasingCss, DEFAULT_ZOOM_PAN_CONFIG } from '@/lib/utils/cameraTransform';
 import { AddStepModal } from '@/components/demos/steps/AddStepModal';
 import { AspectRatioWarningModal } from '@/components/demos/AspectRatioWarningModal';
@@ -60,6 +61,7 @@ import {
   ChevronDown,
   Maximize2,
   Play,
+  Settings,
 } from 'lucide-react';
 
 interface PreveuoStudioEditorProps {
@@ -122,6 +124,10 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
   const [isAnimationMenuOpen, setIsAnimationMenuOpen] = useState(false);
   const [activeAnimationSection, setActiveAnimationSection] = useState<'zoomPan' | 'autoplay'>('zoomPan');
   const animationMenuRef = useRef<HTMLDivElement>(null);
+
+  // Full Demo Settings Modal State (Supademo-style Playback / Autoplay / Branding)
+  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
+  const [settingsModalTab, setSettingsModalTab] = useState<SettingsModalTab>('autoplay');
 
   // Close animation dropdown menu on outside click or Escape
   useEffect(() => {
@@ -314,7 +320,8 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
             '';
         }
 
-        const res = await fetch(`/api/demos/${demo.id}`, {
+        const targetId = updatedDemo.id || (updatedDemo as any)._id || demo.id || (demo as any)._id;
+        const res = await fetch(`/api/demos/${targetId}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -332,7 +339,13 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
         if (res.ok) {
           const resData = await res.json().catch(() => null);
           if (resData?.data?.demo) {
-            setDemo(resData.data.demo);
+            setDemo({
+              ...resData.data.demo,
+              settings: {
+                ...(updatedDemo.settings || {}),
+                ...(resData.data.demo.settings || {}),
+              },
+            });
           }
           setSaveStatus('saved');
         } else {
@@ -1159,14 +1172,27 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
     // Canvas click in Animation tab sets or updates focus point when in Zoom & Pan mode
     if (activeTab === 'animation' && activeAnimationSection === 'zoomPan') {
       const existingConfig = currentStep?.zoomPan || DEFAULT_ZOOM_PAN_CONFIG;
+      const boxW = existingConfig.focusRegion?.width || 60;
+      const boxH = existingConfig.focusRegion?.height || 50;
+      const roundedX = Math.round(clampedX * 10) / 10;
+      const roundedY = Math.round(clampedY * 10) / 10;
+      const newBoxX = Math.max(0, Math.min(100 - boxW, roundedX - boxW / 2));
+      const newBoxY = Math.max(0, Math.min(100 - boxH, roundedY - boxH / 2));
+
       handleUpdateStep({
         zoomPan: {
           ...existingConfig,
           enabled: true,
           linkedHotspotId: null,
           focusPoint: {
-            x: Math.round(clampedX * 10) / 10,
-            y: Math.round(clampedY * 10) / 10,
+            x: roundedX,
+            y: roundedY,
+          },
+          focusRegion: {
+            x: Math.round(newBoxX * 10) / 10,
+            y: Math.round(newBoxY * 10) / 10,
+            width: boxW,
+            height: boxH,
           },
         },
       });
@@ -1328,38 +1354,48 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
 
     if (studioAnimationTimeoutRef.current) {
       clearTimeout(studioAnimationTimeoutRef.current);
+      studioAnimationTimeoutRef.current = null;
     }
 
+    // 1. Prepare preview: hide editor handles and ensure 1.0x baseline
     setIsStudioAnimationPreviewing(true);
     setStudioCameraScale(1.0);
     setStudioCameraTransition('none');
 
-    const durationMs = Math.max(100, zoomConfig.durationMs || 800);
-    const holdMs = Math.max(0, zoomConfig.holdDurationMs || 600);
-    const returnMs = Math.max(100, zoomConfig.returnDurationMs || 500);
+    const durationMs = Math.max(200, zoomConfig.durationMs || 800);
+    const holdMs = 1200; // Hold at zoomed state for 1.2s so user can evaluate framing
+    const returnMs = 600; // Smooth return to original size
     const easingCss = getEasingCss(zoomConfig.easing);
 
+    const targetZoom = zoomConfig.focusRegion?.width
+      ? Math.max(1.1, Math.min(3.5, 100 / zoomConfig.focusRegion.width))
+      : (zoomConfig.zoomLevel || 1.5);
+
+    // 2. Animate camera to zoomed region
     setTimeout(() => {
       setStudioCameraTransition(`transform ${durationMs}ms ${easingCss}`);
-      setStudioCameraScale(zoomConfig.zoomLevel || 1.5);
+      setStudioCameraScale(targetZoom);
 
+      // 3. Hold at zoomed position, then smoothly return to original 1.0x size
       studioAnimationTimeoutRef.current = setTimeout(() => {
-        if (zoomConfig.endBehavior === 'returnToFit') {
-          setTimeout(() => {
-            setStudioCameraTransition(`transform ${returnMs}ms ${easingCss}`);
-            setStudioCameraScale(1.0);
-            setIsStudioAnimationPreviewing(false);
-          }, holdMs);
-        } else {
+        // 4. Return to fit (1.0x original size)
+        setStudioCameraTransition(`transform ${returnMs}ms cubic-bezier(0.16, 1, 0.3, 1)`);
+        setStudioCameraScale(1.0);
+
+        // 5. Restore editor handles once return animation finishes
+        studioAnimationTimeoutRef.current = setTimeout(() => {
+          setStudioCameraTransition('none');
           setIsStudioAnimationPreviewing(false);
-        }
-      }, durationMs);
-    }, 50);
+          studioAnimationTimeoutRef.current = null;
+        }, returnMs);
+      }, durationMs + holdMs);
+    }, 60);
   };
 
   const handleResetStudioCamera = () => {
     if (studioAnimationTimeoutRef.current) {
       clearTimeout(studioAnimationTimeoutRef.current);
+      studioAnimationTimeoutRef.current = null;
     }
     setStudioCameraTransition('transform 300ms ease-out');
     setStudioCameraScale(1.0);
@@ -1380,9 +1416,11 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
         effectiveFocus = { x: linked.position.x, y: linked.position.y };
       }
     }
+    const hasLinkedHotspot = Boolean(zoomConfig?.linkedHotspotId);
     return computeCameraTransform({
       scale: studioCameraScale,
       focusPoint: effectiveFocus,
+      focusRegion: hasLinkedHotspot ? undefined : zoomConfig?.focusRegion,
       active: studioCameraScale > 1.001,
     });
   }, [currentStep?.zoomPan, studioCameraScale, stepElements]);
@@ -1689,6 +1727,14 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
                         setIsPlacingHotspot(false);
                         setActiveTab('animation');
                         setIsAnimationMenuOpen(false);
+                        if (!currentStep?.zoomPan?.enabled) {
+                          handleUpdateStep({
+                            zoomPan: {
+                              ...(currentStep?.zoomPan || DEFAULT_ZOOM_PAN_CONFIG),
+                              enabled: true,
+                            },
+                          });
+                        }
                       }}
                       className={`w-full flex items-start gap-3 p-2.5 rounded-xl text-left transition-colors cursor-pointer ${
                         activeTab === 'animation' && activeAnimationSection === 'zoomPan'
@@ -1718,29 +1764,22 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
                       </div>
                     </button>
 
-                    {/* Option 2: Autoplay */}
+                    {/* Option 2: Autoplay (Opens Settings Modal) */}
                     <button
                       type="button"
                       onClick={() => {
-                        setActiveAnimationSection('autoplay');
-                        setSelectedElementId(null);
-                        setSelectedNodeType('step');
-                        setIsPlacingHotspot(false);
-                        setActiveTab('animation');
+                        setSettingsModalTab('autoplay');
+                        setIsSettingsModalOpen(true);
                         setIsAnimationMenuOpen(false);
                       }}
-                      className={`w-full flex items-start gap-3 p-2.5 rounded-xl text-left transition-colors cursor-pointer ${
-                        activeTab === 'animation' && activeAnimationSection === 'autoplay'
-                          ? 'bg-[#5B5CE2]/10 text-[#5B5CE2]'
-                          : 'hover:bg-[#f8f8fc] text-[#0f0f1a]'
-                      }`}
+                      className="w-full flex items-start gap-3 p-2.5 rounded-xl text-left transition-colors cursor-pointer hover:bg-[#f8f8fc] text-[#0f0f1a]"
                     >
                       <div className="w-8 h-8 rounded-lg bg-[#5B5CE2]/10 text-[#5B5CE2] flex items-center justify-center shrink-0 mt-0.5">
                         <Play className="w-4 h-4 fill-current" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between">
-                          <span className="text-xs font-bold text-[#0f0f1a]">Autoplay</span>
+                          <span className="text-xs font-bold text-[#0f0f1a]">Autoplay Settings</span>
                           {demo.settings?.autoplay ? (
                             <span className="text-[9.5px] font-semibold bg-[#10b981]/15 text-[#059669] px-1.5 py-0.5 rounded-full">
                               Active
@@ -1752,7 +1791,7 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
                           )}
                         </div>
                         <p className="text-[11px] text-[#6b7280] leading-snug mt-0.5">
-                          Continuous walkthrough step dwell & progression
+                          Slide timing, delays, loop & voiceover arbitration
                         </p>
                       </div>
                     </button>
@@ -1780,6 +1819,19 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
             </button>
 
             <div className="h-5 w-px bg-[#e5e7eb] mx-1" />
+
+            {/* Settings Button (Opens Full Supademo-style Settings Modal) */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setSettingsModalTab('autoplay');
+                setIsSettingsModalOpen(true);
+              }}
+              leftIcon={<Settings className="w-3.5 h-3.5 text-[#5B5CE2]" />}
+            >
+              Settings
+            </Button>
 
             {/* Preview Button */}
             <Button
@@ -2557,26 +2609,39 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
                     })}
                   </div>
 
-                  {/* Interactive Focal Crosshair Overlay when configuring Zoom & Pan */}
-                  {activeTab === 'animation' && activeAnimationSection === 'zoomPan' && !isStudioAnimationPreviewing && (
-                    <FocusCrosshairOverlay
-                      config={currentStep?.zoomPan || DEFAULT_ZOOM_PAN_CONFIG}
+                  {/* Interactive Canvas Zoom & Pan Bounding Box Overlay (Matching Image 1) */}
+                  {Boolean(currentStep?.zoomPan?.enabled) && (
+                    <ZoomPanBoundingBox
+                      config={currentStep.zoomPan!}
                       containerRef={canvasRef}
-                      linkedElement={stepElements.find(
-                        (el) =>
-                          el.id === currentStep?.zoomPan?.linkedHotspotId ||
-                          (el as any)._id === currentStep?.zoomPan?.linkedHotspotId
-                      )}
-                      onUpdateFocusPoint={(x, y) => {
+                      isPreviewing={isStudioAnimationPreviewing}
+                      onUpdateConfig={(updates) => {
                         const existing = currentStep?.zoomPan || DEFAULT_ZOOM_PAN_CONFIG;
                         handleUpdateStep({
                           zoomPan: {
                             ...existing,
+                            ...updates,
                             enabled: true,
-                            linkedHotspotId: null,
-                            focusPoint: { x, y },
                           },
                         });
+                      }}
+                      onRemove={() => {
+                        if (studioAnimationTimeoutRef.current) {
+                          clearTimeout(studioAnimationTimeoutRef.current);
+                          studioAnimationTimeoutRef.current = null;
+                        }
+                        setIsStudioAnimationPreviewing(false);
+                        setStudioCameraScale(1.0);
+                        setStudioCameraTransition('transform 300ms ease-out');
+                        handleUpdateStep({
+                          zoomPan: {
+                            ...(currentStep?.zoomPan || DEFAULT_ZOOM_PAN_CONFIG),
+                            enabled: false,
+                          },
+                        });
+                      }}
+                      onPreview={() => {
+                        handlePreviewStudioAnimation();
                       }}
                     />
                   )}
@@ -2792,6 +2857,34 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
 
               {activeTab === 'settings' && (
                 <div className="space-y-4">
+                  {/* Full Settings Modal Banner Button */}
+                  <div className="p-3.5 rounded-2xl bg-gradient-to-br from-[#5B5CE2]/10 to-[#5B5CE2]/5 border border-[#5B5CE2]/20 space-y-2.5">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-1.5 text-xs font-bold text-[#0f0f1a]">
+                        <Settings className="w-4 h-4 text-[#5B5CE2]" />
+                        <span>Walkthrough Settings</span>
+                      </div>
+                      <span className="text-[10px] font-semibold text-[#5B5CE2] bg-white px-2 py-0.5 rounded-md border border-[#5B5CE2]/20 shadow-2xs">
+                        Full Modal
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-[#6b7280] leading-snug">
+                      Configure Autoplay timing, audio arbitration, custom branding, and embed permissions.
+                    </p>
+                    <Button
+                      variant="primary"
+                      size="sm"
+                      fullWidth
+                      onClick={() => {
+                        setSettingsModalTab('autoplay');
+                        setIsSettingsModalOpen(true);
+                      }}
+                      leftIcon={<Settings className="w-3.5 h-3.5" />}
+                    >
+                      Open Full Settings Modal
+                    </Button>
+                  </div>
+
                   <Input
                     label="Demo Title"
                     value={demo.name}
@@ -2809,7 +2902,81 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
                     }}
                   />
 
-                  <div className="flex items-center justify-between pt-2">
+                  {/* Quick Autoplay Settings in Settings Tab */}
+                  <div className="p-3.5 bg-[#fafafc] rounded-2xl border border-[#e5e7eb] space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <span className="text-xs font-bold text-[#0f0f1a] block">Autoplay</span>
+                        <span className="text-[11px] text-[#6b7280]">Play content without interaction</span>
+                      </div>
+                      <input
+                        type="checkbox"
+                        checked={demo.settings?.autoplay ?? false}
+                        onChange={(e) => {
+                          const updated = {
+                            ...demo,
+                            settings: { ...demo.settings, autoplay: e.target.checked },
+                          };
+                          setDemo(updated);
+                          triggerAutosave(updated, scenes, steps, elements, interactions, chapters);
+                        }}
+                        className="w-4 h-4 accent-[#5B5CE2]"
+                      />
+                    </div>
+
+                    {demo.settings?.autoplay && (
+                      <div className="pt-2 border-t border-[#f0f0f4] space-y-3">
+                        <div className="space-y-1">
+                          <div className="flex items-center justify-between text-xs">
+                            <span className="text-[#374151] font-semibold">Step Duration</span>
+                            <span className="font-mono text-[#5B5CE2] font-bold">
+                              {demo.settings?.autoplayDelay ?? 2000} ms
+                            </span>
+                          </div>
+                          <input
+                            type="range"
+                            min="500"
+                            max="10000"
+                            step="250"
+                            value={demo.settings?.autoplayDelay ?? 2000}
+                            onChange={(e) => {
+                              const val = parseInt(e.target.value, 10);
+                              const updated = {
+                                ...demo,
+                                settings: { ...demo.settings, autoplayDelay: val },
+                              };
+                              setDemo(updated);
+                              triggerAutosave(updated, scenes, steps, elements, interactions, chapters);
+                            }}
+                            className="w-full h-1.5 bg-[#e5e7eb] rounded-lg appearance-none cursor-pointer accent-[#5B5CE2]"
+                          />
+                        </div>
+
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs text-[#374151] font-semibold">Loop Content</span>
+                          <input
+                            type="checkbox"
+                            checked={Boolean(demo.settings?.loop || demo.settings?.autoplayLoop)}
+                            onChange={(e) => {
+                              const updated = {
+                                ...demo,
+                                settings: {
+                                  ...demo.settings,
+                                  loop: e.target.checked,
+                                  autoplayLoop: e.target.checked,
+                                },
+                              };
+                              setDemo(updated);
+                              triggerAutosave(updated, scenes, steps, elements, interactions, chapters);
+                            }}
+                            className="w-4 h-4 accent-[#5B5CE2]"
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="flex items-center justify-between pt-1">
                     <label className="text-[12.5px] font-medium text-[#374151]">
                       Show Progress Bar
                     </label>
@@ -2854,7 +3021,7 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
 
           <div className="flex-1 w-full max-w-6xl mx-auto rounded-2xl overflow-hidden shadow-2xl border border-white/10 animate-preview-modal">
             <DemoRuntimePlayer
-              key={`preview-${activeStepIndex}-${steps.length}-${scenes.map((s) => s.sourceAssetUrl).join('|')}`}
+              key={`preview-${activeStepIndex}-${steps.length}-${JSON.stringify(demo.settings || {})}-${scenes.map((s) => s.sourceAssetUrl).join('|')}`}
               demoName={demo.name}
               demoSettings={demo.settings}
               scenes={scenes}
@@ -3016,6 +3183,32 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
           </div>
         </div>
       )}
+
+      {/* Supademo-Style Full Demo Settings Modal (Appearance, Autoplay, Branding, Sharing) */}
+      <DemoSettingsModal
+        isOpen={isSettingsModalOpen}
+        onClose={() => setIsSettingsModalOpen(false)}
+        settings={demo.settings || {}}
+        initialTab={settingsModalTab}
+        onSave={async (updatedSettings) => {
+          const updated = {
+            ...demo,
+            settings: {
+              ...(demo.settings || {}),
+              ...updatedSettings,
+            },
+          };
+          setDemo(updated);
+          await saveImmediately(
+            updated,
+            scenes,
+            steps,
+            elements,
+            interactions,
+            chapters
+          );
+        }}
+      />
     </div>
   );
 };

@@ -461,7 +461,11 @@ export class DemoService {
     if (payload.status) demoDoc.status = payload.status;
     if (payload.type) demoDoc.type = payload.type;
     if (payload.settings) {
-      demoDoc.settings = { ...demoDoc.settings, ...payload.settings };
+      demoDoc.settings = {
+        ...(demoDoc.settings || {}),
+        ...payload.settings,
+      };
+      demoDoc.markModified('settings');
     }
 
     // Pre-calculate ID mappings to preserve relationships between scenes, chapters, steps, and elements

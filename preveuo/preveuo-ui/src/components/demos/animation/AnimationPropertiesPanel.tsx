@@ -332,12 +332,20 @@ export const AnimationPropertiesPanel: React.FC<AnimationPropertiesPanelProps> =
                 <div className="flex items-center justify-between pt-0.5">
                   <button
                     type="button"
-                    onClick={() =>
+                    onClick={() => {
+                      const boxW = zoomConfig.focusRegion?.width || 60;
+                      const boxH = zoomConfig.focusRegion?.height || 50;
                       handleUpdateZoomPan({
                         linkedHotspotId: null,
                         focusPoint: { x: 50, y: 50 },
-                      })
-                    }
+                        focusRegion: {
+                          x: Math.round(Math.max(0, 50 - boxW / 2) * 10) / 10,
+                          y: Math.round(Math.max(0, 50 - boxH / 2) * 10) / 10,
+                          width: boxW,
+                          height: boxH,
+                        },
+                      });
+                    }}
                     className="text-[11px] font-semibold text-[#5B5CE2] hover:underline flex items-center gap-1 cursor-pointer"
                   >
                     <Crosshair className="w-3 h-3" />
@@ -355,15 +363,24 @@ export const AnimationPropertiesPanel: React.FC<AnimationPropertiesPanelProps> =
                       max="100"
                       step="1"
                       value={zoomConfig.focusPoint.x}
-                      onChange={(e) =>
+                      onChange={(e) => {
+                        const newX = Math.max(0, Math.min(100, parseFloat(e.target.value) || 0));
+                        const boxW = zoomConfig.focusRegion?.width || 60;
+                        const boxH = zoomConfig.focusRegion?.height || 50;
                         handleUpdateZoomPan({
                           linkedHotspotId: null,
                           focusPoint: {
                             ...zoomConfig.focusPoint,
-                            x: Math.max(0, Math.min(100, parseFloat(e.target.value) || 0)),
+                            x: newX,
                           },
-                        })
-                      }
+                          focusRegion: {
+                            x: Math.round(Math.max(0, Math.min(100 - boxW, newX - boxW / 2)) * 10) / 10,
+                            y: zoomConfig.focusRegion?.y ?? 15,
+                            width: boxW,
+                            height: boxH,
+                          },
+                        });
+                      }}
                       className="w-full text-xs py-1 px-2 rounded-lg border border-[#e5e7eb] bg-white font-mono"
                     />
                   </div>
@@ -375,15 +392,24 @@ export const AnimationPropertiesPanel: React.FC<AnimationPropertiesPanelProps> =
                       max="100"
                       step="1"
                       value={zoomConfig.focusPoint.y}
-                      onChange={(e) =>
+                      onChange={(e) => {
+                        const newY = Math.max(0, Math.min(100, parseFloat(e.target.value) || 0));
+                        const boxW = zoomConfig.focusRegion?.width || 60;
+                        const boxH = zoomConfig.focusRegion?.height || 50;
                         handleUpdateZoomPan({
                           linkedHotspotId: null,
                           focusPoint: {
                             ...zoomConfig.focusPoint,
-                            y: Math.max(0, Math.min(100, parseFloat(e.target.value) || 0)),
+                            y: newY,
                           },
-                        })
-                      }
+                          focusRegion: {
+                            x: zoomConfig.focusRegion?.x ?? 20,
+                            y: Math.round(Math.max(0, Math.min(100 - boxH, newY - boxH / 2)) * 10) / 10,
+                            width: boxW,
+                            height: boxH,
+                          },
+                        });
+                      }}
                       className="w-full text-xs py-1 px-2 rounded-lg border border-[#e5e7eb] bg-white font-mono"
                     />
                   </div>
@@ -728,15 +754,15 @@ export const AnimationPropertiesPanel: React.FC<AnimationPropertiesPanelProps> =
                 <div className="flex items-center justify-between text-xs font-semibold text-[#0f0f1a]">
                   <span>Default Dwell Duration</span>
                   <span className="font-mono text-[#5B5CE2]">
-                    {((demoSettings.autoplayDelay || 4000) / 1000).toFixed(1)}s
+                    {((demoSettings.autoplayDelay || 2000) / 1000).toFixed(1)}s
                   </span>
                 </div>
                 <input
                   type="range"
-                  min="2000"
+                  min="500"
                   max="10000"
-                  step="500"
-                  value={demoSettings.autoplayDelay || 4000}
+                  step="250"
+                  value={demoSettings.autoplayDelay || 2000}
                   onChange={(e) =>
                     onUpdateDemoSettings({ autoplayDelay: parseInt(e.target.value, 10) })
                   }
