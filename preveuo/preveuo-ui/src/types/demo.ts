@@ -253,7 +253,7 @@ export type HotspotAnimation = 'none' | 'ping' | 'pulse' | 'bounce';
 export type HotspotVisibility = 'always' | 'onHover' | 'onClick' | 'afterDelay';
 export type HotspotActionType = 'nextStep' | 'previousStep' | 'goToStep' | 'goToScene' | 'goToChapter' | 'externalUrl';
 
-export type HotspotPointerStyle = 'beacon' | 'cursor' | 'hand' | 'target' | 'bullseye' | 'number';
+export type HotspotPointerStyle = 'beacon' | 'ripple' | 'cursor' | 'hand' | 'target' | 'bullseye' | 'number';
 
 export interface PointerAnimationSettings {
   speed?: 'slow' | 'medium' | 'fast';

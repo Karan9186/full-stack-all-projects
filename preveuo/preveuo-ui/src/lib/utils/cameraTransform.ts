@@ -125,7 +125,7 @@ export function computeCameraTransform({
       scale: 1.0,
       translateX: 0,
       translateY: 0,
-      transform: 'translate(0%, 0%) scale(1)',
+      transform: 'translate(0.000%, 0.000%) scale(1.000)',
       transformOrigin: '0 0',
       isZoomed: false,
       clampedCenter: { x: 0.5, y: 0.5 },

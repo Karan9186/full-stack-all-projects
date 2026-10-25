@@ -1,5 +1,7 @@
+import { THEME_COLORS } from '@/lib/constants/theme';
 import mongoose, { Schema, Document, Model } from 'mongoose';
 import { DemoType, DemoStatus, DemoSettings } from '@/types/demo';
+import { PRIMARY_COLOR } from '@/lib/constants/theme';
 
 export interface IDemoDoc extends Document {
   workspaceId: mongoose.Types.ObjectId;
@@ -97,9 +99,9 @@ const DemoSchema = new Schema<IDemoDoc>(
         showCursor: true,
         showControls: true,
         responsive: true,
-        background: '#0f0f1a',
+        background: THEME_COLORS.bgDark,
         defaultTransition: 'fade',
-        accentColor: '#5B5CE2',
+        accentColor: PRIMARY_COLOR,
         aspectRatio: '16:9',
         canonicalWidth: 1920,
         canonicalHeight: 1080,

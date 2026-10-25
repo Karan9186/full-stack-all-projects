@@ -18,14 +18,14 @@ export const NewsletterSection: React.FC = () => {
   };
 
   return (
-    <section className="mt-24 rounded-3xl bg-[#f8f8fc] border border-[#e5e7eb] p-8 sm:p-14 text-center max-w-[900px] mx-auto">
-      <div className="w-12 h-12 rounded-2xl bg-[#5B5CE2]/10 text-[#5B5CE2] flex items-center justify-center mx-auto mb-5">
+    <section className="mt-24 rounded-3xl bg-light border border-border-default p-8 sm:p-14 text-center max-w-[900px] mx-auto">
+      <div className="w-12 h-12 rounded-2xl bg-brand-purple/10 text-brand-purple flex items-center justify-center mx-auto mb-5">
         <Mail className="w-6 h-6" />
       </div>
-      <h2 className="text-[26px] sm:text-[32px] font-extrabold text-[#0f0f1a] tracking-tight mb-3">
+      <h2 className="text-[26px] sm:text-[32px] font-extrabold text-heading tracking-tight mb-3">
         Stories in your inbox
       </h2>
-      <p className="text-[14.5px] sm:text-[16px] text-[#6b7280] max-w-[480px] mx-auto mb-8">
+      <p className="text-[14.5px] sm:text-[16px] text-body max-w-[480px] mx-auto mb-8">
         Get bi-weekly teardowns of high-converting product walkthroughs, demo benchmarks, and SaaS growth playbooks.
       </p>
 

@@ -11,7 +11,7 @@ import CTASection from '@/components/landing/CTASection';
 
 export default function HomePage() {
   return (
-    <div className="flex flex-col min-h-screen bg-white text-[#0f0f1a]">
+    <div className="flex flex-col min-h-screen bg-white text-heading">
       <Navbar />
       <main className="flex-1 pt-0">
         <HeroSection />

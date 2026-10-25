@@ -20,10 +20,10 @@ export const AnalyticsTabContent: React.FC = () => {
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
-          <h2 className="text-[24px] sm:text-[28px] font-bold tracking-tight text-[#0f0f1a]">
+          <h2 className="text-[24px] sm:text-[28px] font-bold tracking-tight text-heading">
             Analytics
           </h2>
-          <p className="text-[13.5px] text-[#6b7280] font-normal mt-0.5">
+          <p className="text-[13.5px] text-body font-normal mt-0.5">
             Understand what resonates and where viewers convert.
           </p>
         </div>
@@ -31,19 +31,19 @@ export const AnalyticsTabContent: React.FC = () => {
         <div className="flex items-center gap-2.5">
           <button
             type="button"
-            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-medium bg-white border border-[#e5e7eb] text-[#0f0f1a] shadow-2xs hover:border-[#d1d5db] transition-colors cursor-pointer"
+            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-medium bg-white border border-border-default text-heading shadow-2xs hover:border-border-input transition-colors cursor-pointer"
           >
-            <Download className="w-3.5 h-3.5 text-[#6b7280]" />
+            <Download className="w-3.5 h-3.5 text-body" />
             <span>Export CSV</span>
           </button>
 
           <button
             type="button"
-            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-medium bg-white border border-[#e5e7eb] text-[#0f0f1a] shadow-2xs hover:border-[#d1d5db] transition-colors cursor-pointer"
+            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-medium bg-white border border-border-default text-heading shadow-2xs hover:border-border-input transition-colors cursor-pointer"
           >
-            <Clock className="w-3.5 h-3.5 text-[#6b7280]" />
+            <Clock className="w-3.5 h-3.5 text-body" />
             <span>Last 30 days</span>
-            <ChevronDown className="w-3.5 h-3.5 text-[#9ca3af]" />
+            <ChevronDown className="w-3.5 h-3.5 text-muted" />
           </button>
         </div>
       </div>
@@ -52,10 +52,10 @@ export const AnalyticsTabContent: React.FC = () => {
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3.5 mb-6">
         {WORKSPACE_ANALYTICS_KPIS.map((kpi, idx) => (
           <Card key={idx} className="p-4">
-            <span className="text-[12px] font-medium text-[#6b7280] block mb-2">
+            <span className="text-[12px] font-medium text-body block mb-2">
               {kpi.label}
             </span>
-            <div className="text-[22px] font-bold text-[#0f0f1a] tracking-tight leading-none mb-2">
+            <div className="text-[22px] font-bold text-heading tracking-tight leading-none mb-2">
               {kpi.value}
             </div>
             <div className="flex items-center gap-1 text-[11px] font-medium text-emerald-600">
@@ -73,45 +73,45 @@ export const AnalyticsTabContent: React.FC = () => {
           <Card className="p-6 h-full flex flex-col justify-between">
             <div className="flex items-center justify-between mb-6">
               <div>
-                <h3 className="text-[15px] sm:text-[16px] font-semibold text-[#0f0f1a]">
+                <h3 className="text-[15px] sm:text-[16px] font-semibold text-heading">
                   Engagement over time
                 </h3>
-                <p className="text-[12px] text-[#6b7280] font-normal mt-0.5">
+                <p className="text-[12px] text-body font-normal mt-0.5">
                   Views, interactions, and completions
                 </p>
               </div>
 
               <button
                 type="button"
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-[#fafafc] border border-[#e5e7eb] text-[#0f0f1a]"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-canvas border border-border-default text-heading"
               >
                 <span>Daily</span>
-                <ChevronDown className="w-3.5 h-3.5 text-[#9ca3af]" />
+                <ChevronDown className="w-3.5 h-3.5 text-muted" />
               </button>
             </div>
 
             {/* SVG Chart with percentage gridlines */}
             <div className="relative w-full h-64">
-              <div className="absolute inset-0 flex flex-col justify-between pointer-events-none text-[10.5px] font-mono text-[#9ca3af]">
+              <div className="absolute inset-0 flex flex-col justify-between pointer-events-none text-[10.5px] font-mono text-muted">
                 <div className="flex items-center w-full">
                   <span className="w-10">100%</span>
-                  <div className="flex-1 border-b border-[#f0f0f4]" />
+                  <div className="flex-1 border-b border-border-light" />
                 </div>
                 <div className="flex items-center w-full">
                   <span className="w-10">75%</span>
-                  <div className="flex-1 border-b border-[#f0f0f4]" />
+                  <div className="flex-1 border-b border-border-light" />
                 </div>
                 <div className="flex items-center w-full">
                   <span className="w-10">50%</span>
-                  <div className="flex-1 border-b border-[#f0f0f4]" />
+                  <div className="flex-1 border-b border-border-light" />
                 </div>
                 <div className="flex items-center w-full">
                   <span className="w-10">25%</span>
-                  <div className="flex-1 border-b border-[#f0f0f4]" />
+                  <div className="flex-1 border-b border-border-light" />
                 </div>
                 <div className="flex items-center w-full">
                   <span className="w-10">0</span>
-                  <div className="flex-1 border-b border-[#f0f0f4]" />
+                  <div className="flex-1 border-b border-border-light" />
                 </div>
               </div>
 
@@ -121,7 +121,7 @@ export const AnalyticsTabContent: React.FC = () => {
                   <path
                     d="M 0 170 C 60 160, 120 160, 180 150 C 240 140, 300 130, 360 115 C 420 100, 460 90, 500 88"
                     fill="none"
-                    stroke="#9ca3af"
+                    stroke="currentColor"
                     strokeWidth="2"
                     strokeDasharray="4 4"
                     strokeLinecap="round"
@@ -130,9 +130,10 @@ export const AnalyticsTabContent: React.FC = () => {
                   <path
                     d="M 0 155 C 60 135, 120 140, 180 120 C 240 100, 300 105, 360 85 C 420 70, 460 72, 500 70"
                     fill="none"
-                    stroke="#5B5CE2"
+                    stroke="currentColor"
                     strokeWidth="2.8"
                     strokeLinecap="round"
+                    className="text-brand-purple"
                   />
                 </svg>
               </div>
@@ -144,10 +145,10 @@ export const AnalyticsTabContent: React.FC = () => {
         <div className="lg:col-span-5">
           <Card className="p-6 h-full flex flex-col justify-between">
             <div className="mb-5">
-              <h3 className="text-[15px] sm:text-[16px] font-semibold text-[#0f0f1a]">
+              <h3 className="text-[15px] sm:text-[16px] font-semibold text-heading">
                 Viewer funnel
               </h3>
-              <p className="text-[12px] text-[#6b7280] font-normal mt-0.5">
+              <p className="text-[12px] text-body font-normal mt-0.5">
                 From first view to conversion
               </p>
             </div>
@@ -156,17 +157,17 @@ export const AnalyticsTabContent: React.FC = () => {
               {WORKSPACE_FUNNEL_ITEMS.map((item, idx) => (
                 <div key={idx} className="space-y-1.5">
                   <div className="flex items-center justify-between text-xs">
-                    <span className="font-medium text-[#0f0f1a]">
-                      {item.label} <span className="font-normal text-[#9ca3af] ml-1">{item.percent}%</span>
+                    <span className="font-medium text-heading">
+                      {item.label} <span className="font-normal text-muted ml-1">{item.percent}%</span>
                     </span>
-                    <span className="font-mono text-[#0f0f1a] font-semibold">
+                    <span className="font-mono text-heading font-semibold">
                       {item.count}
                     </span>
                   </div>
 
-                  <div className="w-full h-2 rounded-full bg-[#f0f0f4] overflow-hidden">
+                  <div className="w-full h-2 rounded-full bg-border-light overflow-hidden">
                     <div
-                      className="h-full bg-[#5B5CE2] rounded-full transition-all duration-300"
+                      className="h-full bg-brand-purple rounded-full transition-all duration-300"
                       style={{ width: `${item.percent}%` }}
                     />
                   </div>
@@ -181,20 +182,20 @@ export const AnalyticsTabContent: React.FC = () => {
       <Card className="p-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
           <div>
-            <h3 className="text-[15px] sm:text-[16px] font-semibold text-[#0f0f1a]">
+            <h3 className="text-[15px] sm:text-[16px] font-semibold text-heading">
               Demo performance
             </h3>
-            <p className="text-[12px] text-[#6b7280] font-normal mt-0.5">
+            <p className="text-[12px] text-body font-normal mt-0.5">
               Compare engagement across published demos
             </p>
           </div>
 
           <div className="relative w-full sm:w-64">
-            <Search className="w-4 h-4 text-[#9ca3af] absolute left-3 top-1/2 -translate-y-1/2" />
+            <Search className="w-4 h-4 text-muted absolute left-3 top-1/2 -translate-y-1/2" />
             <input
               type="search"
               placeholder="Search demos..."
-              className="w-full pl-9 pr-4 py-1.5 rounded-xl text-xs bg-white border border-[#e5e7eb] text-[#0f0f1a] placeholder-[#9ca3af] focus:outline-none focus:border-[#5B5CE2] focus:ring-2 focus:ring-[#5B5CE2]/15"
+              className="w-full pl-9 pr-4 py-1.5 rounded-xl text-xs bg-white border border-border-default text-heading placeholder-muted focus:outline-none focus:border-brand-purple focus:ring-2 focus:ring-brand-purple/15"
             />
           </div>
         </div>

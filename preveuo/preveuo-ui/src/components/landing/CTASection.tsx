@@ -18,23 +18,23 @@ export default function CTASection() {
   }, []);
 
   return (
-    <section className="py-24 bg-gradient-to-b from-[#f9f8ff] via-[#f3f2ff] to-[#ebe9fe] border-t border-[#eeecff]">
+    <section className="py-24 bg-gradient-to-b from-brand-purple/10 via-brand-purple/5 to-transparent border-t border-brand-purple/20">
       <div className="max-w-[760px] mx-auto px-6 text-center">
         {/* Centered purple logo badge */}
-        <div className="w-12 h-12 rounded-xl bg-[#5B5CE2] flex items-center justify-center mx-auto mb-6 shadow-sm shadow-[#5B5CE2]/20">
+        <div className="w-12 h-12 rounded-xl bg-brand-purple flex items-center justify-center mx-auto mb-6 shadow-sm shadow-brand-purple/20">
           <svg width="20" height="20" viewBox="0 0 16 16" fill="none">
             <rect x="3" y="7" width="10" height="8" rx="1.5" fill="white" fillOpacity="0.9" />
             <path d="M5 7V5a3 3 0 016 0v2" stroke="white" strokeWidth="1.5" strokeLinecap="round" fill="none" />
           </svg>
         </div>
 
-        <p className="text-[10.5px] font-bold uppercase tracking-[0.2em] text-[#5B5CE2] mb-3">
+        <p className="text-[10.5px] font-bold uppercase tracking-[0.2em] text-brand-purple mb-3">
           Get started today
         </p>
-        <h2 className="text-[40px] sm:text-[50px] font-extrabold tracking-[-0.03em] text-[#0f0f1a] leading-[1.12] mb-4">
+        <h2 className="text-[40px] sm:text-[50px] font-extrabold tracking-[-0.03em] text-heading leading-[1.12] mb-4">
           Ready to make your product<br className="hidden sm:block" /> unforgettable?
         </h2>
-        <p className="text-[16px] sm:text-[17px] text-[#6b7280] mb-9 max-w-[480px] mx-auto leading-relaxed">
+        <p className="text-[16px] sm:text-[17px] text-body mb-9 max-w-[480px] mx-auto leading-relaxed">
           Join thousands of teams who use Preveuo to turn product complexity into buyer confidence—without a single sales call.
         </p>
 
@@ -60,7 +60,7 @@ export default function CTASection() {
           </Link>
         </div>
 
-        <p className="text-xs text-[#9ca3af] mt-4">
+        <p className="text-xs text-muted mt-4">
           No credit card required • 14-day free trial • Cancel anytime
         </p>
       </div>

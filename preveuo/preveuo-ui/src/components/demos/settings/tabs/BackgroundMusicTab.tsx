@@ -68,12 +68,12 @@ export const BackgroundMusicTab: React.FC<BackgroundMusicTabProps> = ({
   }, []);
 
   return (
-    <div className="space-y-6 text-[#0f0f1a] animate-fade-in max-w-2xl">
+    <div className="space-y-6 text-heading animate-fade-in max-w-2xl">
       {/* 1. Header & Enable Toggle */}
-      <div className="flex items-start justify-between pb-5 border-b border-[#f0f0f4]">
+      <div className="flex items-start justify-between pb-5 border-b border-border-light">
         <div>
-          <h4 className="text-sm font-bold text-[#0f0f1a]">Background Music</h4>
-          <p className="text-xs text-[#6b7280] mt-0.5 leading-relaxed">
+          <h4 className="text-sm font-bold text-heading">Background Music</h4>
+          <p className="text-xs text-body mt-0.5 leading-relaxed">
             The selected background music will play in a loop as viewers interact with this demo.
           </p>
         </div>
@@ -84,14 +84,14 @@ export const BackgroundMusicTab: React.FC<BackgroundMusicTabProps> = ({
             onChange={(e) => handleUpdateMusic({ enabled: e.target.checked })}
             className="sr-only peer"
           />
-          <div className="w-11 h-6 bg-[#e5e7eb] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#5B5CE2]" />
+          <div className="w-11 h-6 bg-border-default peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand-purple" />
         </label>
       </div>
 
       <div className={`space-y-5 transition-opacity duration-200 ${music.enabled ? 'opacity-100' : 'opacity-40 pointer-events-none'}`}>
         {/* 2. Track Selector */}
         <div className="space-y-2">
-          <label className="text-xs font-bold text-[#374151]">Select Background Music</label>
+          <label className="text-xs font-bold text-gray-700">Select Background Music</label>
           <div className="flex items-center gap-2">
             <select
               value={music.trackUrl || PRESET_TRACKS[0].url}
@@ -106,7 +106,7 @@ export const BackgroundMusicTab: React.FC<BackgroundMusicTabProps> = ({
                   setIsPlayingPreview(false);
                 }
               }}
-              className="flex-1 text-xs py-2 px-3 rounded-xl border border-[#d1d5db] bg-white text-[#0f0f1a] focus:outline-none focus:border-[#5B5CE2] font-semibold"
+              className="flex-1 text-xs py-2 px-3 rounded-xl border border-border-input bg-white text-heading focus:outline-none focus:border-brand-purple font-semibold"
             >
               {PRESET_TRACKS.map((t) => (
                 <option key={t.id} value={t.url}>
@@ -122,7 +122,7 @@ export const BackgroundMusicTab: React.FC<BackgroundMusicTabProps> = ({
               className={`px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer shadow-xs ${
                 isPlayingPreview
                   ? 'bg-amber-100 text-amber-800 border border-amber-300'
-                  : 'bg-white border border-[#d1d5db] text-[#0f0f1a] hover:border-[#5B5CE2]'
+                  : 'bg-white border border-border-input text-heading hover:border-brand-purple'
               }`}
             >
               {isPlayingPreview ? (
@@ -132,7 +132,7 @@ export const BackgroundMusicTab: React.FC<BackgroundMusicTabProps> = ({
                 </>
               ) : (
                 <>
-                  <Play className="w-3.5 h-3.5 fill-current text-[#5B5CE2]" />
+                  <Play className="w-3.5 h-3.5 fill-current text-brand-purple" />
                   <span>Preview</span>
                 </>
               )}
@@ -141,13 +141,13 @@ export const BackgroundMusicTab: React.FC<BackgroundMusicTabProps> = ({
         </div>
 
         {/* 3. Controls & Volume Slider */}
-        <div className="p-4 rounded-2xl bg-[#fafafc] border border-[#e5e7eb] space-y-3">
+        <div className="p-4 rounded-2xl bg-canvas border border-border-default space-y-3">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 text-xs font-bold text-[#0f0f1a]">
-              <Volume2 className="w-4 h-4 text-[#5B5CE2]" />
+            <div className="flex items-center gap-2 text-xs font-bold text-heading">
+              <Volume2 className="w-4 h-4 text-brand-purple" />
               <span>Volume Controls</span>
             </div>
-            <span className="text-xs font-mono font-bold text-[#5B5CE2] bg-[#5B5CE2]/10 px-2 py-0.5 rounded-md">
+            <span className="text-xs font-mono font-bold text-brand-purple bg-brand-purple/10 px-2 py-0.5 rounded-md">
               {music.volume ?? 50}%
             </span>
           </div>
@@ -165,20 +165,20 @@ export const BackgroundMusicTab: React.FC<BackgroundMusicTabProps> = ({
                 audioRef.current.volume = val / 100;
               }
             }}
-            className="w-full h-1.5 bg-[#e5e7eb] rounded-lg appearance-none cursor-pointer accent-[#5B5CE2]"
+            className="w-full h-1.5 bg-border-default rounded-lg appearance-none cursor-pointer accent-brand-purple"
           />
 
           <div className="flex items-center justify-between pt-1">
-            <label className="flex items-center gap-2 text-xs font-medium text-[#4b5563] cursor-pointer">
+            <label className="flex items-center gap-2 text-xs font-medium text-gray-600 cursor-pointer">
               <input
                 type="checkbox"
                 checked={music.loop !== false}
                 onChange={(e) => handleUpdateMusic({ loop: e.target.checked })}
-                className="w-4 h-4 accent-[#5B5CE2] rounded"
+                className="w-4 h-4 accent-brand-purple rounded"
               />
               <span>Loop audio continuously during demo</span>
             </label>
-            <span className="text-[10px] text-[#9ca3af]">Auto-ducks on voiceovers</span>
+            <span className="text-[10px] text-muted">Auto-ducks on voiceovers</span>
           </div>
         </div>
       </div>

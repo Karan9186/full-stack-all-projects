@@ -2,6 +2,7 @@ import bcrypt from 'bcryptjs';
 import { connectToDatabase } from './mongodb';
 import { User } from './models/User';
 import { Workspace } from './models/Workspace';
+import { PRIMARY_COLOR } from '@/lib/constants/theme';
 
 export async function ensureDefaultDataSeeded() {
   await connectToDatabase();
@@ -21,7 +22,7 @@ export async function ensureDefaultDataSeeded() {
     slug: 'acme-corp',
     teamSize: '51-200',
     primaryGoal: 'sales',
-    brandColor: '#5B5CE2',
+    brandColor: PRIMARY_COLOR,
     customDomain: 'demos.acme.co',
     whiteLabel: true,
     plan: {
@@ -61,7 +62,7 @@ export async function ensureDefaultDataSeeded() {
     slug: 'techcloud',
     teamSize: '11-50',
     primaryGoal: 'onboarding',
-    brandColor: '#4f46e5',
+    brandColor: PRIMARY_COLOR,
     customDomain: 'tours.techcloud.io',
     whiteLabel: false,
     plan: {

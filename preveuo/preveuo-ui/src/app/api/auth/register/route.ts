@@ -5,6 +5,7 @@ import { User } from '@/lib/db/models/User';
 import { Workspace } from '@/lib/db/models/Workspace';
 import { ensureDefaultDataSeeded } from '@/lib/db/seedDefaultData';
 import { AuthApiResponse, RegisterApiResponseData, RegisterRequestPayload, AuthSession } from '@/types/auth';
+import { PRIMARY_COLOR } from '@/lib/constants/theme';
 
 export async function POST(req: NextRequest) {
   try {
@@ -112,7 +113,7 @@ export async function POST(req: NextRequest) {
       slug: cleanSlug,
       teamSize,
       primaryGoal,
-      brandColor: '#5B5CE2',
+      brandColor: PRIMARY_COLOR,
       customDomain: '',
       whiteLabel: true,
       plan: {

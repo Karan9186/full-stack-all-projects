@@ -14,7 +14,7 @@ export const ArticleCard: React.FC<ArticleCardProps> = ({ article }) => {
       <div>
         {/* Banner with watermarked number */}
         <div
-          className={`h-48 relative overflow-hidden ${article.bgTint} flex items-center justify-center p-6 border-b border-[#f0f0f4]`}
+          className={`h-48 relative overflow-hidden ${article.bgTint} flex items-center justify-center p-6 border-b border-border-light`}
         >
           <span
             className={`absolute -right-2 -bottom-6 text-[120px] font-black tracking-tighter select-none pointer-events-none ${article.watermarkColor}`}
@@ -24,7 +24,7 @@ export const ArticleCard: React.FC<ArticleCardProps> = ({ article }) => {
 
           <div className="relative z-10 w-16 h-16 rounded-2xl bg-white shadow-sm flex items-center justify-center border border-white/60">
             <svg
-              className="w-8 h-8 text-[#5B5CE2]"
+              className="w-8 h-8 text-brand-purple"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
@@ -46,22 +46,22 @@ export const ArticleCard: React.FC<ArticleCardProps> = ({ article }) => {
             </Badge>
           </div>
 
-          <h3 className="text-[17px] font-bold text-[#0f0f1a] leading-snug group-hover:text-[#5B5CE2] transition-colors line-clamp-2">
+          <h3 className="text-[17px] font-bold text-heading leading-snug group-hover:text-brand-purple transition-colors line-clamp-2">
             {article.title}
           </h3>
 
-          <p className="text-[13.5px] text-[#6b7280] leading-relaxed mt-2.5 line-clamp-2">
+          <p className="text-[13.5px] text-body leading-relaxed mt-2.5 line-clamp-2">
             {article.excerpt}
           </p>
         </div>
       </div>
 
       {/* Footer Info */}
-      <div className="p-6 pt-0 border-t border-[#f0f0f4] mt-auto flex items-center justify-between text-[12.5px] text-[#9ca3af]">
+      <div className="p-6 pt-0 border-t border-border-light mt-auto flex items-center justify-between text-[12.5px] text-muted">
         <span>{article.date} · {article.readTime}</span>
         <Link
           href={`/resources/${article.id}`}
-          className="inline-flex items-center gap-1 font-semibold text-[#5B5CE2] group-hover:translate-x-1 transition-transform"
+          className="inline-flex items-center gap-1 font-semibold text-brand-purple group-hover:translate-x-1 transition-transform"
         >
           Read <ChevronRight className="w-3.5 h-3.5" />
         </Link>

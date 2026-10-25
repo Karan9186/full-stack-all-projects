@@ -25,18 +25,18 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
 }) => {
   return (
     <div
-      className={`flex flex-col md:flex-row md:items-center md:justify-between gap-4 pb-6 border-b border-[#e5e7eb] ${className}`}
+      className={`flex flex-col md:flex-row md:items-center md:justify-between gap-4 pb-6 border-b border-border-default ${className}`}
     >
       <div className="flex flex-col gap-1.5 max-w-2xl">
         {breadcrumbs && <div className="mb-1">{breadcrumbs}</div>}
         <div className="flex items-center gap-3">
-          <h1 className="text-2xl sm:text-[26px] font-bold tracking-[-0.025em] text-[#0f0f1a] leading-tight">
+          <h1 className="text-2xl sm:text-[26px] font-bold tracking-[-0.025em] text-heading leading-tight">
             {title}
           </h1>
           {badge && <div>{badge}</div>}
         </div>
         {description && (
-          <p className="text-[13.5px] sm:text-[14px] text-[#6b7280] font-normal leading-relaxed">
+          <p className="text-[13.5px] sm:text-[14px] text-body font-normal leading-relaxed">
             {description}
           </p>
         )}

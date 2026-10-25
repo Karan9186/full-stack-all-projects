@@ -21,7 +21,7 @@ export const EditorHeader: React.FC<EditorHeaderProps> = ({
   isSaved,
 }) => {
   return (
-    <header className="h-16 border-b border-[#e5e7eb] bg-white px-4 sm:px-6 flex items-center justify-between z-20 shrink-0">
+    <header className="h-16 border-b border-border-default bg-white px-4 sm:px-6 flex items-center justify-between z-20 shrink-0">
       {/* Left: Back & Tour Title Input */}
       <div className="flex items-center gap-3">
         <Link href="/workspace">
@@ -30,7 +30,7 @@ export const EditorHeader: React.FC<EditorHeaderProps> = ({
             size="sm"
             aria-label="Back to Workspace"
           >
-            <ArrowLeft className="w-4 h-4 text-[#0f0f1a]" />
+            <ArrowLeft className="w-4 h-4 text-heading" />
           </IconButton>
         </Link>
         <div className="flex items-center gap-2">
@@ -38,7 +38,7 @@ export const EditorHeader: React.FC<EditorHeaderProps> = ({
             type="text"
             value={tourName}
             onChange={(e) => onTourNameChange(e.target.value)}
-            className="text-[14px] sm:text-[15px] font-semibold text-[#0f0f1a] bg-transparent border-b border-transparent hover:border-[#d1d5db] focus:border-[#5B5CE2] focus:outline-none px-1 py-0.5 transition-colors"
+            className="text-[14px] sm:text-[15px] font-semibold text-heading bg-transparent border-b border-transparent hover:border-border-input focus:border-brand-purple focus:outline-none px-1 py-0.5 transition-colors"
           />
           <Badge variant={isSaved ? 'success' : 'warning'} size="sm" dot>
             {isSaved ? 'Saved' : 'Unsaved changes'}

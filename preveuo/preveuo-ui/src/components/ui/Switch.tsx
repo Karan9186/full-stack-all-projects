@@ -26,12 +26,12 @@ export const Switch: React.FC<SwitchProps> = ({
       {(label || description) && (
         <div className="flex flex-col text-left">
           {label && (
-            <span className="text-[12.5px] font-bold text-[#0f0f1a] select-none">
+            <span className="text-[12.5px] font-bold text-text-heading select-none">
               {label}
             </span>
           )}
           {description && (
-            <span className="text-[11px] text-[#6b7280] select-none">
+            <span className="text-[11px] text-text-body select-none">
               {description}
             </span>
           )}
@@ -45,7 +45,7 @@ export const Switch: React.FC<SwitchProps> = ({
         disabled={disabled}
         onClick={() => !disabled && onChange(!checked)}
         className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors duration-200 focus:outline-none cursor-pointer ${
-          checked ? 'bg-[#5B5CE2]' : 'bg-[#e5e7eb]'
+          checked ? 'bg-brand-purple' : 'bg-border-default'
         }`}
       >
         <span

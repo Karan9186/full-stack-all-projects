@@ -19,7 +19,7 @@ export const DemoTimelineBar: React.FC<DemoTimelineBarProps> = ({
   onNext,
 }) => {
   return (
-    <div className="h-16 border-t border-[#e5e7eb] bg-white px-4 sm:px-8 flex items-center justify-between shrink-0 z-20">
+    <div className="h-16 border-t border-border-default bg-white px-4 sm:px-8 flex items-center justify-between shrink-0 z-20">
       <Button
         variant="outline"
         size="sm"
@@ -43,14 +43,14 @@ export const DemoTimelineBar: React.FC<DemoTimelineBarProps> = ({
               onClick={() => onSelectStep(idx)}
               className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer whitespace-nowrap ${
                 isActive
-                  ? 'bg-[#5B5CE2] text-white shadow-xs'
+                  ? 'bg-brand-purple text-white shadow-xs'
                   : isPassed
-                  ? 'bg-[#f0f0f4] text-[#0f0f1a] hover:bg-[#e5e7eb]'
-                  : 'bg-white text-[#9ca3af] border border-[#e5e7eb] hover:border-[#d1d5db]'
+                  ? 'bg-border-light text-heading hover:bg-border-default'
+                  : 'bg-white text-muted border border-border-default hover:border-border-input'
               }`}
             >
               <span className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] ${
-                isActive ? 'bg-white text-[#5B5CE2]' : 'bg-[#e5e7eb] text-[#6b7280]'
+                isActive ? 'bg-white text-brand-purple' : 'bg-border-default text-body'
               }`}>
                 {idx + 1}
               </span>

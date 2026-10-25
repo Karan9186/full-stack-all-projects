@@ -27,7 +27,7 @@ export const Skeleton: React.FC<SkeletonProps> = ({
 
   return (
     <div
-      className={`animate-pulse bg-[#f0f0f4] ${roundedStyles[rounded]} ${className}`}
+      className={`animate-pulse bg-border-light ${roundedStyles[rounded]} ${className}`}
       {...props}
     />
   );
@@ -35,7 +35,7 @@ export const Skeleton: React.FC<SkeletonProps> = ({
 
 export const CardSkeleton: React.FC<{ className?: string }> = ({ className = '' }) => {
   return (
-    <div className={`p-6 rounded-2xl border border-[#e5e7eb] bg-white flex flex-col gap-4 ${className}`}>
+    <div className={`p-6 rounded-2xl border border-border-default bg-white flex flex-col gap-4 ${className}`}>
       <div className="flex items-center gap-3">
         <Skeleton rounded="full" className="w-10 h-10 shrink-0" />
         <div className="flex flex-col gap-2 w-full">
@@ -58,13 +58,13 @@ export const TableSkeleton: React.FC<{ rows?: number; columns?: number; classNam
   className = '',
 }) => {
   return (
-    <div className={`w-full rounded-2xl border border-[#e5e7eb] bg-white overflow-hidden ${className}`}>
-      <div className="p-4 border-b border-[#f0f0f4] flex gap-4 bg-[#fafafc]">
+    <div className={`w-full rounded-2xl border border-border-default bg-white overflow-hidden ${className}`}>
+      <div className="p-4 border-b border-border-light flex gap-4 bg-canvas">
         {Array.from({ length: columns }).map((_, i) => (
           <Skeleton key={i} className="h-4 flex-1" />
         ))}
       </div>
-      <div className="divide-y divide-[#f0f0f4]">
+      <div className="divide-y divide-border-light">
         {Array.from({ length: rows }).map((_, rowIndex) => (
           <div key={rowIndex} className="p-4 flex gap-4 items-center">
             {Array.from({ length: columns }).map((_, colIndex) => (

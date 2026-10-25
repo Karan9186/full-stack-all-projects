@@ -55,12 +55,12 @@ export const TranslationsSettingsTab: React.FC<TranslationsSettingsTabProps> = (
   };
 
   return (
-    <div className="space-y-6 text-[#0f0f1a] animate-fade-in max-w-2xl">
+    <div className="space-y-6 text-heading animate-fade-in max-w-2xl">
       {/* 1. Header & Auto Browser Detect */}
-      <div className="flex items-start justify-between pb-5 border-b border-[#f0f0f4]">
+      <div className="flex items-start justify-between pb-5 border-b border-border-light">
         <div>
-          <h4 className="text-sm font-bold text-[#0f0f1a]">Set Default Based on Browser</h4>
-          <p className="text-xs text-[#6b7280] mt-0.5 leading-relaxed">
+          <h4 className="text-sm font-bold text-heading">Set Default Based on Browser</h4>
+          <p className="text-xs text-body mt-0.5 leading-relaxed">
             Automatically display matching translations based on the viewer's default browser language settings.
           </p>
         </div>
@@ -71,40 +71,40 @@ export const TranslationsSettingsTab: React.FC<TranslationsSettingsTabProps> = (
             onChange={(e) => handleUpdate({ autoDetectBrowserLanguage: e.target.checked })}
             className="sr-only peer"
           />
-          <div className="w-11 h-6 bg-[#e5e7eb] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#5B5CE2]" />
+          <div className="w-11 h-6 bg-border-default peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand-purple" />
         </label>
       </div>
 
       {/* 2. Helpful Tip Card */}
-      <div className="p-3.5 rounded-2xl bg-indigo-50/60 border border-indigo-100 text-[#4338ca] text-xs flex items-start gap-2.5">
-        <Sparkles className="w-4 h-4 text-[#5B5CE2] shrink-0 mt-0.5" />
+      <div className="p-3.5 rounded-2xl bg-indigo-50/60 border border-indigo-100 text-indigo-700 text-xs flex items-start gap-2.5">
+        <Sparkles className="w-4 h-4 text-brand-purple shrink-0 mt-0.5" />
         <p className="leading-snug">
           <strong>Tip:</strong> Add your desired translations via the Translations Hub to ensure accurate language detection for international visitors.
         </p>
       </div>
 
       {/* 3. Translations Hub Card */}
-      <div className="p-5 rounded-2xl bg-[#fafafc] border border-[#e5e7eb] space-y-3">
+      <div className="p-5 rounded-2xl bg-canvas border border-border-default space-y-3">
         <div className="flex items-center gap-2">
-          <Globe2 className="w-4 h-4 text-[#5B5CE2]" />
-          <h4 className="text-sm font-bold text-[#0f0f1a]">Translations Hub</h4>
+          <Globe2 className="w-4 h-4 text-brand-purple" />
+          <h4 className="text-sm font-bold text-heading">Translations Hub</h4>
         </div>
-        <p className="text-xs text-[#6b7280] leading-relaxed">
+        <p className="text-xs text-body leading-relaxed">
           Let viewers toggle between multiple languages seamlessly, all from a single demo link or embed.
         </p>
 
         <button
           type="button"
           onClick={() => setShowHubDrawer(!showHubDrawer)}
-          className="px-4 py-2 rounded-xl bg-[#5B5CE2] hover:bg-[#4a4bd4] text-white text-xs font-semibold shadow-xs flex items-center gap-1.5 cursor-pointer transition-all hover:shadow-md"
+          className="px-4 py-2 rounded-xl bg-brand-purple hover:bg-brand-purple-hover text-white text-xs font-semibold shadow-xs flex items-center gap-1.5 cursor-pointer transition-all hover:shadow-md"
         >
           <Languages className="w-3.5 h-3.5" />
           <span>{showHubDrawer ? 'Hide Translations Hub' : 'Open Translations Hub'}</span>
         </button>
 
         {showHubDrawer && (
-          <div className="pt-3 border-t border-[#e5e7eb] space-y-2 animate-in fade-in duration-150">
-            <div className="text-[11px] font-bold text-[#374151] uppercase tracking-wider">
+          <div className="pt-3 border-t border-border-default space-y-2 animate-in fade-in duration-150">
+            <div className="text-[11px] font-bold text-gray-700 uppercase tracking-wider">
               Enable Languages for this Walkthrough:
             </div>
             <div className="grid grid-cols-2 gap-2">
@@ -117,12 +117,12 @@ export const TranslationsSettingsTab: React.FC<TranslationsSettingsTabProps> = (
                     onClick={() => toggleLanguage(lang.code)}
                     className={`p-2.5 rounded-xl border text-left text-xs font-semibold flex items-center justify-between transition-all cursor-pointer ${
                       isSelected
-                        ? 'border-[#5B5CE2] bg-[#5B5CE2]/10 text-[#5B5CE2]'
-                        : 'border-[#e5e7eb] bg-white text-[#4b5563] hover:border-[#cbd5e1]'
+                        ? 'border-brand-purple bg-brand-purple/10 text-brand-purple'
+                        : 'border-border-default bg-white text-gray-600 hover:border-slate-300'
                     }`}
                   >
                     <span>{lang.name}</span>
-                    {isSelected && <Check className="w-3.5 h-3.5 text-[#5B5CE2]" />}
+                    {isSelected && <Check className="w-3.5 h-3.5 text-brand-purple" />}
                   </button>
                 );
               })}

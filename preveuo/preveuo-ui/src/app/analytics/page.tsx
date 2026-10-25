@@ -16,7 +16,7 @@ export default function AnalyticsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#f8f9fc] text-[#0f0f1a] flex font-sans selection:bg-[#5B5CE2] selection:text-white">
+    <div className="min-h-screen bg-light text-heading flex font-sans selection:bg-brand-purple selection:text-white">
       {/* Left Sidebar with active Analytics tab */}
       <WorkspaceSidebar
         activeTab="analytics"
@@ -41,7 +41,7 @@ export default function AnalyticsPage() {
       <button
         type="button"
         aria-label="Help & Support"
-        className="fixed bottom-6 right-6 w-10 h-10 rounded-full bg-[#0f0f1a] text-white flex items-center justify-center font-bold text-sm shadow-xl hover:scale-105 active:scale-95 transition-transform cursor-pointer z-50 border border-white/10"
+        className="fixed bottom-6 right-6 w-10 h-10 rounded-full bg-dark text-white flex items-center justify-center font-bold text-sm shadow-xl hover:scale-105 active:scale-95 transition-transform cursor-pointer z-50 border border-white/10"
       >
         ?
       </button>

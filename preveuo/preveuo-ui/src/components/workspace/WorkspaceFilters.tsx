@@ -29,8 +29,8 @@ export const WorkspaceFilters: React.FC<WorkspaceFiltersProps> = ({
               onClick={() => onSelectCategory(cat)}
               className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all shrink-0 cursor-pointer ${
                 isSelected
-                  ? 'bg-[#5B5CE2] text-white shadow-xs'
-                  : 'bg-white text-[#6b7280] hover:text-[#0f0f1a] border border-[#e5e7eb] hover:border-[#d1d5db]'
+                  ? 'bg-brand-purple text-white shadow-xs'
+                  : 'bg-white text-body hover:text-heading border border-border-default hover:border-border-input'
               }`}
             >
               {cat}

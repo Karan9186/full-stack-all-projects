@@ -9,3 +9,4 @@ export * from './resources';
 export * from './how-it-works';
 export * from './demo';
 export * from './common';
+export * from '@/lib/constants/theme';

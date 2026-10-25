@@ -461,7 +461,7 @@ export const WORKSPACE_FULL_ACTIVITY = [
     id: 'act-5',
     user: 'Sarah Jenkins',
     action: 'integrated Slack channel',
-    demoName: '#sales-demo-alerts',
+    demoName: 'sales-demo-alerts',
     timeAgo: '2 days ago',
     avatarInitials: 'SJ',
     details: 'Configured automated prospect notifications.',

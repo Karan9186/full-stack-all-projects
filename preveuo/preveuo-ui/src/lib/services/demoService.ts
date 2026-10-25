@@ -1,3 +1,4 @@
+import { THEME_COLORS } from '@/lib/constants/theme';
 import mongoose from 'mongoose';
 import { connectToDatabase } from '@/lib/db/mongodb';
 import { Demo, IDemoDoc } from '@/lib/db/models/Demo';
@@ -19,6 +20,7 @@ import {
   DemoRuntimeSnapshot,
   DemoAnalyticsEventType,
 } from '@/types/demo';
+import { PRIMARY_COLOR } from '@/lib/constants/theme';
 
 function generateRandomSlug(base: string): string {
   const clean = base
@@ -367,9 +369,9 @@ export class DemoService {
         showCursor: true,
         showControls: true,
         responsive: true,
-        background: '#0f0f1a',
+        background: THEME_COLORS.bgDark,
         defaultTransition: 'fade',
-        accentColor: '#5B5CE2',
+        accentColor: PRIMARY_COLOR,
       },
     });
 
@@ -386,7 +388,7 @@ export class DemoService {
         sourceType: 'screenshot',
         sourceAssetUrl: payload.initialImageUrl,
         viewport: { width: 1920, height: 1080, aspectRatio: '16:9' },
-        background: '#f8f8fc',
+        background: THEME_COLORS.bgLight,
       });
 
       const stepDoc = await Step.create({
@@ -557,7 +559,7 @@ export class DemoService {
           sourceType: s.sourceType || 'screenshot',
           sourceAssetUrl: s.sourceAssetUrl || '',
           viewport: s.viewport || { width: 1920, height: 1080 },
-          background: s.background || '#f8f8fc',
+          background: s.background || THEME_COLORS.bgLight,
           metadata: s.metadata || {},
         };
       });
@@ -586,7 +588,7 @@ export class DemoService {
           sourceType: 'screenshot',
           sourceAssetUrl: '',
           viewport: { width: 1920, height: 1080 },
-          background: '#f8f8fc',
+          background: THEME_COLORS.bgLight,
         });
         fallbackSceneId = defaultScene._id;
       }

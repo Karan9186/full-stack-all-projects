@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { HotspotPointerStyle, PointerAnimationSettings } from '@/types/demo';
 import { PointerRenderer } from './PointerRenderer';
 import { RotateCcw, Sparkles, Volume2, Gauge, Maximize2 } from 'lucide-react';
+import { PRIMARY_COLOR, THEME_COLORS } from '@/lib/constants/theme';
 
 export interface PointerMiniPreviewProps {
   style: HotspotPointerStyle;
@@ -15,7 +16,7 @@ export interface PointerMiniPreviewProps {
 
 export const PointerMiniPreview: React.FC<PointerMiniPreviewProps> = ({
   style,
-  color = '#5B5CE2',
+  color = PRIMARY_COLOR,
   size = 'md',
   animationSettings,
   onAnimationChange,
@@ -48,16 +49,16 @@ export const PointerMiniPreview: React.FC<PointerMiniPreviewProps> = ({
   const clickFeedback = animationSettings?.clickFeedback !== false;
 
   return (
-    <div className="rounded-xl border border-[#e5e7eb] bg-white overflow-hidden shadow-2xs select-none">
+    <div className="rounded-xl border border-border-default bg-white overflow-hidden shadow-2xs select-none">
       {/* Top Header with Status Indicator & Replay Button */}
-      <div className="h-8 px-2.5 bg-[#f8f8fc] border-b border-[#e5e7eb] flex items-center justify-between text-xs">
+      <div className="h-8 px-2.5 bg-light border-b border-border-default flex items-center justify-between text-xs">
         <div className="flex items-center gap-1.5">
           <span
             className={`w-1.5 h-1.5 rounded-full transition-colors ${
-              isPlaying ? 'bg-emerald-500 animate-pulse' : 'bg-[#5B5CE2]'
+              isPlaying ? 'bg-emerald-500 animate-pulse' : 'bg-brand-purple'
             }`}
           />
-          <span className="text-[10.5px] font-semibold text-[#4b5563] uppercase tracking-wider">
+          <span className="text-[10.5px] font-semibold text-gray-600 uppercase tracking-wider">
             {isPlaying ? 'Playing Preview' : 'Interactive Preview'}
           </span>
         </div>
@@ -65,7 +66,7 @@ export const PointerMiniPreview: React.FC<PointerMiniPreviewProps> = ({
         <button
           type="button"
           onClick={handleReplay}
-          className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md hover:bg-white text-[11px] font-semibold text-[#5B5CE2] border border-transparent hover:border-[#e5e7eb] transition-all cursor-pointer shadow-2xs active:scale-95"
+          className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md hover:bg-white text-[11px] font-semibold text-brand-purple border border-transparent hover:border-border-default transition-all cursor-pointer shadow-2xs active:scale-95"
           title="Replay pointer animation"
         >
           <RotateCcw className="w-3 h-3" />
@@ -76,15 +77,15 @@ export const PointerMiniPreview: React.FC<PointerMiniPreviewProps> = ({
       {/* Miniature Demonstration Canvas */}
       <div
         style={{
-          backgroundColor: '#fafafc',
-          backgroundImage: 'radial-gradient(#d1d5db 1px, transparent 1px)',
+          backgroundColor: THEME_COLORS.bgCanvas,
+          backgroundImage: `radial-gradient(${THEME_COLORS.borderInput} 1px, transparent 1px)`,
           backgroundSize: '12px 12px',
         }}
         className="h-28 relative flex items-center justify-center overflow-hidden p-4"
       >
         {/* Sample Target UI element inside miniature canvas */}
-        <div className="relative inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-white border border-[#d1d5db] text-xs font-semibold text-[#0f0f1a] shadow-xs">
-          <Sparkles className="w-3.5 h-3.5 text-[#5B5CE2]" />
+        <div className="relative inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-white border border-border-input text-xs font-semibold text-heading shadow-xs">
+          <Sparkles className="w-3.5 h-3.5 text-brand-purple" />
           <span>Save changes</span>
 
           {/* Pointer Anchored right on the target */}
@@ -103,12 +104,12 @@ export const PointerMiniPreview: React.FC<PointerMiniPreviewProps> = ({
 
       {/* Compact Animation Settings Controls (only rendered if onAnimationChange provided) */}
       {onAnimationChange && (
-        <div className="p-2.5 bg-[#fcfcfe] border-t border-[#f0f0f4] space-y-2 text-xs">
+        <div className="p-2.5 bg-light border-t border-border-light space-y-2 text-xs">
           {/* Size & Speed Row */}
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-1">
-              <span className="text-[11px] font-medium text-[#6b7280]">Size:</span>
-              <div className="flex items-center bg-[#f1f2f6] p-0.5 rounded-lg">
+              <span className="text-[11px] font-medium text-body">Size:</span>
+              <div className="flex items-center bg-gray-100 p-0.5 rounded-lg">
                 {(['sm', 'md', 'lg'] as const).map((s) => (
                   <button
                     key={s}
@@ -116,8 +117,8 @@ export const PointerMiniPreview: React.FC<PointerMiniPreviewProps> = ({
                     onClick={() => onAnimationChange({ size: s })}
                     className={`px-2 py-0.5 text-[10.5px] font-semibold rounded-md transition-all cursor-pointer ${
                       currentSize === s
-                        ? 'bg-white text-[#0f0f1a] shadow-2xs'
-                        : 'text-[#6b7280] hover:text-[#0f0f1a]'
+                        ? 'bg-white text-heading shadow-2xs'
+                        : 'text-body hover:text-heading'
                     }`}
                   >
                     {s.toUpperCase()}
@@ -127,8 +128,8 @@ export const PointerMiniPreview: React.FC<PointerMiniPreviewProps> = ({
             </div>
 
             <div className="flex items-center gap-1">
-              <span className="text-[11px] font-medium text-[#6b7280]">Speed:</span>
-              <div className="flex items-center bg-[#f1f2f6] p-0.5 rounded-lg">
+              <span className="text-[11px] font-medium text-body">Speed:</span>
+              <div className="flex items-center bg-gray-100 p-0.5 rounded-lg">
                 {(['slow', 'medium', 'fast'] as const).map((spd) => (
                   <button
                     key={spd}
@@ -136,8 +137,8 @@ export const PointerMiniPreview: React.FC<PointerMiniPreviewProps> = ({
                     onClick={() => onAnimationChange({ speed: spd })}
                     className={`px-1.5 py-0.5 text-[10.5px] font-semibold rounded-md transition-all cursor-pointer capitalize ${
                       currentSpeed === spd
-                        ? 'bg-white text-[#0f0f1a] shadow-2xs'
-                        : 'text-[#6b7280] hover:text-[#0f0f1a]'
+                        ? 'bg-white text-heading shadow-2xs'
+                        : 'text-body hover:text-heading'
                     }`}
                   >
                     {spd === 'medium' ? 'Norm' : spd}
@@ -149,13 +150,13 @@ export const PointerMiniPreview: React.FC<PointerMiniPreviewProps> = ({
 
           {/* Contextual Options based on Style */}
           {(canonicalStyle === 'cursor' || canonicalStyle === 'hand') && (
-            <div className="flex items-center justify-between pt-1 border-t border-[#f0f0f4]">
-              <span className="text-[11px] font-medium text-[#6b7280]">Click Ripple Feedback</span>
+            <div className="flex items-center justify-between pt-1 border-t border-border-light">
+              <span className="text-[11px] font-medium text-body">Click Ripple Feedback</span>
               <button
                 type="button"
                 onClick={() => onAnimationChange({ clickFeedback: !clickFeedback })}
                 className={`relative inline-flex h-4 w-7 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-150 ease-in-out focus:outline-hidden ${
-                  clickFeedback ? 'bg-[#5B5CE2]' : 'bg-[#e5e7eb]'
+                  clickFeedback ? 'bg-brand-purple' : 'bg-border-default'
                 }`}
               >
                 <span
@@ -168,9 +169,9 @@ export const PointerMiniPreview: React.FC<PointerMiniPreviewProps> = ({
           )}
 
           {(canonicalStyle === 'beacon' || canonicalStyle === 'target') && (
-            <div className="flex items-center justify-between pt-1 border-t border-[#f0f0f4]">
-              <span className="text-[11px] font-medium text-[#6b7280]">Ring Pulse Intensity</span>
-              <div className="flex items-center bg-[#f1f2f6] p-0.5 rounded-lg">
+            <div className="flex items-center justify-between pt-1 border-t border-border-light">
+              <span className="text-[11px] font-medium text-body">Ring Pulse Intensity</span>
+              <div className="flex items-center bg-gray-100 p-0.5 rounded-lg">
                 {(['subtle', 'standard', 'high'] as const).map((intensity) => (
                   <button
                     key={intensity}
@@ -178,8 +179,8 @@ export const PointerMiniPreview: React.FC<PointerMiniPreviewProps> = ({
                     onClick={() => onAnimationChange({ intensity })}
                     className={`px-1.5 py-0.5 text-[10.5px] font-semibold rounded-md transition-all cursor-pointer capitalize ${
                       (animationSettings?.intensity || 'standard') === intensity
-                        ? 'bg-white text-[#0f0f1a] shadow-2xs'
-                        : 'text-[#6b7280] hover:text-[#0f0f1a]'
+                        ? 'bg-white text-heading shadow-2xs'
+                        : 'text-body hover:text-heading'
                     }`}
                   >
                     {intensity}

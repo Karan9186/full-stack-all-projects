@@ -23,9 +23,9 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
 }) => {
   return (
     <div
-      className={`flex flex-col items-center justify-center text-center p-8 sm:p-12 rounded-2xl border border-dashed border-[#d1d5db] bg-[#fafafc] ${className}`}
+      className={`flex flex-col items-center justify-center text-center p-8 sm:p-12 rounded-2xl border border-dashed border-border-input bg-canvas ${className}`}
     >
-      <div className="w-12 h-12 rounded-2xl bg-[#5B5CE2]/10 text-[#5B5CE2] flex items-center justify-center mb-4">
+      <div className="w-12 h-12 rounded-2xl bg-brand-purple/10 text-brand-purple flex items-center justify-center mb-4">
         {icon || (
           <svg
             className="w-6 h-6"
@@ -43,12 +43,12 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
         )}
       </div>
 
-      <h4 className="text-[15px] sm:text-[16px] font-semibold text-[#0f0f1a] tracking-tight">
+      <h4 className="text-[15px] sm:text-[16px] font-semibold text-heading tracking-tight">
         {title}
       </h4>
 
       {description && (
-        <p className="text-[13px] sm:text-[13.5px] text-[#6b7280] font-normal max-w-sm mt-1.5 leading-relaxed">
+        <p className="text-[13px] sm:text-[13.5px] text-body font-normal max-w-sm mt-1.5 leading-relaxed">
           {description}
         </p>
       )}

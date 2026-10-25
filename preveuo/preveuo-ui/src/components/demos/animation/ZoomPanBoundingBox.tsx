@@ -198,9 +198,9 @@ export const ZoomPanBoundingBox: React.FC<ZoomPanBoundingBoxProps> = ({
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
         onPointerCancel={handlePointerUp}
-        className={`absolute rounded-xl border-2 border-[#5B5CE2] shadow-2xl transition-shadow ${
+        className={`absolute rounded-xl border-2 border-brand-purple shadow-2xl transition-shadow ${
           isInteractive
-            ? 'pointer-events-auto cursor-move hover:border-[#4a4bd4] hover:shadow-[0_0_0_1px_#5B5CE2]'
+            ? 'pointer-events-auto cursor-move hover:border-brand-purple-hover hover:ring-1 hover:ring-brand-purple'
             : 'pointer-events-none'
         }`}
         style={{
@@ -211,11 +211,11 @@ export const ZoomPanBoundingBox: React.FC<ZoomPanBoundingBoxProps> = ({
         }}
       >
         {/* Subtle inner grid lines or center indicator */}
-        <div className="absolute inset-0 bg-[#5B5CE2]/5 rounded-lg pointer-events-none" />
+        <div className="absolute inset-0 bg-brand-purple/5 rounded-lg pointer-events-none" />
 
         {/* Zoom Magnifier Pill Tag (Top-left inside box) */}
-        <div className="absolute top-2 left-2 pointer-events-none flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-white/95 text-[#0f0f1a] shadow-xs text-[10px] font-bold font-mono">
-          <span className="w-1.5 h-1.5 rounded-full bg-[#5B5CE2]" />
+        <div className="absolute top-2 left-2 pointer-events-none flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-white/95 text-heading shadow-xs text-[10px] font-bold font-mono">
+          <span className="w-1.5 h-1.5 rounded-full bg-brand-purple" />
           <span>Zoom {currentZoomMultiplier.toFixed(1)}×</span>
         </div>
 
@@ -228,7 +228,7 @@ export const ZoomPanBoundingBox: React.FC<ZoomPanBoundingBoxProps> = ({
               onPointerMove={handlePointerMove}
               onPointerUp={handlePointerUp}
               onPointerCancel={handlePointerUp}
-              className="absolute -top-1.5 -left-1.5 w-3.5 h-3.5 rounded bg-[#5B5CE2] border-2 border-white shadow-md cursor-nwse-resize hover:scale-125 transition-transform z-40"
+              className="absolute -top-1.5 -left-1.5 w-3.5 h-3.5 rounded bg-brand-purple border-2 border-white shadow-md cursor-nwse-resize hover:scale-125 transition-transform z-40"
               title="Resize Top-Left"
             />
             {/* Top-Right */}
@@ -237,7 +237,7 @@ export const ZoomPanBoundingBox: React.FC<ZoomPanBoundingBoxProps> = ({
               onPointerMove={handlePointerMove}
               onPointerUp={handlePointerUp}
               onPointerCancel={handlePointerUp}
-              className="absolute -top-1.5 -right-1.5 w-3.5 h-3.5 rounded bg-[#5B5CE2] border-2 border-white shadow-md cursor-nesw-resize hover:scale-125 transition-transform z-40"
+              className="absolute -top-1.5 -right-1.5 w-3.5 h-3.5 rounded bg-brand-purple border-2 border-white shadow-md cursor-nesw-resize hover:scale-125 transition-transform z-40"
               title="Resize Top-Right"
             />
             {/* Bottom-Left */}
@@ -246,7 +246,7 @@ export const ZoomPanBoundingBox: React.FC<ZoomPanBoundingBoxProps> = ({
               onPointerMove={handlePointerMove}
               onPointerUp={handlePointerUp}
               onPointerCancel={handlePointerUp}
-              className="absolute -bottom-1.5 -left-1.5 w-3.5 h-3.5 rounded bg-[#5B5CE2] border-2 border-white shadow-md cursor-nesw-resize hover:scale-125 transition-transform z-40"
+              className="absolute -bottom-1.5 -left-1.5 w-3.5 h-3.5 rounded bg-brand-purple border-2 border-white shadow-md cursor-nesw-resize hover:scale-125 transition-transform z-40"
               title="Resize Bottom-Left"
             />
             {/* Bottom-Right */}
@@ -255,7 +255,7 @@ export const ZoomPanBoundingBox: React.FC<ZoomPanBoundingBoxProps> = ({
               onPointerMove={handlePointerMove}
               onPointerUp={handlePointerUp}
               onPointerCancel={handlePointerUp}
-              className="absolute -bottom-1.5 -right-1.5 w-3.5 h-3.5 rounded bg-[#5B5CE2] border-2 border-white shadow-md cursor-nwse-resize hover:scale-125 transition-transform z-40"
+              className="absolute -bottom-1.5 -right-1.5 w-3.5 h-3.5 rounded bg-brand-purple border-2 border-white shadow-md cursor-nwse-resize hover:scale-125 transition-transform z-40"
               title="Resize Bottom-Right"
             />
           </>
@@ -265,7 +265,7 @@ export const ZoomPanBoundingBox: React.FC<ZoomPanBoundingBoxProps> = ({
         <div
           onPointerDown={(e) => e.stopPropagation()}
           onClick={(e) => e.stopPropagation()}
-          className="absolute top-full mt-3 left-1/2 -translate-x-1/2 pointer-events-auto z-50 flex items-center gap-1.5 p-1 bg-white rounded-2xl shadow-xl border border-[#e5e7eb] animate-fade-in"
+          className="absolute top-full mt-3 left-1/2 -translate-x-1/2 pointer-events-auto z-50 flex items-center gap-1.5 p-1 bg-white rounded-2xl shadow-xl border border-border-default animate-fade-in"
         >
           {/* Zoom Preview Button */}
           <button
@@ -275,7 +275,7 @@ export const ZoomPanBoundingBox: React.FC<ZoomPanBoundingBoxProps> = ({
               e.stopPropagation();
               onPreview();
             }}
-            className="px-4 py-2 rounded-xl bg-[#5B5CE2] hover:bg-[#4a4bd4] active:scale-95 text-white text-xs font-semibold shadow-xs flex items-center gap-1.5 transition-all duration-150 cursor-pointer hover:shadow-md"
+            className="px-4 py-2 rounded-xl bg-brand-purple hover:bg-brand-purple-hover active:scale-95 text-white text-xs font-semibold shadow-xs flex items-center gap-1.5 transition-all duration-150 cursor-pointer hover:shadow-md"
             title="Preview camera zoom in place"
           >
             <Play className="w-3.5 h-3.5 fill-current" />
@@ -306,8 +306,8 @@ export const ZoomPanBoundingBox: React.FC<ZoomPanBoundingBoxProps> = ({
               }}
               className={`w-8 h-8 rounded-xl flex items-center justify-center transition-colors cursor-pointer ${
                 showHelpTooltip
-                  ? 'bg-[#5B5CE2]/10 text-[#5B5CE2]'
-                  : 'text-gray-400 hover:text-[#5B5CE2] hover:bg-gray-100'
+                  ? 'bg-brand-purple/10 text-brand-purple'
+                  : 'text-gray-400 hover:text-brand-purple hover:bg-gray-100'
               }`}
               title="Help & instructions"
             >
@@ -317,7 +317,7 @@ export const ZoomPanBoundingBox: React.FC<ZoomPanBoundingBoxProps> = ({
             {showHelpTooltip && (
               <div
                 onClick={(e) => e.stopPropagation()}
-                className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 w-64 p-3 rounded-2xl bg-[#0f0f1a] text-white text-xs shadow-2xl border border-white/10 space-y-1.5 z-60 animate-in fade-in zoom-in-95 duration-150"
+                className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 w-64 p-3 rounded-2xl bg-dark text-white text-xs shadow-2xl border border-white/10 space-y-1.5 z-60 animate-in fade-in zoom-in-95 duration-150"
               >
                 <div className="flex items-center justify-between font-bold text-white">
                   <span>How Zoom & Pan Works</span>
@@ -333,7 +333,7 @@ export const ZoomPanBoundingBox: React.FC<ZoomPanBoundingBoxProps> = ({
                   Drag the box to pan the camera focus. Resize corners to zoom in on key buttons or fields.
                   During playback, the viewer smoothly zooms directly into this crop region!
                 </p>
-                <div className="pt-1 flex items-center justify-between text-[10px] text-[#5B5CE2] font-semibold">
+                <div className="pt-1 flex items-center justify-between text-[10px] text-brand-purple font-semibold">
                   <span>Aspect-ratio locked</span>
                   <span className="font-mono">{currentZoomMultiplier.toFixed(1)}× magnification</span>
                 </div>

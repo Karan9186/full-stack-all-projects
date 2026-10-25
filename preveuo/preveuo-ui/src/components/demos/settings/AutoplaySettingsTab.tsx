@@ -20,12 +20,12 @@ export const AutoplaySettingsTab: React.FC<AutoplaySettingsTabProps> = ({
   const isLoop = settings.loop ?? settings.autoplayLoop ?? false;
 
   return (
-    <div className="space-y-6 text-[#0f0f1a] animate-fade-in">
+    <div className="space-y-6 text-heading animate-fade-in">
       {/* 1. Main Autoplay Toggle Header (matches Image 2) */}
-      <div className="flex items-start justify-between pb-4 border-b border-[#f0f0f4]">
+      <div className="flex items-start justify-between pb-4 border-b border-border-light">
         <div>
-          <h3 className="text-base font-extrabold text-[#0f0f1a]">Autoplay</h3>
-          <p className="text-xs text-[#6b7280] mt-0.5">
+          <h3 className="text-base font-extrabold text-heading">Autoplay</h3>
+          <p className="text-xs text-body mt-0.5">
             Automatically play content without user interaction.
           </p>
         </div>
@@ -38,20 +38,20 @@ export const AutoplaySettingsTab: React.FC<AutoplaySettingsTabProps> = ({
             onChange={(e) => onChange({ autoplay: e.target.checked })}
             className="sr-only peer"
           />
-          <div className="w-11 h-6 bg-[#e5e7eb] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#5B5CE2]" />
+          <div className="w-11 h-6 bg-border-default peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand-purple" />
         </label>
       </div>
 
       {/* 2. Timing Mode Switcher: Uniform vs Custom per slide */}
       <div className={`space-y-5 transition-opacity duration-200 ${isAutoplay ? 'opacity-100' : 'opacity-40 pointer-events-none'}`}>
-        <div className="inline-flex p-1 bg-[#f0f0f4] rounded-2xl border border-[#e5e7eb] w-full sm:w-auto">
+        <div className="inline-flex p-1 bg-border-light rounded-2xl border border-border-default w-full sm:w-auto">
           <button
             type="button"
             onClick={() => onChange({ autoplayMode: 'uniform' })}
             className={`px-5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
               timingMode === 'uniform'
-                ? 'bg-white text-[#0f0f1a] shadow-xs'
-                : 'text-[#6b7280] hover:text-[#0f0f1a]'
+                ? 'bg-white text-heading shadow-xs'
+                : 'text-body hover:text-heading'
             }`}
           >
             Uniform across slides
@@ -61,8 +61,8 @@ export const AutoplaySettingsTab: React.FC<AutoplaySettingsTabProps> = ({
             onClick={() => onChange({ autoplayMode: 'custom' })}
             className={`px-5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
               timingMode === 'custom'
-                ? 'bg-white text-[#0f0f1a] shadow-xs'
-                : 'text-[#6b7280] hover:text-[#0f0f1a]'
+                ? 'bg-white text-heading shadow-xs'
+                : 'text-body hover:text-heading'
             }`}
           >
             Custom per slide
@@ -74,10 +74,10 @@ export const AutoplaySettingsTab: React.FC<AutoplaySettingsTabProps> = ({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* Step Duration (ms) */}
             <div className="space-y-1.5">
-              <div className="flex items-center gap-1.5 text-xs font-bold text-[#374151]">
+              <div className="flex items-center gap-1.5 text-xs font-bold text-gray-700">
                 <span>Step Duration (ms)</span>
                 <span title="Dwell time each slide stays in view before progressing">
-                  <Info className="w-3.5 h-3.5 text-[#9ca3af]" />
+                  <Info className="w-3.5 h-3.5 text-muted" />
                 </span>
               </div>
               <div className="relative">
@@ -92,10 +92,10 @@ export const AutoplaySettingsTab: React.FC<AutoplaySettingsTabProps> = ({
                       autoplayDelay: Math.max(500, parseInt(e.target.value, 10) || 2000),
                     })
                   }
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-[#d1d5db] bg-white text-xs font-semibold text-[#0f0f1a] focus:outline-none focus:border-[#5B5CE2] focus:ring-2 focus:ring-[#5B5CE2]/20 transition-all"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-border-input bg-white text-xs font-semibold text-heading focus:outline-none focus:border-brand-purple focus:ring-2 focus:ring-brand-purple/20 transition-all"
                   placeholder="2000"
                 />
-                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[11px] text-[#9ca3af] font-mono">
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[11px] text-muted font-mono">
                   ms
                 </span>
               </div>
@@ -103,10 +103,10 @@ export const AutoplaySettingsTab: React.FC<AutoplaySettingsTabProps> = ({
 
             {/* Transition Delay (ms) */}
             <div className="space-y-1.5">
-              <div className="flex items-center gap-1.5 text-xs font-bold text-[#374151]">
+              <div className="flex items-center gap-1.5 text-xs font-bold text-gray-700">
                 <span>Transition Delay (ms)</span>
                 <span title="Delay between zoom animation finish and slide advance">
-                  <Info className="w-3.5 h-3.5 text-[#9ca3af]" />
+                  <Info className="w-3.5 h-3.5 text-muted" />
                 </span>
               </div>
               <div className="relative">
@@ -121,22 +121,22 @@ export const AutoplaySettingsTab: React.FC<AutoplaySettingsTabProps> = ({
                       transitionDelayMs: Math.max(0, parseInt(e.target.value, 10) || 500),
                     })
                   }
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-[#d1d5db] bg-white text-xs font-semibold text-[#0f0f1a] focus:outline-none focus:border-[#5B5CE2] focus:ring-2 focus:ring-[#5B5CE2]/20 transition-all"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-border-input bg-white text-xs font-semibold text-heading focus:outline-none focus:border-brand-purple focus:ring-2 focus:ring-brand-purple/20 transition-all"
                   placeholder="500"
                 />
-                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[11px] text-[#9ca3af] font-mono">
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[11px] text-muted font-mono">
                   ms
                 </span>
               </div>
             </div>
           </div>
         ) : (
-          <div className="p-4 rounded-2xl bg-[#f8f8fc] border border-[#e5e7eb] space-y-1.5">
-            <div className="text-xs font-bold text-[#0f0f1a] flex items-center gap-1.5">
-              <Clock className="w-4 h-4 text-[#5B5CE2]" />
+          <div className="p-4 rounded-2xl bg-light border border-border-default space-y-1.5">
+            <div className="text-xs font-bold text-heading flex items-center gap-1.5">
+              <Clock className="w-4 h-4 text-brand-purple" />
               <span>Per-Slide Individual Timing Active</span>
             </div>
-            <p className="text-[11px] text-[#6b7280] leading-relaxed">
+            <p className="text-[11px] text-body leading-relaxed">
               In this mode, each slide uses its own custom duration configured in the slide's Animation properties.
               Slides without an override will default to {stepDuration}ms.
             </p>
@@ -146,8 +146,8 @@ export const AutoplaySettingsTab: React.FC<AutoplaySettingsTabProps> = ({
         {/* 4. Loop Content Toggle Switch */}
         <div className="flex items-start justify-between pt-2">
           <div>
-            <h4 className="text-xs font-bold text-[#0f0f1a]">Loop content</h4>
-            <p className="text-[11px] text-[#6b7280] mt-0.5">
+            <h4 className="text-xs font-bold text-heading">Loop content</h4>
+            <p className="text-[11px] text-body mt-0.5">
               Repeat in a loop with continuous playback.
             </p>
           </div>
@@ -161,13 +161,13 @@ export const AutoplaySettingsTab: React.FC<AutoplaySettingsTabProps> = ({
               }
               className="sr-only peer"
             />
-            <div className="w-10 h-5.5 bg-[#e5e7eb] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4.5 after:w-4.5 after:transition-all peer-checked:bg-[#5B5CE2]" />
+            <div className="w-10 h-5.5 bg-border-default peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4.5 after:w-4.5 after:transition-all peer-checked:bg-brand-purple" />
           </label>
         </div>
 
         {/* 5. Warning Notice Banner (matches Image 2 exactly) */}
-        <div className="p-3.5 rounded-2xl bg-[#FFF7ED] border border-[#FFEDD5] text-[#9A3412] flex items-center gap-2.5 shadow-2xs">
-          <AlertCircle className="w-4 h-4 text-[#EA580C] shrink-0" />
+        <div className="p-3.5 rounded-2xl bg-amber-50 border border-amber-200 text-amber-800 flex items-center gap-2.5 shadow-2xs">
+          <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
           <p className="text-xs font-medium leading-snug">
             If a voiceover is present, the longer of the step or voiceover duration is used.
           </p>

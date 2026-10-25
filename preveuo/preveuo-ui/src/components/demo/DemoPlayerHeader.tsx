@@ -31,7 +31,7 @@ export const DemoPlayerHeader: React.FC<DemoPlayerHeaderProps> = ({
   onModeChange,
 }) => {
   return (
-    <header className="h-16 border-b border-[#e5e7eb] bg-white px-4 sm:px-6 flex items-center justify-between z-20 shrink-0">
+    <header className="h-16 border-b border-border-default bg-white px-4 sm:px-6 flex items-center justify-between z-20 shrink-0">
       {/* Left: Back & Tour Info */}
       <div className="flex items-center gap-3">
         <Link href="/workspace">
@@ -40,12 +40,12 @@ export const DemoPlayerHeader: React.FC<DemoPlayerHeaderProps> = ({
             size="sm"
             aria-label="Back to Workspace"
           >
-            <ArrowLeft className="w-4 h-4 text-[#0f0f1a]" />
+            <ArrowLeft className="w-4 h-4 text-heading" />
           </IconButton>
         </Link>
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-[14px] sm:text-[15px] font-bold text-[#0f0f1a] truncate max-w-[200px] sm:max-w-xs">
+            <h1 className="text-[14px] sm:text-[15px] font-bold text-heading truncate max-w-[200px] sm:max-w-xs">
               {title}
             </h1>
             <Badge variant="purple" size="sm">
@@ -78,11 +78,11 @@ export const DemoPlayerHeader: React.FC<DemoPlayerHeaderProps> = ({
           onClick={onRestart}
           aria-label="Restart tour"
         >
-          <RotateCcw className="w-4 h-4 text-[#6b7280]" />
+          <RotateCcw className="w-4 h-4 text-body" />
         </IconButton>
 
         {/* Speed toggle */}
-        <div className="flex items-center rounded-xl bg-[#f0f0f4] p-1 border border-[#e5e7eb] text-xs">
+        <div className="flex items-center rounded-xl bg-border-light p-1 border border-border-default text-xs">
           {[1, 1.5, 2].map((s) => (
             <button
               key={s}
@@ -90,8 +90,8 @@ export const DemoPlayerHeader: React.FC<DemoPlayerHeaderProps> = ({
               onClick={() => onSpeedChange(s)}
               className={`px-2 py-1 rounded-lg font-semibold transition-all cursor-pointer ${
                 speed === s
-                  ? 'bg-white text-[#0f0f1a] shadow-xs'
-                  : 'text-[#6b7280] hover:text-[#0f0f1a]'
+                  ? 'bg-white text-heading shadow-xs'
+                  : 'text-body hover:text-heading'
               }`}
             >
               {s}x
@@ -100,14 +100,14 @@ export const DemoPlayerHeader: React.FC<DemoPlayerHeaderProps> = ({
         </div>
 
         {/* Mode switcher */}
-        <div className="flex items-center rounded-xl bg-[#f0f0f4] p-1 border border-[#e5e7eb] text-xs">
+        <div className="flex items-center rounded-xl bg-border-light p-1 border border-border-default text-xs">
           <button
             type="button"
             onClick={() => onModeChange('guided')}
             className={`px-2.5 py-1 rounded-lg font-semibold transition-all cursor-pointer ${
               mode === 'guided'
-                ? 'bg-white text-[#5B5CE2] shadow-xs'
-                : 'text-[#6b7280] hover:text-[#0f0f1a]'
+                ? 'bg-white text-brand-purple shadow-xs'
+                : 'text-body hover:text-heading'
             }`}
           >
             Guided
@@ -117,8 +117,8 @@ export const DemoPlayerHeader: React.FC<DemoPlayerHeaderProps> = ({
             onClick={() => onModeChange('interactive')}
             className={`px-2.5 py-1 rounded-lg font-semibold transition-all cursor-pointer ${
               mode === 'interactive'
-                ? 'bg-white text-[#5B5CE2] shadow-xs'
-                : 'text-[#6b7280] hover:text-[#0f0f1a]'
+                ? 'bg-white text-brand-purple shadow-xs'
+                : 'text-body hover:text-heading'
             }`}
           >
             Explore

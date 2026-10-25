@@ -63,15 +63,15 @@ export const StandardLoginForm: React.FC<StandardLoginFormProps> = ({ onSuccess 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       {/* Quick Demo Credentials Pill */}
-      <div className="p-3 bg-[#5B5CE2]/5 border border-[#5B5CE2]/20 rounded-xl flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2 text-xs text-[#0f0f1a]">
-          <Sparkles className="w-4 h-4 text-[#5B5CE2] shrink-0" />
-          <span>Demo Account: <strong className="font-semibold text-[#5B5CE2]">karan@acme.co</strong></span>
+      <div className="p-3 bg-brand-purple/5 border border-brand-purple/20 rounded-xl flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2 text-xs text-heading">
+          <Sparkles className="w-4 h-4 text-brand-purple shrink-0" />
+          <span>Demo Account: <strong className="font-semibold text-brand-purple">karan@acme.co</strong></span>
         </div>
         <button
           type="button"
           onClick={fillDemoAccount}
-          className="text-[11px] font-bold text-[#5B5CE2] hover:underline bg-white px-2 py-1 rounded-md border border-[#5B5CE2]/30 cursor-pointer shadow-2xs"
+          className="text-[11px] font-bold text-brand-purple hover:underline bg-white px-2 py-1 rounded-md border border-brand-purple/30 cursor-pointer shadow-2xs"
         >
           Auto-fill
         </button>
@@ -122,7 +122,7 @@ export const StandardLoginForm: React.FC<StandardLoginFormProps> = ({ onSuccess 
         />
         <Link
           href="/contact"
-          className="text-[12.5px] font-semibold text-[#5B5CE2] hover:underline"
+          className="text-[12.5px] font-semibold text-brand-purple hover:underline"
         >
           Forgot password?
         </Link>

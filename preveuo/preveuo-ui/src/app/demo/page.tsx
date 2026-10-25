@@ -65,7 +65,7 @@ export default function DemoPlayerPage() {
   };
 
   return (
-    <div className="h-screen w-screen flex flex-col bg-white text-[#0f0f1a] font-sans overflow-hidden select-none">
+    <div className="h-screen w-screen flex flex-col bg-white text-heading font-sans overflow-hidden select-none">
       <DemoPlayerHeader
         title="Acme Analytics Tour"
         stepNumber={currentStepIndex + 1}

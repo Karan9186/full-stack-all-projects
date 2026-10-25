@@ -7,10 +7,10 @@ export const WorkspaceGreetingHeader: React.FC = () => {
   return (
     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
       <div>
-        <h2 className="text-[24px] sm:text-[28px] font-bold tracking-[-0.025em] text-[#0f0f1a]">
+        <h2 className="text-[24px] sm:text-[28px] font-bold tracking-[-0.025em] text-heading">
           Good morning, Karan
         </h2>
-        <p className="text-[13.5px] sm:text-[14px] text-[#6b7280] font-normal mt-0.5">
+        <p className="text-[13.5px] sm:text-[14px] text-body font-normal mt-0.5">
           Here&apos;s how your demos are performing this month.
         </p>
       </div>
@@ -18,11 +18,11 @@ export const WorkspaceGreetingHeader: React.FC = () => {
       {/* Date Range Picker Pill */}
       <button
         type="button"
-        className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-medium bg-white border border-[#e5e7eb] text-[#0f0f1a] shadow-2xs hover:border-[#d1d5db] transition-colors self-start sm:self-auto cursor-pointer"
+        className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-medium bg-white border border-border-default text-heading shadow-2xs hover:border-border-input transition-colors self-start sm:self-auto cursor-pointer"
       >
-        <Clock className="w-3.5 h-3.5 text-[#6b7280]" />
+        <Clock className="w-3.5 h-3.5 text-body" />
         <span>May 1 – May 21, 2025</span>
-        <ChevronDown className="w-3.5 h-3.5 text-[#9ca3af]" />
+        <ChevronDown className="w-3.5 h-3.5 text-muted" />
       </button>
     </div>
   );

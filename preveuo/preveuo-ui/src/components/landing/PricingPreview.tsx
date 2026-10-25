@@ -61,12 +61,12 @@ export default function PricingPreview() {
         'Enterprise SLA & SOC2 Compliance'
       ],
       ctaText: 'Contact Enterprise Sales',
-      ctaHref: '/pricing#enterprise'
+      ctaHref: '/pricing?plan=enterprise'
     }
   ];
 
   return (
-    <section className="py-24 bg-white dark:bg-[#090D16] relative">
+    <section className="py-24 bg-white dark:bg-dark relative">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-3xl mx-auto mb-14">
           <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-indigo-50 dark:bg-indigo-950/80 border border-indigo-200 dark:border-indigo-800 text-xs font-semibold text-indigo-700 dark:text-indigo-300 mb-4">

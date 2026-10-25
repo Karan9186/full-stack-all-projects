@@ -227,11 +227,11 @@ export const ChapterRenderer: React.FC<ChapterRendererProps> = ({
     <div
       style={{
         background: isDark
-          ? 'radial-gradient(ellipse at 45% 40%, #3e414d 0%, #292a34 50%, #171821 100%)'
-          : '#ffffff',
+          ? 'radial-gradient(ellipse at 45% 40%, rgba(62,65,77,1) 0%, rgba(41,42,52,1) 50%, rgba(23,24,33,1) 100%)'
+          : 'white',
       }}
       className={`relative w-full h-full min-h-[460px] flex items-center justify-center overflow-hidden font-sans select-none ${
-        isDark ? 'text-white' : 'text-[#0f0f1a]'
+        isDark ? 'text-white' : 'text-heading'
       }`}
     >
       {/* ========================================================================= */}
@@ -253,7 +253,7 @@ export const ChapterRenderer: React.FC<ChapterRendererProps> = ({
       {/* Dim / Tint Overlay (Strictly controlled by Overlay Opacity slider: 0% = transparent) */}
       <div
         style={{
-          backgroundColor: isDark ? '#000000' : '#ffffff',
+          backgroundColor: isDark ? 'black' : 'white',
           opacity: overlayOpacity,
         }}
         className="absolute inset-0 pointer-events-none z-1 transition-opacity duration-150"
@@ -290,7 +290,7 @@ export const ChapterRenderer: React.FC<ChapterRendererProps> = ({
           {logoConfig.visible && (
             <div className="inline-flex items-center w-fit">
               {isEditor && isEditingLogo ? (
-                <div className="inline-flex items-center gap-2 bg-[#2a2c35] border border-dashed border-[#5B5CE2] rounded-xl px-3 py-1.5 shadow-lg w-fit">
+                <div className="inline-flex items-center gap-2 bg-zinc-800 border border-dashed border-brand-purple rounded-xl px-3 py-1.5 shadow-lg w-fit">
                   <input
                     type="text"
                     autoFocus
@@ -349,7 +349,7 @@ export const ChapterRenderer: React.FC<ChapterRendererProps> = ({
           {/* Chapter Title: Tightly Hugs Text Width (w-fit) */}
           <div className="inline-block w-fit max-w-[440px]">
             {isEditor && isEditingTitle ? (
-              <div className="relative inline-block w-fit max-w-[440px] bg-[#353742] rounded-2xl px-5 py-3 border-2 border-[#5B5CE2] shadow-xl">
+              <div className="relative inline-block w-fit max-w-[440px] bg-zinc-800 rounded-2xl px-5 py-3 border-2 border-brand-purple shadow-xl">
                 <textarea
                   autoFocus
                   rows={2}
@@ -377,7 +377,7 @@ export const ChapterRenderer: React.FC<ChapterRendererProps> = ({
                 }}
                 className={`group/title inline-block w-fit max-w-[440px] ${
                   isEditor
-                    ? 'bg-[#353742]/90 hover:bg-[#3c3e4a] rounded-2xl px-5 py-3 cursor-text transition-all duration-200 border border-transparent hover:border-white/20 hover:shadow-lg active:scale-[0.99]'
+                    ? 'bg-zinc-800/90 hover:bg-zinc-700 rounded-2xl px-5 py-3 cursor-text transition-all duration-200 border border-transparent hover:border-white/20 hover:shadow-lg active:scale-[0.99]'
                     : ''
                 }`}
                 title={isEditor ? 'Click to edit title' : undefined}
@@ -395,7 +395,7 @@ export const ChapterRenderer: React.FC<ChapterRendererProps> = ({
           {/* Chapter Description: Tightly Hugs Text Width (w-fit) */}
           <div className="inline-block w-fit max-w-[440px]">
             {isEditor && isEditingDesc ? (
-              <div className="relative inline-block w-fit max-w-[440px] bg-[#2b2d36] rounded-xl px-4 py-2 border-2 border-[#5B5CE2] shadow-xl">
+              <div className="relative inline-block w-fit max-w-[440px] bg-zinc-800 rounded-xl px-4 py-2 border-2 border-brand-purple shadow-xl">
                 <textarea
                   autoFocus
                   rows={1}
@@ -417,7 +417,7 @@ export const ChapterRenderer: React.FC<ChapterRendererProps> = ({
                 }}
                 className={`group/desc inline-block w-fit max-w-[440px] ${
                   isEditor
-                    ? 'bg-[#2b2d36]/90 hover:bg-[#333540] rounded-xl px-4 py-2 cursor-text transition-all duration-200 border border-transparent hover:border-white/15 hover:shadow-md'
+                    ? 'bg-zinc-800/90 hover:bg-zinc-700 rounded-xl px-4 py-2 cursor-text transition-all duration-200 border border-transparent hover:border-white/15 hover:shadow-md'
                     : ''
                 }`}
                 title={isEditor ? 'Click to edit description' : undefined}
@@ -449,7 +449,7 @@ export const ChapterRenderer: React.FC<ChapterRendererProps> = ({
                     return (
                       <div
                         key={btn.id}
-                        className="flex items-center gap-1.5 bg-[#2a2c35] border border-[#5B5CE2] rounded-xl px-3 py-1.5 shadow-lg w-fit"
+                        className="flex items-center gap-1.5 bg-zinc-800 border border-brand-purple rounded-xl px-3 py-1.5 shadow-lg w-fit"
                       >
                         <input
                           type="text"
@@ -467,7 +467,7 @@ export const ChapterRenderer: React.FC<ChapterRendererProps> = ({
                           onClick={() => setEditingBtnId(null)}
                           className="p-1 hover:bg-white/10 rounded text-emerald-400 cursor-pointer"
                         >
-                          <Check className="w-3 h-3" />
+                          <Check className="w-3.5 h-3.5" />
                         </button>
                       </div>
                     );
@@ -483,7 +483,7 @@ export const ChapterRenderer: React.FC<ChapterRendererProps> = ({
                             ? 'bg-white/10 hover:bg-white/20 text-white border border-white/20'
                             : btn.style === 'outline'
                             ? 'bg-transparent hover:bg-white/10 border border-white/30 text-white'
-                            : 'bg-[#5B5CE2] hover:bg-[#4d4ee0] text-white shadow-[#5B5CE2]/35 hover:shadow-[#5B5CE2]/60 hover:-translate-y-0.5'
+                            : 'bg-brand-purple hover:bg-brand-purple-hover text-white shadow-brand-purple/35 hover:shadow-brand-purple/60 hover:-translate-y-0.5'
                         } ${isSelected ? 'ring-2 ring-white ring-offset-2 ring-offset-black/50' : ''}`}
                       >
                         {/* Shimmer sweep on primary button */}
@@ -511,7 +511,7 @@ export const ChapterRenderer: React.FC<ChapterRendererProps> = ({
                               e.stopPropagation();
                               setEditingBtnId(btn.id);
                             }}
-                            className="p-1 hover:text-[#5B5CE2] text-white/70 transition-colors"
+                            className="p-1 hover:text-brand-purple text-white/70 transition-colors"
                             title="Rename button"
                           >
                             <Pencil className="w-2.5 h-2.5" />
@@ -556,7 +556,7 @@ export const ChapterRenderer: React.FC<ChapterRendererProps> = ({
                   value={formEmail}
                   onChange={(e) => setFormEmail(e.target.value)}
                   placeholder={chapter.formConfig?.emailPlaceholder || 'Enter your work email...'}
-                  className="w-full bg-[#2a2c35]/90 border border-white/20 focus:border-[#5B5CE2] rounded-xl px-4 py-2.5 text-sm text-white placeholder-white/40 outline-none transition-colors"
+                  className="w-full bg-zinc-800/90 border border-white/20 focus:border-brand-purple rounded-xl px-4 py-2.5 text-sm text-white placeholder-white/40 outline-none transition-colors"
                 />
                 {chapter.formConfig?.requireName && (
                   <input
@@ -564,13 +564,13 @@ export const ChapterRenderer: React.FC<ChapterRendererProps> = ({
                     value={formName}
                     onChange={(e) => setFormName(e.target.value)}
                     placeholder="Your full name..."
-                    className="w-full bg-[#2a2c35]/90 border border-white/20 focus:border-[#5B5CE2] rounded-xl px-4 py-2.5 text-sm text-white placeholder-white/40 outline-none transition-colors"
+                    className="w-full bg-zinc-800/90 border border-white/20 focus:border-brand-purple rounded-xl px-4 py-2.5 text-sm text-white placeholder-white/40 outline-none transition-colors"
                   />
                 )}
               </div>
               <button
                 type="submit"
-                className="w-full py-2.5 px-6 rounded-xl bg-[#5B5CE2] hover:bg-[#4d4ee0] text-white font-semibold text-sm shadow-lg shadow-[#5B5CE2]/35 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-98"
+                className="w-full py-2.5 px-6 rounded-xl bg-brand-purple hover:bg-brand-purple-hover text-white font-semibold text-sm shadow-lg shadow-brand-purple/35 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-98"
               >
                 <span>{chapter.formConfig?.buttonLabel || 'Access Demo'}</span>
                 <ArrowRight className="w-3.5 h-3.5" />
@@ -611,7 +611,7 @@ export const ChapterRenderer: React.FC<ChapterRendererProps> = ({
                     }
                   )
                 }
-                className="py-2.5 px-6 rounded-xl bg-[#5B5CE2] hover:bg-[#4d4ee0] text-white font-semibold text-sm shadow-lg transition-all flex items-center gap-2 cursor-pointer"
+                className="py-2.5 px-6 rounded-xl bg-brand-purple hover:bg-brand-purple-hover text-white font-semibold text-sm shadow-lg transition-all flex items-center gap-2 cursor-pointer"
               >
                 <span>Continue to Tour</span>
                 <ArrowRight className="w-3.5 h-3.5" />
@@ -633,8 +633,8 @@ export const ChapterRenderer: React.FC<ChapterRendererProps> = ({
                     setPasswordError(false);
                   }}
                   placeholder="Enter passcode to unlock..."
-                  className={`w-full bg-[#2a2c35]/90 border ${
-                    passwordError ? 'border-red-500' : 'border-white/20 focus:border-[#5B5CE2]'
+                  className={`w-full bg-zinc-800/90 border ${
+                    passwordError ? 'border-red-500' : 'border-white/20 focus:border-brand-purple'
                   } rounded-xl pl-10 pr-4 py-2.5 text-sm text-white placeholder-white/40 outline-none transition-colors`}
                 />
               </div>
@@ -645,7 +645,7 @@ export const ChapterRenderer: React.FC<ChapterRendererProps> = ({
               )}
               <button
                 type="submit"
-                className="w-full py-2.5 px-6 rounded-xl bg-[#5B5CE2] hover:bg-[#4d4ee0] text-white font-semibold text-sm shadow-lg shadow-[#5B5CE2]/35 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-98"
+                className="w-full py-2.5 px-6 rounded-xl bg-brand-purple hover:bg-brand-purple-hover text-white font-semibold text-sm shadow-lg shadow-brand-purple/35 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-98"
               >
                 <span>Unlock Demo</span>
                 <ArrowRight className="w-3.5 h-3.5" />
@@ -672,7 +672,7 @@ export const ChapterRenderer: React.FC<ChapterRendererProps> = ({
             <div
               className={`w-full p-1 rounded-2xl transition-all duration-300 ${
                 isEditor
-                  ? 'border-2 border-dashed border-white/45 hover:border-[#5B5CE2] hover:bg-white/5'
+                  ? 'border-2 border-dashed border-white/45 hover:border-brand-purple hover:bg-white/5'
                   : ''
               }`}
             >
@@ -689,7 +689,7 @@ export const ChapterRenderer: React.FC<ChapterRendererProps> = ({
                     ? 'transform 0.08s ease-out'
                     : 'transform 0.5s cubic-bezier(0.16, 1, 0.3, 1)',
                 }}
-                className="relative aspect-[16/10] w-full rounded-xl overflow-hidden shadow-2xl bg-[#1e1f26] border border-white/10 flex flex-col will-change-transform cursor-pointer group/card"
+                className="relative aspect-[16/10] w-full rounded-xl overflow-hidden shadow-2xl bg-zinc-900 border border-white/10 flex flex-col will-change-transform cursor-pointer group/card"
               >
                 {/* Dynamic Glare Reflection Overlay */}
                 {isCardHovered && (
@@ -709,12 +709,12 @@ export const ChapterRenderer: React.FC<ChapterRendererProps> = ({
                 )}
 
                 {/* Mini browser address bar matching user screenshot */}
-                <div className="h-7 bg-[#21232d] border-b border-white/10 px-3 flex items-center justify-between shrink-0 select-none z-20">
+                <div className="h-7 bg-zinc-800 border-b border-white/10 px-3 flex items-center justify-between shrink-0 select-none z-20">
                   {/* Traffic Light Dots */}
                   <div className="flex items-center gap-1.5">
-                    <span className="w-2.5 h-2.5 rounded-full bg-[#ff5f56] group-hover/card:brightness-110 transition-all cursor-pointer" />
-                    <span className="w-2.5 h-2.5 rounded-full bg-[#ffbd2e] group-hover/card:brightness-110 transition-all cursor-pointer" />
-                    <span className="w-2.5 h-2.5 rounded-full bg-[#27c93f] group-hover/card:brightness-110 transition-all cursor-pointer" />
+                    <span className="w-2.5 h-2.5 rounded-full bg-red-500 group-hover/card:brightness-110 transition-all cursor-pointer" />
+                    <span className="w-2.5 h-2.5 rounded-full bg-amber-500 group-hover/card:brightness-110 transition-all cursor-pointer" />
+                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 group-hover/card:brightness-110 transition-all cursor-pointer" />
                   </div>
 
                   {/* Browser Controls */}
@@ -732,7 +732,7 @@ export const ChapterRenderer: React.FC<ChapterRendererProps> = ({
                   </div>
 
                   {/* Domain Pill */}
-                  <div className="bg-[#14151b] border border-white/10 rounded-md px-2.5 py-0.5 text-[10.5px] text-white/80 font-mono flex items-center gap-1.5 shadow-inner">
+                  <div className="bg-zinc-950 border border-white/10 rounded-md px-2.5 py-0.5 text-[10.5px] text-white/80 font-mono flex items-center gap-1.5 shadow-inner">
                     <Lock className="w-2.5 h-2.5 text-emerald-400" />
                     <span className="tracking-tight">{sceneSlug}</span>
                   </div>
@@ -741,7 +741,7 @@ export const ChapterRenderer: React.FC<ChapterRendererProps> = ({
                 </div>
 
                 {/* Mockup Body: Step Screenshot / Custom Cover Asset */}
-                <div className="relative flex-1 w-full overflow-hidden flex flex-col bg-[#181920]">
+                <div className="relative flex-1 w-full overflow-hidden flex flex-col bg-zinc-900">
                   {resolvedImageUrl ? (
                     <div className="relative w-full h-full overflow-hidden group/img">
                       {Boolean(resolvedImageUrl.match(/\.(mp4|webm|mov)$/i)) ||
@@ -772,9 +772,9 @@ export const ChapterRenderer: React.FC<ChapterRendererProps> = ({
                         onMouseLeave={() => setIsBeaconHovered(false)}
                         className="absolute top-[48%] left-[52%] -translate-x-1/2 -translate-y-1/2 z-20 transition-transform duration-300 group-hover/card:scale-110"
                       >
-                        <span className="absolute -inset-3.5 rounded-full bg-[#5B5CE2] animate-ping opacity-70" />
-                        <span className="absolute -inset-1.5 rounded-full bg-[#5B5CE2]/60 animate-pulse" />
-                        <div className="relative w-7 h-7 rounded-full bg-[#5B5CE2] text-white flex items-center justify-center shadow-2xl border-2 border-white cursor-pointer hover:scale-110 transition-transform">
+                        <span className="absolute -inset-3.5 rounded-full bg-brand-purple animate-ping opacity-70" />
+                        <span className="absolute -inset-1.5 rounded-full bg-brand-purple/60 animate-pulse" />
+                        <div className="relative w-7 h-7 rounded-full bg-brand-purple text-white flex items-center justify-center shadow-2xl border-2 border-white cursor-pointer hover:scale-110 transition-transform">
                           <Sparkles className="w-3.5 h-3.5 animate-spin-slow" />
                         </div>
 
@@ -794,7 +794,7 @@ export const ChapterRenderer: React.FC<ChapterRendererProps> = ({
                       </div>
                     </div>
                   ) : (
-                    <div className="w-full h-full flex flex-col items-center justify-center bg-[#21232d] text-white/50 p-6 text-center select-none">
+                    <div className="w-full h-full flex flex-col items-center justify-center bg-zinc-800 text-white/50 p-6 text-center select-none">
                       <ImageIcon className="w-8 h-8 mb-2 text-white/30" />
                       <span className="text-xs font-medium">Select a step or image in Cover settings</span>
                     </div>
@@ -804,11 +804,11 @@ export const ChapterRenderer: React.FC<ChapterRendererProps> = ({
                   <div className="absolute inset-x-0 bottom-2.5 flex items-center justify-center opacity-0 group-hover/card:opacity-100 transition-all duration-300 transform translate-y-1.5 group-hover/card:translate-y-0 pointer-events-none z-30">
                     {isEditor ? (
                       <div className="px-3 py-1 rounded-full bg-black/80 backdrop-blur-md border border-white/20 text-white text-[10px] font-medium flex items-center gap-1.5 shadow-2xl">
-                        <Sparkles className="w-3 h-3 text-[#5B5CE2]" />
+                        <Sparkles className="w-3 h-3 text-brand-purple" />
                         <span>Interactive Step Preview</span>
                       </div>
                     ) : (
-                      <div className="px-4 py-1.5 rounded-full bg-[#5B5CE2] text-white text-[11px] font-bold flex items-center gap-1.5 shadow-2xl animate-bounce">
+                      <div className="px-4 py-1.5 rounded-full bg-brand-purple text-white text-[11px] font-bold flex items-center gap-1.5 shadow-2xl animate-bounce">
                         <Play className="w-3 h-3 fill-white" />
                         <span>Click Anywhere to Start Tour</span>
                       </div>

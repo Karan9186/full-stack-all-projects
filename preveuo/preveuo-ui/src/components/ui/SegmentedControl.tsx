@@ -28,7 +28,7 @@ export const SegmentedControl: React.FC<SegmentedControlProps> = ({
 
   return (
     <div
-      className={`inline-flex items-center p-0.5 rounded-xl bg-[#f0f0f4] border border-[#e5e7eb] ${
+      className={`inline-flex items-center p-0.5 rounded-xl bg-border-light border border-border-default ${
         fullWidth ? 'w-full' : ''
       } ${className}`}
     >
@@ -41,8 +41,8 @@ export const SegmentedControl: React.FC<SegmentedControlProps> = ({
             onClick={() => onChange(option.value)}
             className={`flex-1 flex items-center justify-center gap-1.5 rounded-lg font-bold transition-all cursor-pointer ${sizeClasses} ${
               isSelected
-                ? 'bg-white text-[#0f0f1a] shadow-xs'
-                : 'text-[#6b7280] hover:text-[#0f0f1a]'
+                ? 'bg-white text-heading shadow-xs'
+                : 'text-body hover:text-heading'
             }`}
           >
             {option.icon && <span className="shrink-0">{option.icon}</span>}

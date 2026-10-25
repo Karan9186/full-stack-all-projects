@@ -87,7 +87,7 @@ export const RegisterStep2WorkspaceForm: React.FC<RegisterStep2WorkspaceFormProp
           error={errors.workspaceSlug}
           required
         />
-        <p className="text-[11.5px] text-[#6b7280] mt-1 font-mono">
+        <p className="text-[11.5px] text-body mt-1 font-mono">
           Live domain: preveuo.com/w/{formData.workspaceSlug || 'your-slug'}
         </p>
       </div>

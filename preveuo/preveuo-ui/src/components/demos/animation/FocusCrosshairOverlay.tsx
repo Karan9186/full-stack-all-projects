@@ -90,7 +90,7 @@ export const FocusCrosshairOverlay: React.FC<FocusCrosshairOverlayProps> = ({
     >
       {/* 1. Zoomed Camera Viewport Bounds Box */}
       <div
-        className="absolute border-2 border-dashed border-[#5B5CE2]/70 rounded-xl bg-[#5B5CE2]/5 transition-all duration-150 pointer-events-none shadow-sm"
+        className="absolute border-2 border-dashed border-brand-purple/70 rounded-xl bg-brand-purple/5 transition-all duration-150 pointer-events-none shadow-sm"
         style={{
           width: `${windowWidthPct}%`,
           height: `${windowHeightPct}%`,
@@ -100,7 +100,7 @@ export const FocusCrosshairOverlay: React.FC<FocusCrosshairOverlayProps> = ({
         }}
       >
         {/* Corner Guides */}
-        <div className="absolute top-1 left-1.5 text-[9px] font-mono font-bold text-[#5B5CE2] bg-white/90 px-1.5 py-0.5 rounded shadow-xs uppercase tracking-wider flex items-center gap-1">
+        <div className="absolute top-1 left-1.5 text-[9px] font-mono font-bold text-brand-purple bg-white/90 px-1.5 py-0.5 rounded shadow-xs uppercase tracking-wider flex items-center gap-1">
           <span>Camera Frame {scale.toFixed(2)}×</span>
         </div>
       </div>
@@ -121,21 +121,21 @@ export const FocusCrosshairOverlay: React.FC<FocusCrosshairOverlayProps> = ({
         title="Drag focal target on canvas"
       >
         {/* Pulsing Sonar Ring */}
-        <div className="w-12 h-12 rounded-full border-2 border-[#5B5CE2] bg-[#5B5CE2]/15 flex items-center justify-center animate-pulse shadow-md">
-          <Crosshair className="w-5 h-5 text-[#5B5CE2]" />
+        <div className="w-12 h-12 rounded-full border-2 border-brand-purple bg-brand-purple/15 flex items-center justify-center animate-pulse shadow-md">
+          <Crosshair className="w-5 h-5 text-brand-purple" />
         </div>
 
         {/* Focal Coordinate Pill Badge */}
-        <div className="mt-1.5 px-2 py-0.5 rounded-full bg-[#0f0f1a]/90 text-white text-[10px] font-mono font-medium shadow-lg flex items-center gap-1 whitespace-nowrap">
+        <div className="mt-1.5 px-2 py-0.5 rounded-full bg-dark/90 text-white text-[10px] font-mono font-medium shadow-lg flex items-center gap-1 whitespace-nowrap">
           {linkedElement ? (
             <>
-              <LinkIcon className="w-2.5 h-2.5 text-[#5B5CE2]" />
-              <span className="text-[#a5b4fc]">Linked:</span>
+              <LinkIcon className="w-2.5 h-2.5 text-brand-purple" />
+              <span className="text-indigo-300">Linked:</span>
               <span className="max-w-[80px] truncate">{linkedElement.name || 'Hotspot'}</span>
             </>
           ) : (
             <>
-              <Move className="w-2.5 h-2.5 text-[#9ca3af]" />
+              <Move className="w-2.5 h-2.5 text-muted" />
               <span>
                 X: {posX}% Y: {posY}%
               </span>

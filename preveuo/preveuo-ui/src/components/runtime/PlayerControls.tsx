@@ -63,7 +63,7 @@ export const PlayerControls: React.FC<PlayerControlsProps> = ({
     <div
       role="toolbar"
       aria-label="Demo Player Controls"
-      className={`absolute bottom-3 sm:bottom-4 left-1/2 -translate-x-1/2 z-40 max-w-[94vw] bg-[#0f0f1a]/90 backdrop-blur-md border border-white/10 rounded-2xl px-2.5 sm:px-4 py-2 flex items-center gap-1.5 sm:gap-3 shadow-2xl text-white select-none transition-all duration-200 ${className}`}
+      className={`absolute bottom-3 sm:bottom-4 left-1/2 -translate-x-1/2 z-40 max-w-[94vw] bg-dark/90 backdrop-blur-md border border-white/10 rounded-2xl px-2.5 sm:px-4 py-2 flex items-center gap-1.5 sm:gap-3 shadow-2xl text-white select-none transition-all duration-200 ${className}`}
     >
       {/* Restart Action */}
       {demoSettings.allowRestart !== false && (
@@ -129,7 +129,7 @@ export const PlayerControls: React.FC<PlayerControlsProps> = ({
           className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-white/10 hover:bg-white/15 text-white text-xs font-semibold transition-all cursor-pointer active:scale-95 border border-white/5"
           title="Browse Chapters"
         >
-          <Layers className="w-3.5 h-3.5 text-[#5B5CE2]" />
+          <Layers className="w-3.5 h-3.5 text-brand-purple" />
           <span className="max-w-[110px] truncate">
             {activeChapterTitle || 'Chapters'}
           </span>
@@ -141,7 +141,7 @@ export const PlayerControls: React.FC<PlayerControlsProps> = ({
         <div className="flex items-center gap-2 pl-1 sm:pl-2">
           <div className="w-20 sm:w-28 h-1.5 bg-white/20 rounded-full overflow-hidden">
             <div
-              className="h-full bg-[#5B5CE2] rounded-full transition-all duration-300 ease-out"
+              className="h-full bg-brand-purple rounded-full transition-all duration-300 ease-out"
               style={{ width: `${progressPercentage}%` }}
             />
           </div>
@@ -166,7 +166,7 @@ export const PlayerControls: React.FC<PlayerControlsProps> = ({
       {demoSettings.showBranding !== false && (
         <div className="hidden md:flex items-center gap-1.5 pl-2.5 border-l border-white/10 text-[10.5px] text-white/50 uppercase tracking-widest font-bold">
           <span>Powered by</span>
-          <span className="text-[#5B5CE2] font-extrabold tracking-normal normal-case text-[12px]">Preveuo</span>
+          <span className="text-brand-purple font-extrabold tracking-normal normal-case text-[12px]">Preveuo</span>
         </div>
       )}
     </div>

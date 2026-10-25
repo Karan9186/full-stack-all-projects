@@ -57,8 +57,8 @@ function WorkspaceContent() {
 
   if (isAuthenticated === null) {
     return (
-      <div className="min-h-screen bg-[#f8f9fc] flex items-center justify-center">
-        <div className="w-8 h-8 rounded-full border-2 border-[#5B5CE2] border-t-transparent animate-spin" />
+      <div className="min-h-screen bg-light flex items-center justify-center">
+        <div className="w-8 h-8 rounded-full border-2 border-brand-purple border-t-transparent animate-spin" />
       </div>
     );
   }
@@ -95,7 +95,7 @@ function WorkspaceContent() {
   };
 
   return (
-    <div className="min-h-screen bg-[#f8f9fc] text-[#0f0f1a] flex font-sans selection:bg-[#5B5CE2] selection:text-white">
+    <div className="min-h-screen bg-light text-heading flex font-sans selection:bg-brand-purple selection:text-white">
       {/* Left Sidebar */}
       <WorkspaceSidebar
         activeTab={activeTab}
@@ -203,7 +203,7 @@ function WorkspaceContent() {
           setActiveTab('help');
           window.history.pushState(null, '', '/workspace?tab=help');
         }}
-        className="fixed bottom-6 right-6 w-10 h-10 rounded-full bg-[#0f0f1a] text-white flex items-center justify-center font-bold text-sm shadow-xl hover:scale-105 active:scale-95 transition-transform cursor-pointer z-40 border border-white/10"
+        className="fixed bottom-6 right-6 w-10 h-10 rounded-full bg-dark text-white flex items-center justify-center font-bold text-sm shadow-xl hover:scale-105 active:scale-95 transition-transform cursor-pointer z-40 border border-white/10"
       >
         ?
       </button>
@@ -220,7 +220,7 @@ function WorkspaceContent() {
 
 export default function WorkspacePage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-[#f8f9fc]" />}>
+    <Suspense fallback={<div className="min-h-screen bg-light" />}>
       <WorkspaceContent />
     </Suspense>
   );

@@ -28,7 +28,7 @@ export const DemoCalloutCard: React.FC<DemoCalloutCardProps> = ({
   return (
     <div
       style={stylePosition}
-      className="absolute z-40 max-w-sm w-80 bg-white rounded-2xl p-5 shadow-2xl border border-[#e5e7eb] animate-in fade-in zoom-in-95 duration-200"
+      className="absolute z-40 max-w-sm w-80 bg-white rounded-2xl p-5 shadow-2xl border border-border-default animate-in fade-in zoom-in-95 duration-200"
     >
       <div className="flex items-center justify-between mb-2">
         <Badge variant="purple" size="sm">
@@ -36,11 +36,11 @@ export const DemoCalloutCard: React.FC<DemoCalloutCardProps> = ({
         </Badge>
       </div>
 
-      <h3 className="text-[15px] font-bold text-[#0f0f1a] leading-snug">
+      <h3 className="text-[15px] font-bold text-heading leading-snug">
         {callout.title}
       </h3>
 
-      <p className="text-[13px] text-[#6b7280] leading-relaxed mt-1.5 mb-4">
+      <p className="text-[13px] text-body leading-relaxed mt-1.5 mb-4">
         {callout.description}
       </p>
 

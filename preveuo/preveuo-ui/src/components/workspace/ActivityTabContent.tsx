@@ -41,10 +41,10 @@ export const ActivityTabContent: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
-          <h2 className="text-[24px] sm:text-[28px] font-bold tracking-tight text-[#0f0f1a]">
+          <h2 className="text-[24px] sm:text-[28px] font-bold tracking-tight text-heading">
             Activity & Audit Log
           </h2>
-          <p className="text-[13.5px] text-[#6b7280] font-normal mt-0.5">
+          <p className="text-[13.5px] text-body font-normal mt-0.5">
             Full compliance audit trail of all demo edits, publications, integrations, and leads.
           </p>
         </div>
@@ -62,15 +62,15 @@ export const ActivityTabContent: React.FC = () => {
       </div>
 
       {/* Filters Bar */}
-      <div className="p-4 rounded-2xl bg-white border border-[#e5e7eb] mb-6 flex flex-col md:flex-row items-center justify-between gap-4">
+      <div className="p-4 rounded-2xl bg-white border border-border-default mb-6 flex flex-col md:flex-row items-center justify-between gap-4">
         <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
           {/* Member Filter */}
           <div className="flex items-center gap-2">
-            <span className="text-xs font-medium text-[#6b7280]">Member:</span>
+            <span className="text-xs font-medium text-body">Member:</span>
             <select
               value={selectedUser}
               onChange={(e) => setSelectedUser(e.target.value)}
-              className="px-3 py-1.5 rounded-xl bg-[#f8f8fc] border border-[#e5e7eb] text-xs font-medium text-[#0f0f1a] focus:outline-none focus:border-[#5B5CE2]"
+              className="px-3 py-1.5 rounded-xl bg-light border border-border-default text-xs font-medium text-heading focus:outline-none focus:border-brand-purple"
             >
               <option value="all">All Members (4)</option>
               <option value="Karan Shah">Karan Shah (Owner)</option>
@@ -82,11 +82,11 @@ export const ActivityTabContent: React.FC = () => {
 
           {/* Event Filter */}
           <div className="flex items-center gap-2">
-            <span className="text-xs font-medium text-[#6b7280]">Event:</span>
+            <span className="text-xs font-medium text-body">Event:</span>
             <select
               value={selectedType}
               onChange={(e) => setSelectedType(e.target.value)}
-              className="px-3 py-1.5 rounded-xl bg-[#f8f8fc] border border-[#e5e7eb] text-xs font-medium text-[#0f0f1a] focus:outline-none focus:border-[#5B5CE2]"
+              className="px-3 py-1.5 rounded-xl bg-light border border-border-default text-xs font-medium text-heading focus:outline-none focus:border-brand-purple"
             >
               <option value="all">All Events</option>
               <option value="published">Publications</option>
@@ -99,27 +99,27 @@ export const ActivityTabContent: React.FC = () => {
 
         {/* Search */}
         <div className="relative w-full md:w-64">
-          <Search className="w-4 h-4 text-[#9ca3af] absolute left-3 top-1/2 -translate-y-1/2" />
+          <Search className="w-4 h-4 text-muted absolute left-3 top-1/2 -translate-y-1/2" />
           <input
             type="text"
             placeholder="Search activity log..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-9 pr-3.5 py-1.5 rounded-xl bg-[#f8f8fc] border border-[#e5e7eb] text-xs text-[#0f0f1a] placeholder-[#9ca3af] focus:outline-none focus:border-[#5B5CE2]"
+            className="w-full pl-9 pr-3.5 py-1.5 rounded-xl bg-light border border-border-default text-xs text-heading placeholder-muted focus:outline-none focus:border-brand-purple"
           />
         </div>
       </div>
 
       {/* Activity Timeline List */}
-      <div className="bg-white rounded-2xl border border-[#e5e7eb] overflow-hidden">
-        <div className="p-4 bg-[#fafafc] border-b border-[#f0f0f4] flex items-center justify-between text-xs font-medium text-[#6b7280]">
+      <div className="bg-white rounded-2xl border border-border-default overflow-hidden">
+        <div className="p-4 bg-canvas border-b border-border-light flex items-center justify-between text-xs font-medium text-body">
           <span>Audit Events ({filteredActivities.length})</span>
           <span className="flex items-center gap-1.5">
             <Calendar className="w-3.5 h-3.5" /> Past 30 Days
           </span>
         </div>
 
-        <div className="divide-y divide-[#f0f0f4]">
+        <div className="divide-y divide-border-light">
           {filteredActivities.map((act) => {
             const isLead = act.action.includes('captured');
             const isPublish = act.action.includes('published');
@@ -128,7 +128,7 @@ export const ActivityTabContent: React.FC = () => {
             return (
               <div
                 key={act.id}
-                className="p-5 hover:bg-[#fafafc] transition-colors flex items-start justify-between gap-4"
+                className="p-5 hover:bg-canvas transition-colors flex items-start justify-between gap-4"
               >
                 <div className="flex items-start gap-3.5 min-w-0">
                   <div
@@ -136,30 +136,30 @@ export const ActivityTabContent: React.FC = () => {
                       isLead
                         ? 'bg-emerald-50 text-emerald-600'
                         : isPublish
-                        ? 'bg-[#5B5CE2]/10 text-[#5B5CE2]'
-                        : 'bg-[#f0f0f4] text-[#4b5563]'
+                        ? 'bg-brand-purple/10 text-brand-purple'
+                        : 'bg-border-light text-gray-600'
                     }`}
                   >
                     {act.avatarInitials}
                   </div>
 
                   <div className="min-w-0">
-                    <p className="text-[13.5px] text-[#0f0f1a] leading-snug">
+                    <p className="text-[13.5px] text-heading leading-snug">
                       <span className="font-semibold">{act.user}</span>{' '}
-                      <span className="text-[#6b7280] font-normal">{act.action}</span>{' '}
-                      <span className="font-medium text-[#5B5CE2] hover:underline cursor-pointer">
+                      <span className="text-body font-normal">{act.action}</span>{' '}
+                      <span className="font-medium text-brand-purple hover:underline cursor-pointer">
                         {act.demoName}
                       </span>
                     </p>
 
-                    <p className="text-[12.5px] text-[#6b7280] font-normal mt-1 bg-[#f8f8fc] p-2 rounded-lg border border-[#f0f0f4]">
+                    <p className="text-[12.5px] text-body font-normal mt-1 bg-light p-2 rounded-lg border border-border-light">
                       {act.details}
                     </p>
 
                     <div className="flex items-center gap-2 mt-2">
-                      <span className="text-[11px] text-[#9ca3af] font-normal">{act.timeAgo}</span>
-                      <span className="text-[#d1d5db]">•</span>
-                      <span className="text-[11px] text-[#6b7280] font-normal flex items-center gap-1 font-mono">
+                      <span className="text-[11px] text-muted font-normal">{act.timeAgo}</span>
+                      <span className="text-border-input">•</span>
+                      <span className="text-[11px] text-body font-normal flex items-center gap-1 font-mono">
                         ID: {act.id}
                       </span>
                     </div>
@@ -168,7 +168,7 @@ export const ActivityTabContent: React.FC = () => {
 
                 <Link
                   href="/workspace?tab=demos"
-                  className="text-[#9ca3af] hover:text-[#5B5CE2] p-2 rounded-lg hover:bg-[#f0f0f4] transition-colors shrink-0"
+                  className="text-muted hover:text-brand-purple p-2 rounded-lg hover:bg-border-light transition-colors shrink-0"
                   title="View Item"
                 >
                   <ExternalLink className="w-4 h-4" />

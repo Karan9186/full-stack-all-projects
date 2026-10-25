@@ -54,10 +54,10 @@ export const HelpTabContent: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
-          <h2 className="text-[24px] sm:text-[28px] font-bold tracking-tight text-[#0f0f1a]">
+          <h2 className="text-[24px] sm:text-[28px] font-bold tracking-tight text-heading">
             Help & Resources
           </h2>
-          <p className="text-[13.5px] text-[#6b7280] font-normal mt-0.5">
+          <p className="text-[13.5px] text-body font-normal mt-0.5">
             Documentation, video walkthroughs, and engineering support for your workspace.
           </p>
         </div>
@@ -74,13 +74,13 @@ export const HelpTabContent: React.FC = () => {
 
       {/* Hero Resource Action Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
-        <div className="p-5 rounded-2xl bg-white border border-[#e5e7eb] hover:border-[#5B5CE2] transition-all flex flex-col justify-between">
+        <div className="p-5 rounded-2xl bg-white border border-border-default hover:border-brand-purple transition-all flex flex-col justify-between">
           <div>
-            <div className="w-10 h-10 rounded-xl bg-[#5B5CE2]/10 text-[#5B5CE2] flex items-center justify-center mb-3">
+            <div className="w-10 h-10 rounded-xl bg-brand-purple/10 text-brand-purple flex items-center justify-center mb-3">
               <Globe className="w-5 h-5" />
             </div>
-            <h4 className="text-[14.5px] font-semibold text-[#0f0f1a] mb-1">Chrome Extension</h4>
-            <p className="text-[13px] text-[#6b7280] font-normal leading-relaxed mb-4">
+            <h4 className="text-[14.5px] font-semibold text-heading mb-1">Chrome Extension</h4>
+            <p className="text-[13px] text-body font-normal leading-relaxed mb-4">
               Capture your web app with 1-click HTML & DOM recording.
             </p>
           </div>
@@ -89,13 +89,13 @@ export const HelpTabContent: React.FC = () => {
           </Button>
         </div>
 
-        <div className="p-5 rounded-2xl bg-white border border-[#e5e7eb] hover:border-[#5B5CE2] transition-all flex flex-col justify-between">
+        <div className="p-5 rounded-2xl bg-white border border-border-default hover:border-brand-purple transition-all flex flex-col justify-between">
           <div>
             <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center mb-3">
               <Video className="w-5 h-5" />
             </div>
-            <h4 className="text-[14.5px] font-semibold text-[#0f0f1a] mb-1">Video Tutorials</h4>
-            <p className="text-[13px] text-[#6b7280] font-normal leading-relaxed mb-4">
+            <h4 className="text-[14.5px] font-semibold text-heading mb-1">Video Tutorials</h4>
+            <p className="text-[13px] text-body font-normal leading-relaxed mb-4">
               5-minute masterclasses on hotspot branching and lead gates.
             </p>
           </div>
@@ -104,13 +104,13 @@ export const HelpTabContent: React.FC = () => {
           </Button>
         </div>
 
-        <div className="p-5 rounded-2xl bg-white border border-[#e5e7eb] hover:border-[#5B5CE2] transition-all flex flex-col justify-between">
+        <div className="p-5 rounded-2xl bg-white border border-border-default hover:border-brand-purple transition-all flex flex-col justify-between">
           <div>
             <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center mb-3">
               <Sparkles className="w-5 h-5" />
             </div>
-            <h4 className="text-[14.5px] font-semibold text-[#0f0f1a] mb-1">Interactive Tour</h4>
-            <p className="text-[13px] text-[#6b7280] font-normal leading-relaxed mb-4">
+            <h4 className="text-[14.5px] font-semibold text-heading mb-1">Interactive Tour</h4>
+            <p className="text-[13px] text-body font-normal leading-relaxed mb-4">
               Explore the Preveuo editor interface hands-on.
             </p>
           </div>
@@ -126,13 +126,13 @@ export const HelpTabContent: React.FC = () => {
           </Button>
         </div>
 
-        <div className="p-5 rounded-2xl bg-white border border-[#e5e7eb] hover:border-[#5B5CE2] transition-all flex flex-col justify-between">
+        <div className="p-5 rounded-2xl bg-white border border-border-default hover:border-brand-purple transition-all flex flex-col justify-between">
           <div>
             <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center mb-3">
               <LifeBuoy className="w-5 h-5" />
             </div>
-            <h4 className="text-[14.5px] font-semibold text-[#0f0f1a] mb-1">Community Hub</h4>
-            <p className="text-[13px] text-[#6b7280] font-normal leading-relaxed mb-4">
+            <h4 className="text-[14.5px] font-semibold text-heading mb-1">Community Hub</h4>
+            <p className="text-[13px] text-body font-normal leading-relaxed mb-4">
               Join 1,200+ product marketers on Slack sharing best practices.
             </p>
           </div>
@@ -144,45 +144,45 @@ export const HelpTabContent: React.FC = () => {
 
       {/* Search Input */}
       <div className="relative mb-6">
-        <Search className="w-4 h-4 text-[#9ca3af] absolute left-3.5 top-1/2 -translate-y-1/2" />
+        <Search className="w-4 h-4 text-muted absolute left-3.5 top-1/2 -translate-y-1/2" />
         <input
           type="text"
           placeholder="Search documentation, guides, and articles..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white border border-[#e5e7eb] text-[13.5px] text-[#0f0f1a] placeholder-[#9ca3af] focus:outline-none focus:border-[#5B5CE2]"
+          className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white border border-border-default text-[13.5px] text-heading placeholder-muted focus:outline-none focus:border-brand-purple"
         />
       </div>
 
       {/* Knowledge Base Articles Grid */}
-      <h3 className="text-[17px] font-semibold text-[#0f0f1a] mb-4">Popular Guides & Documentation</h3>
+      <h3 className="text-[17px] font-semibold text-heading mb-4">Popular Guides & Documentation</h3>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-8">
         {filteredArticles.map((art) => (
           <div
             key={art.id}
-            className="p-5 rounded-2xl bg-white border border-[#e5e7eb] hover:border-[#d1d5db] transition-all flex flex-col justify-between"
+            className="p-5 rounded-2xl bg-white border border-border-default hover:border-border-input transition-all flex flex-col justify-between"
           >
             <div>
               <div className="flex items-center justify-between gap-2 mb-2">
-                <span className="text-[10.5px] font-semibold uppercase tracking-wider text-[#5B5CE2]">
+                <span className="text-[10.5px] font-semibold uppercase tracking-wider text-brand-purple">
                   {art.category}
                 </span>
-                <span className="text-[11px] text-[#9ca3af] font-normal">{art.readTime}</span>
+                <span className="text-[11px] text-muted font-normal">{art.readTime}</span>
               </div>
 
-              <h4 className="text-[15px] font-semibold text-[#0f0f1a] mb-1.5 hover:text-[#5B5CE2] cursor-pointer">
+              <h4 className="text-[15px] font-semibold text-heading mb-1.5 hover:text-brand-purple cursor-pointer">
                 {art.title}
               </h4>
 
-              <p className="text-[13px] text-[#6b7280] font-normal leading-relaxed mb-4">
+              <p className="text-[13px] text-body font-normal leading-relaxed mb-4">
                 {art.description}
               </p>
             </div>
 
             <a
               href="/resources"
-              className="text-xs font-medium text-[#5B5CE2] hover:underline flex items-center gap-1.5 pt-2 border-t border-[#f0f0f4]"
+              className="text-xs font-medium text-brand-purple hover:underline flex items-center gap-1.5 pt-2 border-t border-border-light"
             >
               Read full article <ArrowRight className="w-3 h-3" />
             </a>
@@ -191,9 +191,9 @@ export const HelpTabContent: React.FC = () => {
       </div>
 
       {/* FAQ Accordion */}
-      <div className="p-6 rounded-2xl bg-white border border-[#e5e7eb] mb-8">
-        <h3 className="text-[17px] font-semibold text-[#0f0f1a] mb-4 flex items-center gap-2">
-          <FileQuestion className="w-5 h-5 text-[#5B5CE2]" /> Frequently Asked Questions
+      <div className="p-6 rounded-2xl bg-white border border-border-default mb-8">
+        <h3 className="text-[17px] font-semibold text-heading mb-4 flex items-center gap-2">
+          <FileQuestion className="w-5 h-5 text-brand-purple" /> Frequently Asked Questions
         </h3>
 
         <div className="space-y-3">
@@ -202,22 +202,22 @@ export const HelpTabContent: React.FC = () => {
             return (
               <div
                 key={faq.q}
-                className="border border-[#e5e7eb] rounded-xl overflow-hidden transition-colors"
+                className="border border-border-default rounded-xl overflow-hidden transition-colors"
               >
                 <button
                   type="button"
                   onClick={() => setExpandedFaq(isOpen ? null : index)}
-                  className="w-full p-4 text-left flex items-center justify-between gap-4 font-semibold text-[13.5px] text-[#0f0f1a] hover:bg-[#fafafc] cursor-pointer"
+                  className="w-full p-4 text-left flex items-center justify-between gap-4 font-semibold text-[13.5px] text-heading hover:bg-canvas cursor-pointer"
                 >
                   <span>{faq.q}</span>
                   {isOpen ? (
-                    <ChevronUp className="w-4 h-4 text-[#6b7280] shrink-0" />
+                    <ChevronUp className="w-4 h-4 text-body shrink-0" />
                   ) : (
-                    <ChevronDown className="w-4 h-4 text-[#6b7280] shrink-0" />
+                    <ChevronDown className="w-4 h-4 text-body shrink-0" />
                   )}
                 </button>
                 {isOpen && (
-                  <div className="px-4 pb-4 pt-1 text-[13px] text-[#6b7280] font-normal leading-relaxed border-t border-[#f0f0f4]">
+                  <div className="px-4 pb-4 pt-1 text-[13px] text-body font-normal leading-relaxed border-t border-border-light">
                     {faq.a}
                   </div>
                 )}
@@ -228,10 +228,10 @@ export const HelpTabContent: React.FC = () => {
       </div>
 
       {/* Direct Support Banner */}
-      <div className="p-6 rounded-2xl bg-[#0f0f1a] text-white flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div className="p-6 rounded-2xl bg-dark text-white flex flex-col sm:flex-row items-center justify-between gap-4">
         <div>
           <h4 className="text-[17px] font-bold mb-1">Need hands-on setup assistance?</h4>
-          <p className="text-[13px] text-[#9ca3af]">
+          <p className="text-[13px] text-muted">
             Schedule a 1-on-1 implementation call with a Preveuo solution architect.
           </p>
         </div>

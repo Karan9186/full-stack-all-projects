@@ -25,9 +25,9 @@ export const FunnelDropoffSection: React.FC<FunnelDropoffSectionProps> = ({ step
             return (
               <div key={st.step} className="space-y-2">
                 <div className="flex items-center justify-between text-xs sm:text-sm">
-                  <span className="font-semibold text-[#0f0f1a]">{st.title}</span>
+                  <span className="font-semibold text-heading">{st.title}</span>
                   <div className="flex items-center gap-4 text-xs">
-                    <span className="font-mono text-[#6b7280]">
+                    <span className="font-mono text-body">
                       {st.views.toLocaleString()} views ({widthPercent}%)
                     </span>
                     {st.dropoffPercentage > 0 && (
@@ -38,9 +38,9 @@ export const FunnelDropoffSection: React.FC<FunnelDropoffSectionProps> = ({ step
                   </div>
                 </div>
 
-                <div className="w-full h-3 bg-[#f0f0f4] rounded-full overflow-hidden">
+                <div className="w-full h-3 bg-border-light rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-[#5B5CE2] rounded-full transition-all duration-500"
+                    className="h-full bg-brand-purple rounded-full transition-all duration-500"
                     style={{ width: `${widthPercent}%` }}
                   />
                 </div>

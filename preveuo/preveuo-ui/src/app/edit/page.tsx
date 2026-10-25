@@ -17,8 +17,8 @@ function EditDemoRedirectContent() {
   }, [router, searchParams]);
 
   return (
-    <div className="h-screen w-screen bg-[#fafafc] flex items-center justify-center font-sans">
-      <div className="w-8 h-8 rounded-full border-2 border-[#5B5CE2] border-t-transparent animate-spin" />
+    <div className="h-screen w-screen bg-canvas flex items-center justify-center font-sans">
+      <div className="w-8 h-8 rounded-full border-2 border-brand-purple border-t-transparent animate-spin" />
     </div>
   );
 }
@@ -27,8 +27,8 @@ export default function EditDemoRedirectPage() {
   return (
     <Suspense
       fallback={
-        <div className="h-screen w-screen bg-[#fafafc] flex items-center justify-center font-sans">
-          <div className="w-8 h-8 rounded-full border-2 border-[#5B5CE2] border-t-transparent animate-spin" />
+        <div className="h-screen w-screen bg-canvas flex items-center justify-center font-sans">
+          <div className="w-8 h-8 rounded-full border-2 border-brand-purple border-t-transparent animate-spin" />
         </div>
       }
     >

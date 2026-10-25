@@ -139,16 +139,16 @@ export const DemoSettingsModal: React.FC<DemoSettingsModalProps> = ({
   return (
     <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6 animate-in fade-in duration-200">
       <div
-        className="w-full max-w-5xl bg-white rounded-3xl shadow-2xl border border-[#e5e7eb] flex flex-col max-h-[90vh] overflow-hidden"
+        className="w-full max-w-5xl bg-white rounded-3xl shadow-2xl border border-border-default flex flex-col max-h-[90vh] overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Modal Top Header (matches Supademo) */}
-        <div className="h-16 px-6 border-b border-[#f0f0f4] flex items-center justify-between shrink-0 bg-white">
+        <div className="h-16 px-6 border-b border-border-light flex items-center justify-between shrink-0 bg-white">
           <div className="flex items-center gap-2">
-            <h2 className="text-lg font-extrabold text-[#0f0f1a]">Settings</h2>
+            <h2 className="text-lg font-extrabold text-heading">Settings</h2>
             <button
               type="button"
-              className="text-gray-400 hover:text-[#5B5CE2] p-1 rounded-lg transition-colors cursor-pointer"
+              className="text-gray-400 hover:text-brand-purple p-1 rounded-lg transition-colors cursor-pointer"
               title="Settings Help"
             >
               <HelpCircle className="w-4 h-4" />
@@ -164,7 +164,7 @@ export const DemoSettingsModal: React.FC<DemoSettingsModalProps> = ({
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search settings..."
-                className="w-48 pl-9 pr-3 py-1.5 rounded-xl border border-[#e5e7eb] text-xs text-[#0f0f1a] placeholder-gray-400 focus:outline-none focus:border-[#5B5CE2] transition-colors"
+                className="w-48 pl-9 pr-3 py-1.5 rounded-xl border border-border-default text-xs text-heading placeholder-gray-400 focus:outline-none focus:border-brand-purple transition-colors"
               />
             </div>
 
@@ -181,10 +181,10 @@ export const DemoSettingsModal: React.FC<DemoSettingsModalProps> = ({
         {/* Modal Body: Left Sidebar + Right Content Area */}
         <div className="flex-1 flex overflow-hidden">
           {/* Left Navigation Sidebar */}
-          <aside className="w-48 sm:w-56 border-r border-[#f0f0f4] bg-[#fafafc] p-4 flex flex-col gap-5 shrink-0 overflow-y-auto">
+          <aside className="w-48 sm:w-56 border-r border-border-light bg-canvas p-4 flex flex-col gap-5 shrink-0 overflow-y-auto">
             {filteredGroups.map((group) => (
               <div key={group.group} className="space-y-1">
-                <div className="text-[10px] font-bold uppercase tracking-wider text-[#9ca3af] px-2 mb-1.5">
+                <div className="text-[10px] font-bold uppercase tracking-wider text-muted px-2 mb-1.5">
                   {group.group}
                 </div>
                 {group.items.map((item) => {
@@ -197,13 +197,13 @@ export const DemoSettingsModal: React.FC<DemoSettingsModalProps> = ({
                       onClick={() => setActiveTab(item.id as SettingsModalTab)}
                       className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                         isActive
-                          ? 'bg-white text-[#0f0f1a] shadow-xs border border-[#e5e7eb]'
-                          : 'text-[#6b7280] hover:text-[#0f0f1a] hover:bg-[#f2f2fa]'
+                          ? 'bg-white text-heading shadow-xs border border-border-default'
+                          : 'text-body hover:text-heading hover:bg-light'
                       }`}
                     >
                       <Icon
                         className={`w-4 h-4 ${
-                          isActive ? 'text-[#5B5CE2]' : 'text-[#9ca3af]'
+                          isActive ? 'text-brand-purple' : 'text-muted'
                         }`}
                       />
                       <span>{item.label}</span>
@@ -303,7 +303,7 @@ export const DemoSettingsModal: React.FC<DemoSettingsModalProps> = ({
         </div>
 
         {/* Modal Footer (matches Supademo: [Save] [Close]) */}
-        <div className="h-16 px-6 border-t border-[#f0f0f4] flex items-center justify-end gap-3 shrink-0 bg-white">
+        <div className="h-16 px-6 border-t border-border-light flex items-center justify-end gap-3 shrink-0 bg-white">
           <Button
             variant="outline"
             size="sm"

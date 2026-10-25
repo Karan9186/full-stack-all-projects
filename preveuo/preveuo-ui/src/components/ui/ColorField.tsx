@@ -1,4 +1,6 @@
+import { THEME_COLORS } from '@/lib/constants/theme';
 import React from 'react';
+import { PRIMARY_COLOR, PRIMARY_COLOR_HOVER } from '@/lib/constants/theme';
 
 export interface ColorFieldProps {
   label: string;
@@ -9,14 +11,14 @@ export interface ColorFieldProps {
 }
 
 const DEFAULT_PRESET_COLORS = [
-  '#5B5CE2', // Brand Purple
-  '#4a4bd4', // Dark Purple
-  '#2563eb', // Blue
-  '#0f0f1a', // Dark
-  '#ffffff', // White
-  '#10b981', // Emerald
-  '#f59e0b', // Amber
-  '#ef4444', // Red
+  PRIMARY_COLOR, // Brand Purple
+  PRIMARY_COLOR_HOVER, // Dark Purple
+  THEME_COLORS.info, // Blue
+  THEME_COLORS.bgDark, // Dark
+  THEME_COLORS.white, // White
+  THEME_COLORS.success, // Emerald
+  THEME_COLORS.warning, // Amber
+  THEME_COLORS.danger, // Red
 ];
 
 export const ColorField: React.FC<ColorFieldProps> = ({
@@ -28,12 +30,12 @@ export const ColorField: React.FC<ColorFieldProps> = ({
 }) => {
   return (
     <div className={`space-y-1.5 ${className}`}>
-      <label className="block text-[12.5px] font-bold text-[#0f0f1a]">
+      <label className="block text-[12.5px] font-bold text-heading">
         {label}
       </label>
 
       <div className="flex items-center gap-2">
-        <div className="relative w-8 h-8 rounded-xl border border-[#e5e7eb] overflow-hidden shrink-0 shadow-2xs">
+        <div className="relative w-8 h-8 rounded-xl border border-border-default overflow-hidden shrink-0 shadow-2xs">
           <input
             type="color"
             value={value}
@@ -46,8 +48,8 @@ export const ColorField: React.FC<ColorFieldProps> = ({
           type="text"
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          placeholder="#5B5CE2"
-          className="flex-1 px-3 py-1.5 rounded-xl text-xs font-mono bg-white border border-[#e5e7eb] text-[#0f0f1a] focus:outline-none focus:border-[#5B5CE2] focus:ring-2 focus:ring-[#5B5CE2]/15 uppercase"
+          placeholder={PRIMARY_COLOR}
+          className="flex-1 px-3 py-1.5 rounded-xl text-xs font-mono bg-white border border-border-default text-heading focus:outline-none focus:border-brand-purple focus:ring-2 focus:ring-brand-purple/15 uppercase"
         />
       </div>
 
@@ -62,8 +64,8 @@ export const ColorField: React.FC<ColorFieldProps> = ({
               aria-label={`Select color ${color}`}
               className={`w-5 h-5 rounded-full border transition-transform cursor-pointer ${
                 value.toLowerCase() === color.toLowerCase()
-                  ? 'border-[#0f0f1a] scale-115 ring-2 ring-[#5B5CE2]/30'
-                  : 'border-[#e5e7eb] hover:scale-110'
+                  ? 'border-heading scale-115 ring-2 ring-brand-purple/30'
+                  : 'border-border-default hover:scale-110'
               }`}
             />
           ))}

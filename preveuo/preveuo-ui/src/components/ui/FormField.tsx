@@ -31,11 +31,11 @@ export const FormLabel: React.FC<FormLabelProps> = ({
 }) => {
   return (
     <label
-      className={`block text-[12.5px] font-medium text-[#374151] select-none ${className}`}
+      className={`block text-[12.5px] font-medium text-gray-700 select-none ${className}`}
       {...props}
     >
       {children}
-      {required && <span className="text-[#5B5CE2] ml-1">*</span>}
+      {required && <span className="text-brand-purple ml-1">*</span>}
     </label>
   );
 };
@@ -48,7 +48,7 @@ export const FormDescription: React.FC<FormDescriptionProps> = ({
   ...props
 }) => {
   return (
-    <p className={`text-[12px] text-[#6b7280] leading-normal ${className}`} {...props}>
+    <p className={`text-[12px] text-body leading-normal ${className}`} {...props}>
       {children}
     </p>
   );

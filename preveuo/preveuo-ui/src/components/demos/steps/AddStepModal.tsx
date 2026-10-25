@@ -307,16 +307,16 @@ export const AddStepModal: React.FC<AddStepModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in font-sans">
-      <div className="relative w-full max-w-xl bg-white rounded-2xl shadow-2xl border border-[#e5e7eb] overflow-hidden flex flex-col max-h-[90vh]">
+      <div className="relative w-full max-w-xl bg-white rounded-2xl shadow-2xl border border-border-default overflow-hidden flex flex-col max-h-[90vh]">
         {/* Header */}
-        <div className="px-6 py-4 border-b border-[#f0f0f4] flex items-center justify-between bg-[#fafafc]">
+        <div className="px-6 py-4 border-b border-border-light flex items-center justify-between bg-canvas">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-[#5B5CE2]/10 text-[#5B5CE2] flex items-center justify-center">
+            <div className="w-8 h-8 rounded-xl bg-brand-purple/10 text-brand-purple flex items-center justify-center">
               <Plus className="w-4 h-4" />
             </div>
             <div>
-              <h3 className="text-[16px] font-semibold text-[#0f0f1a] tracking-tight">Add New Step</h3>
-              <p className="text-[12.5px] text-[#6b7280] font-normal leading-normal">
+              <h3 className="text-[16px] font-semibold text-heading tracking-tight">Add New Step</h3>
+              <p className="text-[12.5px] text-body font-normal leading-normal">
                 Upload an image screenshot or video recording to create this step.
               </p>
             </div>
@@ -324,21 +324,21 @@ export const AddStepModal: React.FC<AddStepModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 rounded-lg text-[#9ca3af] hover:text-[#0f0f1a] hover:bg-white transition-colors cursor-pointer"
+            className="p-1.5 rounded-lg text-muted hover:text-heading hover:bg-white transition-colors cursor-pointer"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
         {/* Source Navigation Tabs */}
-        <div className="flex border-b border-[#f0f0f4] bg-white px-6 pt-2">
+        <div className="flex border-b border-border-light bg-white px-6 pt-2">
           <button
             type="button"
             onClick={() => setActiveTab('upload')}
             className={`flex items-center gap-2 pb-3 px-3 text-xs border-b-2 transition-all cursor-pointer ${
               activeTab === 'upload'
-                ? 'font-semibold border-[#5B5CE2] text-[#5B5CE2]'
-                : 'font-medium border-transparent text-[#6b7280] hover:text-[#0f0f1a]'
+                ? 'font-semibold border-brand-purple text-brand-purple'
+                : 'font-medium border-transparent text-body hover:text-heading'
             }`}
           >
             <Upload className="w-3.5 h-3.5" />
@@ -349,8 +349,8 @@ export const AddStepModal: React.FC<AddStepModalProps> = ({
             onClick={() => setActiveTab('scenes')}
             className={`flex items-center gap-2 pb-3 px-3 text-xs border-b-2 transition-all cursor-pointer ${
               activeTab === 'scenes'
-                ? 'font-semibold border-[#5B5CE2] text-[#5B5CE2]'
-                : 'font-medium border-transparent text-[#6b7280] hover:text-[#0f0f1a]'
+                ? 'font-semibold border-brand-purple text-brand-purple'
+                : 'font-medium border-transparent text-body hover:text-heading'
             }`}
           >
             <Layers className="w-3.5 h-3.5" />
@@ -361,8 +361,8 @@ export const AddStepModal: React.FC<AddStepModalProps> = ({
             onClick={() => setActiveTab('url')}
             className={`flex items-center gap-2 pb-3 px-3 text-xs border-b-2 transition-all cursor-pointer ${
               activeTab === 'url'
-                ? 'font-semibold border-[#5B5CE2] text-[#5B5CE2]'
-                : 'font-medium border-transparent text-[#6b7280] hover:text-[#0f0f1a]'
+                ? 'font-semibold border-brand-purple text-brand-purple'
+                : 'font-medium border-transparent text-body hover:text-heading'
             }`}
           >
             <LinkIcon className="w-3.5 h-3.5" />
@@ -403,20 +403,20 @@ export const AddStepModal: React.FC<AddStepModalProps> = ({
                   onClick={() => fileInputRef.current?.click()}
                   className={`border-2 border-dashed rounded-2xl p-8 flex flex-col items-center justify-center text-center cursor-pointer transition-all ${
                     isDragging
-                      ? 'border-[#5B5CE2] bg-[#5B5CE2]/5 scale-[0.99]'
-                      : 'border-[#d1d5db] hover:border-[#5B5CE2] hover:bg-[#fafafc]'
+                      ? 'border-brand-purple bg-brand-purple/5 scale-[0.99]'
+                      : 'border-border-input hover:border-brand-purple hover:bg-canvas'
                   }`}
                 >
-                  <div className="w-12 h-12 rounded-2xl bg-[#5B5CE2]/10 text-[#5B5CE2] flex items-center justify-center mb-3">
+                  <div className="w-12 h-12 rounded-2xl bg-brand-purple/10 text-brand-purple flex items-center justify-center mb-3">
                     <Upload className="w-6 h-6" />
                   </div>
-                  <h4 className="text-[14px] font-semibold text-[#0f0f1a] mb-1">
+                  <h4 className="text-[14px] font-semibold text-heading mb-1">
                     Choose Image or Video to Upload
                   </h4>
-                  <p className="text-[12.5px] text-[#6b7280] font-normal max-w-sm mb-3">
+                  <p className="text-[12.5px] text-body font-normal max-w-sm mb-3">
                     Drag and drop your file here, or click to browse. Supports screenshots (.png, .jpg, .webp) and screen recordings (.mp4, .webm).
                   </p>
-                  <div className="flex items-center gap-3 text-[11px] text-[#9ca3af]">
+                  <div className="flex items-center gap-3 text-[11px] text-muted">
                     <span className="flex items-center gap-1 font-normal">
                       <ImageIcon className="w-3.5 h-3.5" /> Images up to 20MB
                     </span>
@@ -427,7 +427,7 @@ export const AddStepModal: React.FC<AddStepModalProps> = ({
                   </div>
                 </div>
               ) : (
-                <div className="relative rounded-2xl overflow-hidden border border-[#e5e7eb] bg-[#0f0f1a] group">
+                <div className="relative rounded-2xl overflow-hidden border border-border-default bg-dark group">
                   {mediaType === 'image' ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
@@ -449,7 +449,7 @@ export const AddStepModal: React.FC<AddStepModalProps> = ({
                   <div className="absolute top-3 left-3 bg-black/70 backdrop-blur-md text-white text-[10px] font-medium px-2.5 py-1 rounded-md flex items-center gap-1.5">
                     {mediaType === 'video' ? (
                       <>
-                        <Video className="w-3 h-3 text-[#5B5CE2]" />
+                        <Video className="w-3 h-3 text-brand-purple" />
                         <span>Video Recording</span>
                       </>
                     ) : (
@@ -473,8 +473,8 @@ export const AddStepModal: React.FC<AddStepModalProps> = ({
                     <X className="w-4 h-4" />
                   </button>
 
-                  <div className="p-3 bg-white border-t border-[#e5e7eb] flex items-center justify-between text-xs text-[#6b7280]">
-                    <span className="truncate max-w-xs font-medium text-[#0f0f1a]">
+                  <div className="p-3 bg-white border-t border-border-default flex items-center justify-between text-xs text-body">
+                    <span className="truncate max-w-xs font-medium text-heading">
                       {selectedFile?.name}
                     </span>
                     <span>
@@ -489,11 +489,11 @@ export const AddStepModal: React.FC<AddStepModalProps> = ({
           {/* TAB 2: CHOOSE EXISTING SCENE */}
           {activeTab === 'scenes' && (
             <div className="space-y-3">
-              <label className="block text-[12.5px] font-medium text-[#374151]">
+              <label className="block text-[12.5px] font-medium text-gray-700">
                 Select an existing scene screenshot:
               </label>
               {scenes.length === 0 ? (
-                <div className="p-6 text-center text-xs text-[#6b7280] bg-[#fafafc] rounded-xl border border-[#e5e7eb]">
+                <div className="p-6 text-center text-xs text-body bg-canvas rounded-xl border border-border-default">
                   No existing scenes found in this demo.
                 </div>
               ) : (
@@ -507,11 +507,11 @@ export const AddStepModal: React.FC<AddStepModalProps> = ({
                         onClick={() => setSelectedSceneId(sceneId)}
                         className={`relative rounded-xl overflow-hidden border-2 cursor-pointer transition-all ${
                           isSelected
-                            ? 'border-[#5B5CE2] ring-2 ring-[#5B5CE2]/30 shadow-md scale-[1.01]'
-                            : 'border-[#e5e7eb] hover:border-[#cbd5e1]'
+                            ? 'border-brand-purple ring-2 ring-brand-purple/30 shadow-md scale-[1.01]'
+                            : 'border-border-default hover:border-slate-300'
                         }`}
                       >
-                        <div className="aspect-[16/10] bg-[#1e1e2d] overflow-hidden">
+                        <div className="aspect-[16/10] bg-zinc-900 overflow-hidden">
                           {sc.sourceAssetUrl ? (
                             // eslint-disable-next-line @next/next/no-img-element
                             <img
@@ -526,10 +526,10 @@ export const AddStepModal: React.FC<AddStepModalProps> = ({
                           )}
                         </div>
                         <div className="p-2 bg-white flex items-center justify-between text-xs">
-                          <span className="font-medium text-[#0f0f1a] truncate">
+                          <span className="font-medium text-heading truncate">
                             {sc.name || `Scene ${scIdx + 1}`}
                           </span>
-                          {isSelected && <Check className="w-3.5 h-3.5 text-[#5B5CE2] shrink-0" />}
+                          {isSelected && <Check className="w-3.5 h-3.5 text-brand-purple shrink-0" />}
                         </div>
                       </div>
                     );
@@ -550,15 +550,15 @@ export const AddStepModal: React.FC<AddStepModalProps> = ({
                 helperText="Direct link to hosted media asset"
               />
               <div className="flex items-center gap-3 pt-1">
-                <label className="text-[12.5px] font-medium text-[#374151]">Media Type:</label>
+                <label className="text-[12.5px] font-medium text-gray-700">Media Type:</label>
                 <div className="flex items-center gap-2">
                   <button
                     type="button"
                     onClick={() => setCustomUrlType('image')}
                     className={`px-3 py-1 rounded-lg text-xs font-medium cursor-pointer border transition-colors ${
                       customUrlType === 'image'
-                        ? 'bg-[#5B5CE2] text-white border-[#5B5CE2]'
-                        : 'bg-white text-[#6b7280] border-[#d1d5db]'
+                        ? 'bg-brand-purple text-white border-brand-purple'
+                        : 'bg-white text-body border-border-input'
                     }`}
                   >
                     Image
@@ -568,8 +568,8 @@ export const AddStepModal: React.FC<AddStepModalProps> = ({
                     onClick={() => setCustomUrlType('video')}
                     className={`px-3 py-1 rounded-lg text-xs font-medium cursor-pointer border transition-colors ${
                       customUrlType === 'video'
-                        ? 'bg-[#5B5CE2] text-white border-[#5B5CE2]'
-                        : 'bg-white text-[#6b7280] border-[#d1d5db]'
+                        ? 'bg-brand-purple text-white border-brand-purple'
+                        : 'bg-white text-body border-border-input'
                     }`}
                   >
                     Video
@@ -580,7 +580,7 @@ export const AddStepModal: React.FC<AddStepModalProps> = ({
           )}
 
           {/* Step Metadata Settings */}
-          <div className="pt-3 border-t border-[#f0f0f4] space-y-3.5">
+          <div className="pt-3 border-t border-border-light space-y-3.5">
             <Input
               label="Step Title"
               value={title}
@@ -605,7 +605,7 @@ export const AddStepModal: React.FC<AddStepModalProps> = ({
           </div>
 
           {/* Footer Controls */}
-          <div className="pt-4 border-t border-[#f0f0f4] flex items-center justify-end gap-2.5">
+          <div className="pt-4 border-t border-border-light flex items-center justify-end gap-2.5">
             <Button variant="ghost" size="md" type="button" onClick={onClose}>
               Cancel
             </Button>

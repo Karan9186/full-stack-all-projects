@@ -154,10 +154,19 @@ export const DemoRuntimePlayer: React.FC<DemoRuntimePlayerProps> = ({
 
   // Authoritative Camera and Playback Lifecycle State
   const [cameraScale, setCameraScale] = useState(1.0);
+  const cameraScaleRef = useRef(1.0);
   const [cameraTransition, setCameraTransition] = useState('none');
+  const [showHotspots, setShowHotspots] = useState(true);
+  const [isZoomingOut, setIsZoomingOut] = useState(false);
+  const isZoomingOutRef = useRef(false);
   const stepPhaseRef = useRef<'init' | 'animating' | 'holding' | 'waiting' | 'done'>('init');
   const isPlayingRef = useRef(isPlaying);
   isPlayingRef.current = isPlaying;
+
+  const updateCameraScale = useCallback((scale: number) => {
+    cameraScaleRef.current = scale;
+    setCameraScale(scale);
+  }, []);
 
   const lifecycleTimersRef = useRef<{
     delay?: NodeJS.Timeout;
@@ -165,6 +174,7 @@ export const DemoRuntimePlayer: React.FC<DemoRuntimePlayerProps> = ({
     pointer?: NodeJS.Timeout;
     hold?: NodeJS.Timeout;
     advance?: NodeJS.Timeout;
+    zoomOut?: NodeJS.Timeout;
   }>({});
 
   const cancelPlaybackLifecycle = useCallback(() => {
@@ -173,6 +183,7 @@ export const DemoRuntimePlayer: React.FC<DemoRuntimePlayerProps> = ({
     if (lifecycleTimersRef.current.pointer) clearTimeout(lifecycleTimersRef.current.pointer);
     if (lifecycleTimersRef.current.hold) clearTimeout(lifecycleTimersRef.current.hold);
     if (lifecycleTimersRef.current.advance) clearTimeout(lifecycleTimersRef.current.advance);
+    if (lifecycleTimersRef.current.zoomOut) clearTimeout(lifecycleTimersRef.current.zoomOut);
     lifecycleTimersRef.current = {};
   }, []);
 
@@ -249,7 +260,10 @@ export const DemoRuntimePlayer: React.FC<DemoRuntimePlayerProps> = ({
 
   const handleRestart = useCallback(() => {
     cancelPlaybackLifecycle();
-    setCameraScale(1.0);
+    isZoomingOutRef.current = false;
+    setIsZoomingOut(false);
+    setShowHotspots(false);
+    updateCameraScale(1.0);
     setCameraTransition('none');
     stepPhaseRef.current = 'init';
     setCurrentSceneIndex(0);
@@ -270,90 +284,127 @@ export const DemoRuntimePlayer: React.FC<DemoRuntimePlayerProps> = ({
       sceneId: scenes[0]?.id,
       stepId: steps[0]?.id,
     });
-  }, [cancelPlaybackLifecycle, chapters, scenes, steps, demoSettings.autoplay, onTrackEvent]);
+  }, [cancelPlaybackLifecycle, chapters, scenes, steps, demoSettings.autoplay, updateCameraScale, onTrackEvent]);
 
   // Step Navigation Functions with explicit destination & loop support
   const goToNextStep = useCallback(() => {
+    if (isZoomingOutRef.current) return;
     cancelPlaybackLifecycle();
-    setCameraScale(1.0);
-    setCameraTransition('none');
-    stepPhaseRef.current = 'init';
 
-    if (currentStep) {
-      onTrackEvent?.('STEP_COMPLETE', {
-        sceneId: currentScene?.id,
-        stepId: currentStep?.id,
-      });
-    }
+    const zoomConfig = currentStep?.zoomPan;
+    const hasZoom = Boolean(zoomConfig?.enabled);
+    const isCurrentlyZoomed =
+      hasZoom &&
+      (cameraScaleRef.current > 1.001 ||
+        stepPhaseRef.current === 'animating' ||
+        stepPhaseRef.current === 'holding' ||
+        stepPhaseRef.current === 'waiting' ||
+        playbackStatus === 'ready');
 
-    // Check completion explicit nextStepId
-    if (currentStep?.completion) {
-      const comp = currentStep.completion;
-      if (comp.nextStepId) {
-        const targetIdx = steps.findIndex(
-          (s) => s.id === comp.nextStepId || (s as any)._id === comp.nextStepId
-        );
-        if (targetIdx !== -1) {
-          setPlaybackStatus('transitioning');
-          setCurrentStepIndex(targetIdx);
-          const nextStep = steps[targetIdx];
-          if (nextStep?.sceneId) {
-            const sceneIdx = scenes.findIndex(
-              (s) => s.id === nextStep.sceneId || (s as any)._id === nextStep.sceneId
-            );
-            if (sceneIdx !== -1 && sceneIdx !== currentSceneIndex) {
-              setCurrentSceneIndex(sceneIdx);
-            }
-          }
-          if (nextStep?.chapterId && nextStep.chapterId !== activeChapterId) {
-            setActiveChapterId(nextStep.chapterId);
-          }
-          setTimeout(() => setPlaybackStatus('ready'), 200);
-          return;
-        }
-      }
-    }
+    const proceedToNext = () => {
+      updateCameraScale(1.0);
+      setCameraTransition('none');
+      stepPhaseRef.current = 'init';
 
-    if (currentStepIndex < steps.length - 1) {
-      const nextIndex = currentStepIndex + 1;
-      setPlaybackStatus('transitioning');
-      setCurrentStepIndex(nextIndex);
-
-      const nextStep = steps[nextIndex];
-      if (nextStep?.sceneId) {
-        const sceneIdx = scenes.findIndex(
-          (s) => s.id === nextStep.sceneId || (s as any)._id === nextStep.sceneId
-        );
-        if (sceneIdx !== -1 && sceneIdx !== currentSceneIndex) {
-          setCurrentSceneIndex(sceneIdx);
-        }
+      if (currentStep) {
+        onTrackEvent?.('STEP_COMPLETE', {
+          sceneId: currentScene?.id,
+          stepId: currentStep?.id,
+        });
       }
 
-      if (nextStep?.chapterId && nextStep.chapterId !== activeChapterId) {
-        setActiveChapterId(nextStep.chapterId);
-      }
-
-      setTimeout(() => setPlaybackStatus('ready'), 200);
-    } else {
-      const shouldLoop = Boolean(demoSettings.loop || demoSettings.autoplayLoop);
-      if (shouldLoop && isPlayingRef.current) {
-        // Continuous looping restart
-        setPlaybackStatus('transitioning');
-        setCurrentStepIndex(0);
-        const firstStep = steps[0];
-        if (firstStep?.sceneId) {
-          const scIdx = scenes.findIndex(
-            (s) => s.id === firstStep.sceneId || (s as any)._id === firstStep.sceneId
+      // Check completion explicit nextStepId
+      if (currentStep?.completion) {
+        const comp = currentStep.completion;
+        if (comp.nextStepId) {
+          const targetIdx = steps.findIndex(
+            (s) => s.id === comp.nextStepId || (s as any)._id === comp.nextStepId
           );
-          if (scIdx !== -1) setCurrentSceneIndex(scIdx);
+          if (targetIdx !== -1) {
+            setPlaybackStatus('transitioning');
+            setCurrentStepIndex(targetIdx);
+            const nextStep = steps[targetIdx];
+            if (nextStep?.sceneId) {
+              const sceneIdx = scenes.findIndex(
+                (s) => s.id === nextStep.sceneId || (s as any)._id === nextStep.sceneId
+              );
+              if (sceneIdx !== -1 && sceneIdx !== currentSceneIndex) {
+                setCurrentSceneIndex(sceneIdx);
+              }
+            }
+            if (nextStep?.chapterId && nextStep.chapterId !== activeChapterId) {
+              setActiveChapterId(nextStep.chapterId);
+            }
+            setTimeout(() => setPlaybackStatus('ready'), 200);
+            return;
+          }
         }
-        if (firstStep?.chapterId && firstStep.chapterId !== activeChapterId) {
-          setActiveChapterId(firstStep.chapterId);
+      }
+
+      if (currentStepIndex < steps.length - 1) {
+        const nextIndex = currentStepIndex + 1;
+        setPlaybackStatus('transitioning');
+        setCurrentStepIndex(nextIndex);
+
+        const nextStep = steps[nextIndex];
+        if (nextStep?.sceneId) {
+          const sceneIdx = scenes.findIndex(
+            (s) => s.id === nextStep.sceneId || (s as any)._id === nextStep.sceneId
+          );
+          if (sceneIdx !== -1 && sceneIdx !== currentSceneIndex) {
+            setCurrentSceneIndex(sceneIdx);
+          }
         }
+
+        if (nextStep?.chapterId && nextStep.chapterId !== activeChapterId) {
+          setActiveChapterId(nextStep.chapterId);
+        }
+
         setTimeout(() => setPlaybackStatus('ready'), 200);
       } else {
-        handleComplete();
+        const shouldLoop = Boolean(demoSettings.loop || demoSettings.autoplayLoop);
+        if (shouldLoop && isPlayingRef.current) {
+          // Continuous looping restart
+          setPlaybackStatus('transitioning');
+          setCurrentStepIndex(0);
+          const firstStep = steps[0];
+          if (firstStep?.sceneId) {
+            const scIdx = scenes.findIndex(
+              (s) => s.id === firstStep.sceneId || (s as any)._id === firstStep.sceneId
+            );
+            if (scIdx !== -1) setCurrentSceneIndex(scIdx);
+          }
+          if (firstStep?.chapterId && firstStep.chapterId !== activeChapterId) {
+            setActiveChapterId(firstStep.chapterId);
+          }
+          setTimeout(() => setPlaybackStatus('ready'), 200);
+        } else {
+          handleComplete();
+        }
       }
+    };
+
+    if (isCurrentlyZoomed) {
+      // Hide hotspots first so camera zooms out cleanly to full slide
+      setShowHotspots(false);
+      isZoomingOutRef.current = true;
+      setIsZoomingOut(true);
+
+      const zoomOutDurationMs = Math.max(
+        300,
+        Math.min(800, zoomConfig?.returnDurationMs || zoomConfig?.durationMs || 500)
+      );
+      const easingCss = getEasingCss(zoomConfig?.easing || 'easeOut');
+      setCameraTransition(`transform ${zoomOutDurationMs}ms ${easingCss}`);
+      updateCameraScale(1.0);
+
+      lifecycleTimersRef.current.zoomOut = setTimeout(() => {
+        isZoomingOutRef.current = false;
+        setIsZoomingOut(false);
+        proceedToNext();
+      }, zoomOutDurationMs);
+    } else {
+      proceedToNext();
     }
   }, [
     cancelPlaybackLifecycle,
@@ -366,39 +417,84 @@ export const DemoRuntimePlayer: React.FC<DemoRuntimePlayerProps> = ({
     activeChapterId,
     demoSettings.loop,
     demoSettings.autoplayLoop,
+    updateCameraScale,
     handleComplete,
-    handleRestart,
     onTrackEvent,
   ]);
 
   const goToPrevStep = useCallback(() => {
+    if (isZoomingOutRef.current) return;
     cancelPlaybackLifecycle();
-    setCameraScale(1.0);
-    setCameraTransition('none');
-    stepPhaseRef.current = 'init';
 
-    if (currentStepIndex > 0) {
-      const prevIndex = currentStepIndex - 1;
-      setPlaybackStatus('transitioning');
-      setCurrentStepIndex(prevIndex);
+    const zoomConfig = currentStep?.zoomPan;
+    const hasZoom = Boolean(zoomConfig?.enabled);
+    const isCurrentlyZoomed =
+      hasZoom &&
+      (cameraScaleRef.current > 1.001 ||
+        stepPhaseRef.current === 'animating' ||
+        stepPhaseRef.current === 'holding' ||
+        stepPhaseRef.current === 'waiting' ||
+        playbackStatus === 'ready');
 
-      const prevStep = steps[prevIndex];
-      if (prevStep?.sceneId) {
-        const sceneIdx = scenes.findIndex(
-          (s) => s.id === prevStep.sceneId || (s as any)._id === prevStep.sceneId
-        );
-        if (sceneIdx !== -1 && sceneIdx !== currentSceneIndex) {
-          setCurrentSceneIndex(sceneIdx);
+    const proceedToPrev = () => {
+      updateCameraScale(1.0);
+      setCameraTransition('none');
+      stepPhaseRef.current = 'init';
+
+      if (currentStepIndex > 0) {
+        const prevIndex = currentStepIndex - 1;
+        setPlaybackStatus('transitioning');
+        setCurrentStepIndex(prevIndex);
+
+        const prevStep = steps[prevIndex];
+        if (prevStep?.sceneId) {
+          const sceneIdx = scenes.findIndex(
+            (s) => s.id === prevStep.sceneId || (s as any)._id === prevStep.sceneId
+          );
+          if (sceneIdx !== -1 && sceneIdx !== currentSceneIndex) {
+            setCurrentSceneIndex(sceneIdx);
+          }
         }
-      }
 
-      if (prevStep?.chapterId && prevStep.chapterId !== activeChapterId) {
-        setActiveChapterId(prevStep.chapterId);
-      }
+        if (prevStep?.chapterId && prevStep.chapterId !== activeChapterId) {
+          setActiveChapterId(prevStep.chapterId);
+        }
 
-      setTimeout(() => setPlaybackStatus('ready'), 200);
+        setTimeout(() => setPlaybackStatus('ready'), 200);
+      }
+    };
+
+    if (isCurrentlyZoomed) {
+      setShowHotspots(false);
+      isZoomingOutRef.current = true;
+      setIsZoomingOut(true);
+
+      const zoomOutDurationMs = Math.max(
+        300,
+        Math.min(800, zoomConfig?.returnDurationMs || zoomConfig?.durationMs || 500)
+      );
+      const easingCss = getEasingCss(zoomConfig?.easing || 'easeOut');
+      setCameraTransition(`transform ${zoomOutDurationMs}ms ${easingCss}`);
+      updateCameraScale(1.0);
+
+      lifecycleTimersRef.current.zoomOut = setTimeout(() => {
+        isZoomingOutRef.current = false;
+        setIsZoomingOut(false);
+        proceedToPrev();
+      }, zoomOutDurationMs);
+    } else {
+      proceedToPrev();
     }
-  }, [cancelPlaybackLifecycle, currentStepIndex, steps, scenes, currentSceneIndex, activeChapterId]);
+  }, [
+    cancelPlaybackLifecycle,
+    currentStep,
+    currentStepIndex,
+    steps,
+    scenes,
+    currentSceneIndex,
+    activeChapterId,
+    updateCameraScale,
+  ]);
 
   // Event bus & action handling
   const handleAction = useCallback(
@@ -535,47 +631,152 @@ export const DemoRuntimePlayer: React.FC<DemoRuntimePlayerProps> = ({
         if (target) {
           const idx = steps.findIndex((s) => s.id === target || (s as any)._id === target);
           if (idx !== -1) {
+            if (isZoomingOutRef.current) return;
             cancelPlaybackLifecycle();
-            setCameraScale(1.0);
-            setCameraTransition('none');
-            stepPhaseRef.current = 'init';
-            setPlaybackStatus('transitioning');
-            setCurrentStepIndex(idx);
-            setIsAtChapter(false);
-            const targetStep = steps[idx];
-            if (targetStep?.sceneId) {
-              const scIdx = scenes.findIndex(
-                (sc) => sc.id === targetStep.sceneId || (sc as any)._id === targetStep.sceneId
+
+            const zoomConfig = currentStep?.zoomPan;
+            const hasZoom = Boolean(zoomConfig?.enabled);
+            const isCurrentlyZoomed =
+              hasZoom &&
+              (cameraScaleRef.current > 1.001 ||
+                stepPhaseRef.current === 'animating' ||
+                stepPhaseRef.current === 'holding' ||
+                stepPhaseRef.current === 'waiting' ||
+                playbackStatus === 'ready');
+
+            const proceedToTarget = () => {
+              updateCameraScale(1.0);
+              setCameraTransition('none');
+              stepPhaseRef.current = 'init';
+              setPlaybackStatus('transitioning');
+              setCurrentStepIndex(idx);
+              setIsAtChapter(false);
+              const targetStep = steps[idx];
+              if (targetStep?.sceneId) {
+                const scIdx = scenes.findIndex(
+                  (sc) => sc.id === targetStep.sceneId || (sc as any)._id === targetStep.sceneId
+                );
+                if (scIdx !== -1) setCurrentSceneIndex(scIdx);
+              }
+              if (targetStep?.chapterId && targetStep.chapterId !== activeChapterId) {
+                setActiveChapterId(targetStep.chapterId);
+              }
+              setTimeout(() => setPlaybackStatus('ready'), 200);
+            };
+
+            if (isCurrentlyZoomed) {
+              setShowHotspots(false);
+              isZoomingOutRef.current = true;
+              setIsZoomingOut(true);
+              const zoomOutDurationMs = Math.max(
+                300,
+                Math.min(800, zoomConfig?.returnDurationMs || zoomConfig?.durationMs || 500)
               );
-              if (scIdx !== -1) setCurrentSceneIndex(scIdx);
+              const easingCss = getEasingCss(zoomConfig?.easing || 'easeOut');
+              setCameraTransition(`transform ${zoomOutDurationMs}ms ${easingCss}`);
+              updateCameraScale(1.0);
+
+              lifecycleTimersRef.current.zoomOut = setTimeout(() => {
+                isZoomingOutRef.current = false;
+                setIsZoomingOut(false);
+                proceedToTarget();
+              }, zoomOutDurationMs);
+            } else {
+              proceedToTarget();
             }
-            if (targetStep?.chapterId && targetStep.chapterId !== activeChapterId) {
-              setActiveChapterId(targetStep.chapterId);
-            }
-            setTimeout(() => setPlaybackStatus('ready'), 200);
           }
         }
       } else if (actionType === 'goToChapter') {
         if (target) {
           const ch = chapters.find((c) => c.id === target || (c as any)._id === target);
           if (ch) {
+            if (isZoomingOutRef.current) return;
             cancelPlaybackLifecycle();
-            setCameraScale(1.0);
-            setCameraTransition('none');
-            stepPhaseRef.current = 'init';
-            setActiveChapterId(ch.id);
-            setIsAtChapter(true);
+
+            const zoomConfig = currentStep?.zoomPan;
+            const hasZoom = Boolean(zoomConfig?.enabled);
+            const isCurrentlyZoomed =
+              hasZoom &&
+              (cameraScaleRef.current > 1.001 ||
+                stepPhaseRef.current === 'animating' ||
+                stepPhaseRef.current === 'holding' ||
+                stepPhaseRef.current === 'waiting' ||
+                playbackStatus === 'ready');
+
+            const proceedToCh = () => {
+              updateCameraScale(1.0);
+              setCameraTransition('none');
+              stepPhaseRef.current = 'init';
+              setActiveChapterId(ch.id);
+              setIsAtChapter(true);
+            };
+
+            if (isCurrentlyZoomed) {
+              setShowHotspots(false);
+              isZoomingOutRef.current = true;
+              setIsZoomingOut(true);
+              const zoomOutDurationMs = Math.max(
+                300,
+                Math.min(800, zoomConfig?.returnDurationMs || zoomConfig?.durationMs || 500)
+              );
+              const easingCss = getEasingCss(zoomConfig?.easing || 'easeOut');
+              setCameraTransition(`transform ${zoomOutDurationMs}ms ${easingCss}`);
+              updateCameraScale(1.0);
+
+              lifecycleTimersRef.current.zoomOut = setTimeout(() => {
+                isZoomingOutRef.current = false;
+                setIsZoomingOut(false);
+                proceedToCh();
+              }, zoomOutDurationMs);
+            } else {
+              proceedToCh();
+            }
           }
         }
       } else if (actionType === 'goToScene') {
         if (target) {
           const idx = scenes.findIndex((s) => s.id === target || (s as any)._id === target);
           if (idx !== -1) {
+            if (isZoomingOutRef.current) return;
             cancelPlaybackLifecycle();
-            setCameraScale(1.0);
-            setCameraTransition('none');
-            stepPhaseRef.current = 'init';
-            setCurrentSceneIndex(idx);
+
+            const zoomConfig = currentStep?.zoomPan;
+            const hasZoom = Boolean(zoomConfig?.enabled);
+            const isCurrentlyZoomed =
+              hasZoom &&
+              (cameraScaleRef.current > 1.001 ||
+                stepPhaseRef.current === 'animating' ||
+                stepPhaseRef.current === 'holding' ||
+                stepPhaseRef.current === 'waiting' ||
+                playbackStatus === 'ready');
+
+            const proceedToSc = () => {
+              updateCameraScale(1.0);
+              setCameraTransition('none');
+              stepPhaseRef.current = 'init';
+              setCurrentSceneIndex(idx);
+            };
+
+            if (isCurrentlyZoomed) {
+              setShowHotspots(false);
+              isZoomingOutRef.current = true;
+              setIsZoomingOut(true);
+              const zoomOutDurationMs = Math.max(
+                300,
+                Math.min(800, zoomConfig?.returnDurationMs || zoomConfig?.durationMs || 500)
+              );
+              const easingCss = getEasingCss(zoomConfig?.easing || 'easeOut');
+              setCameraTransition(`transform ${zoomOutDurationMs}ms ${easingCss}`);
+              updateCameraScale(1.0);
+
+              lifecycleTimersRef.current.zoomOut = setTimeout(() => {
+                isZoomingOutRef.current = false;
+                setIsZoomingOut(false);
+                proceedToSc();
+              }, zoomOutDurationMs);
+            } else {
+              proceedToSc();
+            }
           }
         }
       } else if (actionType === 'externalUrl') {
@@ -584,7 +785,7 @@ export const DemoRuntimePlayer: React.FC<DemoRuntimePlayerProps> = ({
         }
       }
     },
-    [currentStep, goToNextStep, goToPrevStep, steps, chapters, scenes, cancelPlaybackLifecycle, activeChapterId, onTrackEvent]
+    [currentStep, goToNextStep, goToPrevStep, steps, chapters, scenes, cancelPlaybackLifecycle, activeChapterId, updateCameraScale, onTrackEvent]
   );
 
   // Check if active elements request backdrop dimming
@@ -714,15 +915,29 @@ export const DemoRuntimePlayer: React.FC<DemoRuntimePlayerProps> = ({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [goToNextStep, goToPrevStep, handleRestart, demoSettings.accessibility?.disableKeyboardNavigation]);
 
+  // Ref to always access the latest goToNextStep without triggering re-renders
+  const goToNextStepRef = useRef(goToNextStep);
+  useEffect(() => {
+    goToNextStepRef.current = goToNextStep;
+  });
+
+  // Serialized zoom key to ensure stable dependency tracking
+  const zoomConfigKey = useMemo(() => {
+    const zp = currentStep?.zoomPan;
+    if (!zp) return 'none';
+    return `${Boolean(zp.enabled)}-${zp.zoomLevel}-${zp.durationMs}-${zp.delayMs}-${zp.easing}-${zp.endBehavior}-${zp.focusPoint?.x}-${zp.focusPoint?.y}-${zp.focusRegion?.x}-${zp.focusRegion?.y}-${zp.focusRegion?.width}-${zp.focusRegion?.height}-${zp.linkedHotspotId}`;
+  }, [currentStep?.zoomPan]);
+
   // Coordinated Deterministic Per-Step Playback & Camera Lifecycle
   // Step Entrance & Camera Animation (Runs when step/chapter changes)
   useEffect(() => {
     cancelPlaybackLifecycle();
 
     if (!currentStep || isAtChapter || isCompleted) {
-      setCameraScale(1.0);
+      updateCameraScale(1.0);
       setCameraTransition('none');
       setPlaybackStatus('ready');
+      setShowHotspots(true);
       stepPhaseRef.current = 'done';
       return;
     }
@@ -733,57 +948,88 @@ export const DemoRuntimePlayer: React.FC<DemoRuntimePlayerProps> = ({
       typeof window !== 'undefined' &&
       window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    // Phase 1: Initialize Camera to fit baseline (1.0x)
-    setCameraScale(1.0);
+    // Phase 1: Initialize Camera to fit baseline (1.0x) and load hotspots first
+    updateCameraScale(1.0);
     setCameraTransition('none');
     setPlaybackStatus('ready');
     stepPhaseRef.current = 'init';
+    setShowHotspots(true);
 
-    // Must have at least 60ms delay before animating to allow browser to commit 1.0 baseline paint
+    // If no zoom & pan is applied, keep hotspots immediately and handle normal progression
+    if (!hasZoom) {
+      stepPhaseRef.current = 'holding';
+      const requiresInteraction = doesStepRequireInteraction(currentStep, demoSettings);
+      if (requiresInteraction) {
+        stepPhaseRef.current = 'waiting';
+        setPlaybackStatus('waiting');
+        return;
+      }
+
+      if (!isPlayingRef.current) {
+        setPlaybackStatus('ready');
+        return;
+      }
+
+      setPlaybackStatus('playing');
+      const nominalDwell = getStepDwellDuration(currentStep, demoSettings);
+      const transitionDelayMs = Math.max(0, demoSettings?.transitionDelayMs ?? 500);
+
+      lifecycleTimersRef.current.hold = setTimeout(() => {
+        lifecycleTimersRef.current.advance = setTimeout(() => {
+          goToNextStepRef.current();
+        }, transitionDelayMs);
+      }, nominalDwell);
+      return;
+    }
+
+    // Phase 2: Delay before zoom-in (viewer sees full slide with hotspot loaded first, then zoom begins)
     const userDelayMs = Math.max(0, zoomConfig?.delayMs || 0);
-    const delayMs = hasZoom ? Math.max(60, userDelayMs) : 0;
-    const cameraDurationMs = hasZoom
-      ? (prefersReducedMotion ? 0 : Math.max(200, zoomConfig?.durationMs || 800))
-      : 0;
-    const easingCss = hasZoom ? getEasingCss(zoomConfig?.easing) : 'ease-out';
-    const holdDurationMs = hasZoom ? Math.max(200, zoomConfig?.holdDurationMs || 1000) : 0;
+    const delayMs = Math.max(350, userDelayMs || 400);
+    const cameraDurationMs = prefersReducedMotion ? 0 : Math.max(200, zoomConfig?.durationMs || 800);
+    const easingCss = getEasingCss(zoomConfig?.easing);
+    const holdDurationMs = Math.max(200, zoomConfig?.holdDurationMs || 1000);
     const returnDurationMs =
-      hasZoom && zoomConfig?.endBehavior === 'returnToFit'
+      zoomConfig?.endBehavior === 'returnToFit'
         ? (prefersReducedMotion ? 0 : Math.max(200, zoomConfig?.returnDurationMs || 600))
         : 0;
 
     // Target scale calculation: strictly aligns with studio editor bounding box
-    const targetScale = zoomConfig?.focusRegion?.width
-      ? Math.max(1.1, Math.min(3.5, 100 / zoomConfig.focusRegion.width))
-      : (zoomConfig?.zoomLevel || 1.5);
+    const rawTargetScale =
+      zoomConfig?.focusRegion?.width && zoomConfig.focusRegion.width > 5
+        ? 100 / zoomConfig.focusRegion.width
+        : (zoomConfig?.zoomLevel || 1.5);
+    const targetScale = Math.max(1.1, Math.min(3.5, isNaN(rawTargetScale) ? 1.5 : rawTargetScale));
 
-    // Phase 2: Start Delay (guaranteeing 1.0x baseline is painted before transition starts)
+    // Phase 2: Start Delay (viewer sees hotspot on overview, then camera moves into focus)
     lifecycleTimersRef.current.delay = setTimeout(() => {
-      // Phase 3: Camera Movement
-      if (hasZoom && cameraDurationMs > 0) {
+      // Phase 3: Camera Movement to expected zoom (hotspots zoom smoothly with the camera)
+      if (cameraDurationMs > 0) {
         setPlaybackStatus('animating');
         stepPhaseRef.current = 'animating';
         setCameraTransition(`transform ${cameraDurationMs}ms ${easingCss}`);
-        setCameraScale(targetScale);
-      } else if (hasZoom) {
-        setCameraScale(targetScale);
+        updateCameraScale(targetScale);
+      } else {
+        updateCameraScale(targetScale);
         setCameraTransition('none');
       }
 
       lifecycleTimersRef.current.camera = setTimeout(() => {
-        // Phase 4: Pointer Animation Phase
-        const pointerWaitMs = 350;
+        // Camera has reached expected zoom!
+        stepPhaseRef.current = 'holding';
+
+        // Phase 4: Pointer & Interaction Phase
+        const pointerWaitMs = 250;
 
         lifecycleTimersRef.current.pointer = setTimeout(() => {
           // Phase 5: Interaction Checkpoint
-          stepPhaseRef.current = 'holding';
           const requiresInteraction = doesStepRequireInteraction(currentStep, demoSettings);
 
           // Handle Return to Fit behavior
-          if (hasZoom && zoomConfig?.endBehavior === 'returnToFit') {
+          if (zoomConfig?.endBehavior === 'returnToFit') {
             lifecycleTimersRef.current.hold = setTimeout(() => {
+              setShowHotspots(false);
               setCameraTransition(`transform ${returnDurationMs}ms cubic-bezier(0.16, 1, 0.3, 1)`);
-              setCameraScale(1.0);
+              updateCameraScale(1.0);
 
               lifecycleTimersRef.current.advance = setTimeout(() => {
                 if (requiresInteraction) {
@@ -800,7 +1046,7 @@ export const DemoRuntimePlayer: React.FC<DemoRuntimePlayerProps> = ({
                 setPlaybackStatus('playing');
                 const transitionDelayMs = Math.max(0, demoSettings?.transitionDelayMs ?? 500);
                 setTimeout(() => {
-                  goToNextStep();
+                  goToNextStepRef.current();
                 }, transitionDelayMs);
               }, returnDurationMs);
             }, holdDurationMs);
@@ -810,7 +1056,6 @@ export const DemoRuntimePlayer: React.FC<DemoRuntimePlayerProps> = ({
           if (requiresInteraction) {
             stepPhaseRef.current = 'waiting';
             setPlaybackStatus('waiting');
-            // Halt automatic progression at this checkpoint; wait for viewer interaction!
             return;
           }
 
@@ -828,7 +1073,7 @@ export const DemoRuntimePlayer: React.FC<DemoRuntimePlayerProps> = ({
 
           lifecycleTimersRef.current.hold = setTimeout(() => {
             lifecycleTimersRef.current.advance = setTimeout(() => {
-              goToNextStep();
+              goToNextStepRef.current();
             }, transitionDelayMs);
           }, remainingDwell);
 
@@ -841,8 +1086,8 @@ export const DemoRuntimePlayer: React.FC<DemoRuntimePlayerProps> = ({
     };
   }, [
     currentStep?.id,
-    currentStep?.zoomPan,
     currentStepIndex,
+    zoomConfigKey,
     isAtChapter,
     isCompleted,
     demoSettings.autoplay,
@@ -853,7 +1098,7 @@ export const DemoRuntimePlayer: React.FC<DemoRuntimePlayerProps> = ({
     demoSettings.transitionDelayMs,
     demoSettings.autoplayProgressionPolicy,
     cancelPlaybackLifecycle,
-    goToNextStep,
+    updateCameraScale,
   ]);
 
   // Handle Play/Pause toggling without re-initializing camera transform
@@ -890,20 +1135,20 @@ export const DemoRuntimePlayer: React.FC<DemoRuntimePlayerProps> = ({
         lifecycleTimersRef.current.hold = setTimeout(() => {
           if (hasZoom && zoomConfig?.endBehavior === 'returnToFit') {
             setCameraTransition(`transform ${returnDurationMs}ms ${easingCss}`);
-            setCameraScale(1.0);
+            updateCameraScale(1.0);
 
             lifecycleTimersRef.current.advance = setTimeout(() => {
-              goToNextStep();
+              goToNextStepRef.current();
             }, returnDurationMs + transitionDelayMs);
           } else {
             lifecycleTimersRef.current.advance = setTimeout(() => {
-              goToNextStep();
+              goToNextStepRef.current();
             }, transitionDelayMs);
           }
         }, nominalDwell);
       }
     }
-  }, [isPlaying, currentStep, isAtChapter, isCompleted, demoSettings, goToNextStep]);
+  }, [isPlaying, currentStep, isAtChapter, isCompleted, demoSettings, updateCameraScale]);
 
   // Interpolated step content
   const stepTitle = interpolateVariables(
@@ -918,8 +1163,8 @@ export const DemoRuntimePlayer: React.FC<DemoRuntimePlayerProps> = ({
   // Empty demo state guard
   if (steps.length === 0 && (!chapters || chapters.length === 0)) {
     return (
-      <div className="w-full h-full min-h-[400px] bg-[#0c0c14] rounded-2xl flex flex-col items-center justify-center p-8 text-center text-white select-none">
-        <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mb-3 text-[#5B5CE2]">
+      <div className="w-full h-full min-h-[400px] bg-dark rounded-2xl flex flex-col items-center justify-center p-8 text-center text-white select-none">
+        <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mb-3 text-brand-purple">
           <span className="font-extrabold text-lg">P</span>
         </div>
         <h4 className="text-lg font-bold mb-1">No walkthrough steps yet</h4>
@@ -933,7 +1178,7 @@ export const DemoRuntimePlayer: React.FC<DemoRuntimePlayerProps> = ({
   return (
     <div
       ref={containerRef}
-      className={`relative w-full h-full flex flex-col items-center justify-center overflow-hidden font-sans select-none bg-[#0a0a10] text-white ${
+      className={`relative w-full h-full flex flex-col items-center justify-center overflow-hidden font-sans select-none bg-dark text-white ${
         isFullscreen ? 'fixed inset-0 z-50 rounded-0' : 'rounded-2xl shadow-2xl'
       }`}
     >
@@ -963,6 +1208,7 @@ export const DemoRuntimePlayer: React.FC<DemoRuntimePlayerProps> = ({
         cameraTransition={cameraTransition}
         onNextStep={goToNextStep}
         onPrevStep={goToPrevStep}
+        showHotspots={showHotspots}
       />
 
       {/* Completion Modal */}
@@ -982,8 +1228,8 @@ export const DemoRuntimePlayer: React.FC<DemoRuntimePlayerProps> = ({
         isPlaying={isPlaying}
         isCompleted={isCompleted}
         isFullscreen={isFullscreen}
-        canGoPrev={currentStepIndex > 0 && !isAtChapter}
-        canGoNext={currentStepIndex < steps.length - 1}
+        canGoPrev={currentStepIndex > 0 && !isAtChapter && !isZoomingOut}
+        canGoNext={currentStepIndex < steps.length - 1 && !isZoomingOut}
         onPrev={goToPrevStep}
         onNext={goToNextStep}
         onTogglePlay={() => setIsPlaying((p) => !p)}
@@ -1014,9 +1260,9 @@ export const DemoRuntimePlayer: React.FC<DemoRuntimePlayerProps> = ({
           href={demoSettings.branding?.ctaButtonUrl || 'https://preveuo.com'}
           target="_blank"
           rel="noopener noreferrer"
-          className="absolute bottom-4 left-4 z-40 px-2.5 py-1 rounded-xl bg-white/90 hover:bg-white text-[#0f0f1a] text-[10px] font-bold shadow-md border border-[#e5e7eb] flex items-center gap-1.5 transition-all hover:scale-105"
+          className="absolute bottom-4 left-4 z-40 px-2.5 py-1 rounded-xl bg-white/90 hover:bg-white text-heading text-[10px] font-bold shadow-md border border-border-default flex items-center gap-1.5 transition-all hover:scale-105"
         >
-          <span className="w-1.5 h-1.5 rounded-full bg-[#5B5CE2]" />
+          <span className="w-1.5 h-1.5 rounded-full bg-brand-purple" />
           <span>{demoSettings.branding?.watermarkText || 'Created on Preveuo'}</span>
         </a>
       )}

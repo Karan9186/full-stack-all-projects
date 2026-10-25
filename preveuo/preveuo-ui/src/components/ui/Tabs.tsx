@@ -56,7 +56,7 @@ export const TabsList: React.FC<{ children: React.ReactNode; className?: string 
   return (
     <div
       role="tablist"
-      className={`inline-flex items-center gap-1 p-1 bg-[#f0f0f4] rounded-xl self-start ${className}`}
+      className={`inline-flex items-center gap-1 p-1 bg-border-light rounded-xl self-start ${className}`}
     >
       {children}
     </div>
@@ -92,8 +92,8 @@ export const TabsTrigger: React.FC<TabsTriggerProps> = ({
         px-3.5 py-1.5 rounded-lg text-[13px] transition-all duration-150 select-none
         ${
           isSelected
-            ? 'font-semibold bg-white text-[#0f0f1a] shadow-2xs'
-            : 'font-medium text-[#6b7280] hover:text-[#0f0f1a] hover:bg-white/50'
+            ? 'font-semibold bg-white text-heading shadow-2xs'
+            : 'font-medium text-body hover:text-heading hover:bg-white/50'
         }
         disabled:opacity-40 disabled:cursor-not-allowed
         ${className}

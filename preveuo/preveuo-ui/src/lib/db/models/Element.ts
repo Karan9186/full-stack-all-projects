@@ -1,5 +1,6 @@
 import mongoose, { Schema, Document, Model } from 'mongoose';
 import { ElementType, ElementPosition, ElementStyle } from '@/types/demo';
+import { PRIMARY_COLOR, THEME_COLORS } from '@/lib/constants/theme';
 
 export interface IElementDoc extends Document {
   demoId: mongoose.Types.ObjectId;
@@ -75,8 +76,8 @@ const ElementSchema = new Schema<IElementDoc>(
     style: {
       type: Schema.Types.Mixed,
       default: {
-        backgroundColor: '#5B5CE2',
-        color: '#ffffff',
+        backgroundColor: PRIMARY_COLOR,
+        color: THEME_COLORS.white,
         borderRadius: 9999,
         pulseAnimation: true,
       },

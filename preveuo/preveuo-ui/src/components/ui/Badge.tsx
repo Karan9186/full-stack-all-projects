@@ -24,8 +24,8 @@ export const Badge: React.FC<BadgeProps> = ({
   ...props
 }) => {
   const variantStyles = {
-    default: 'bg-[#f3f4f6] text-[#374151] border-[#e5e7eb]',
-    purple: 'bg-[#5B5CE2]/10 text-[#5B5CE2] border-[#5B5CE2]/20',
+    default: 'bg-gray-100 text-gray-700 border-border-default',
+    purple: 'bg-brand-purple/10 text-brand-purple border-brand-purple/20',
     success: 'bg-emerald-50 text-emerald-700 border-emerald-200',
     warning: 'bg-amber-50 text-amber-700 border-amber-200',
     danger: 'bg-rose-50 text-rose-700 border-rose-200',
@@ -33,8 +33,8 @@ export const Badge: React.FC<BadgeProps> = ({
   };
 
   const dotStyles = {
-    default: 'bg-[#6b7280]',
-    purple: 'bg-[#5B5CE2]',
+    default: 'bg-body',
+    purple: 'bg-brand-purple',
     success: 'bg-emerald-500',
     warning: 'bg-amber-500',
     danger: 'bg-rose-500',

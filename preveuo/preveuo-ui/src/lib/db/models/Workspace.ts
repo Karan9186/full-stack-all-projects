@@ -1,4 +1,5 @@
 import mongoose, { Schema, Document, Model } from 'mongoose';
+import { PRIMARY_COLOR } from '@/lib/constants/theme';
 
 export interface IWorkspace extends Document {
   name: string;
@@ -57,7 +58,7 @@ const WorkspaceSchema = new Schema<IWorkspace>(
     },
     brandColor: {
       type: String,
-      default: '#5B5CE2',
+      default: PRIMARY_COLOR,
     },
     customDomain: {
       type: String,

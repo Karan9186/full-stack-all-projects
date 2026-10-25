@@ -53,7 +53,7 @@ export const WorkspaceSidebar: React.FC<WorkspaceSidebarProps> = ({
     { id: 'audience', label: 'Audience', href: '/workspace?tab=audience', icon: Users, badge: '24' },
     { id: 'assets', label: 'Assets', href: '/workspace?tab=assets', icon: ImageIcon },
     { id: 'integrations', label: 'Integrations', href: '/workspace?tab=integrations', icon: SlidersHorizontal },
-    { id: 'ai-studio', label: 'AI Studio', href: '/workspace?tab=ai-studio', icon: Sparkles, badge: 'NEW', badgeColor: 'bg-[#5B5CE2]/10 text-[#5B5CE2]' },
+    { id: 'ai-studio', label: 'AI Studio', href: '/workspace?tab=ai-studio', icon: Sparkles, badge: 'NEW', badgeColor: 'bg-brand-purple/10 text-brand-purple' },
     { id: 'activity', label: 'Activity', href: '/workspace?tab=activity', icon: Activity },
   ];
 
@@ -81,14 +81,14 @@ export const WorkspaceSidebar: React.FC<WorkspaceSidebarProps> = ({
     .toUpperCase() || 'KS';
 
   return (
-    <aside className="w-64 bg-white border-r border-[#e5e7eb] flex flex-col justify-between shrink-0 h-screen sticky top-0 select-none">
+    <aside className="w-64 bg-white border-r border-border-default flex flex-col justify-between shrink-0 h-screen sticky top-0 select-none">
       <div>
         {/* Logo */}
         <div className="h-16 flex items-center px-6 gap-2.5">
-          <div className="w-7 h-7 rounded-lg bg-[#5B5CE2] flex items-center justify-center text-white font-black text-sm shadow-xs">
+          <div className="w-7 h-7 rounded-lg bg-brand-purple flex items-center justify-center text-white font-black text-sm shadow-xs">
             P
           </div>
-          <span className="text-[17px] font-extrabold tracking-tight text-[#0f0f1a]">
+          <span className="text-[17px] font-extrabold tracking-tight text-heading">
             PREVEUO
           </span>
         </div>
@@ -97,22 +97,22 @@ export const WorkspaceSidebar: React.FC<WorkspaceSidebarProps> = ({
         <div className="px-4 mb-4">
           <button
             type="button"
-            className="w-full flex items-center justify-between p-2.5 rounded-xl border border-[#e5e7eb] hover:border-[#d1d5db] bg-[#fafafc] transition-colors cursor-pointer text-left"
+            className="w-full flex items-center justify-between p-2.5 rounded-xl border border-border-default hover:border-border-input bg-canvas transition-colors cursor-pointer text-left"
           >
             <div className="flex items-center gap-2.5 min-w-0">
-              <div className="w-7 h-7 rounded-lg bg-[#0f0f1a] text-white flex items-center justify-center font-bold text-xs shrink-0">
+              <div className="w-7 h-7 rounded-lg bg-dark text-white flex items-center justify-center font-bold text-xs shrink-0">
                 {wsName[0].toUpperCase()}
               </div>
               <div className="min-w-0">
-                <h4 className="text-[13px] font-bold text-[#0f0f1a] truncate leading-tight">
+                <h4 className="text-[13px] font-bold text-heading truncate leading-tight">
                   {wsName}
                 </h4>
-                <p className="text-[11px] text-[#6b7280] truncate leading-tight mt-0.5">
+                <p className="text-[11px] text-body truncate leading-tight mt-0.5">
                   Marketing workspace
                 </p>
               </div>
             </div>
-            <ChevronDown className="w-4 h-4 text-[#9ca3af] shrink-0 ml-1" />
+            <ChevronDown className="w-4 h-4 text-muted shrink-0 ml-1" />
           </button>
         </div>
 
@@ -129,22 +129,22 @@ export const WorkspaceSidebar: React.FC<WorkspaceSidebarProps> = ({
                 onClick={(e) => handleNavClick(item.id, e)}
                 className={`relative flex items-center justify-between px-3.5 py-2.5 rounded-xl text-[13.5px] transition-all ${
                   isActive
-                    ? 'bg-[#f4f4fa] text-[#0f0f1a] font-semibold'
-                    : 'text-[#4b5563] font-medium hover:text-[#0f0f1a] hover:bg-[#f8f8fc]'
+                    ? 'bg-border-light text-heading font-semibold'
+                    : 'text-gray-600 font-medium hover:text-heading hover:bg-light'
                 }`}
               >
                 {isActive && (
-                  <span className="absolute -left-3 top-1/2 -translate-y-1/2 w-1 h-5 bg-[#5B5CE2] rounded-r-full" />
+                  <span className="absolute -left-3 top-1/2 -translate-y-1/2 w-1 h-5 bg-brand-purple rounded-r-full" />
                 )}
                 <div className="flex items-center gap-3">
-                  <Icon className={`w-4 h-4 ${isActive ? 'text-[#0f0f1a]' : 'text-[#6b7280]'}`} />
+                  <Icon className={`w-4 h-4 ${isActive ? 'text-heading' : 'text-body'}`} />
                   <span>{item.label}</span>
                 </div>
 
                 {item.badge && (
                   <span
                     className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                      item.badgeColor || 'bg-[#f0f0f4] text-[#6b7280]'
+                      item.badgeColor || 'bg-border-light text-body'
                     }`}
                   >
                     {item.badge}
@@ -157,7 +157,7 @@ export const WorkspaceSidebar: React.FC<WorkspaceSidebarProps> = ({
       </div>
 
       {/* Bottom Section */}
-      <div className="p-3 border-t border-[#f0f0f4] space-y-1 relative">
+      <div className="p-3 border-t border-border-light space-y-1 relative">
         {secondaryNav.map((item) => {
           const Icon = item.icon;
           const isActive = activeTab === item.id;
@@ -169,20 +169,20 @@ export const WorkspaceSidebar: React.FC<WorkspaceSidebarProps> = ({
               onClick={(e) => handleNavClick(item.id, e)}
               className={`relative flex items-center justify-between px-3.5 py-2.5 rounded-xl text-[13px] transition-colors ${
                 isActive
-                  ? 'bg-[#f4f4fa] text-[#0f0f1a] font-semibold'
-                  : 'text-[#4b5563] font-medium hover:text-[#0f0f1a] hover:bg-[#f8f8fc]'
+                  ? 'bg-border-light text-heading font-semibold'
+                  : 'text-gray-600 font-medium hover:text-heading hover:bg-light'
               }`}
             >
               {isActive && (
-                <span className="absolute -left-3 top-1/2 -translate-y-1/2 w-1 h-5 bg-[#5B5CE2] rounded-r-full" />
+                <span className="absolute -left-3 top-1/2 -translate-y-1/2 w-1 h-5 bg-brand-purple rounded-r-full" />
               )}
               <div className="flex items-center gap-3">
-                <Icon className={`w-4 h-4 ${isActive ? 'text-[#0f0f1a]' : 'text-[#6b7280]'}`} />
+                <Icon className={`w-4 h-4 ${isActive ? 'text-heading' : 'text-body'}`} />
                 <span>{item.label}</span>
               </div>
 
               {item.badge && (
-                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-[#5B5CE2] text-white">
+                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-brand-purple text-white">
                   {item.badge}
                 </span>
               )}
@@ -191,20 +191,20 @@ export const WorkspaceSidebar: React.FC<WorkspaceSidebarProps> = ({
         })}
 
         {/* User Card with 3-dot Dropdown */}
-        <div className="pt-2 mt-2 border-t border-[#f0f0f4] relative">
+        <div className="pt-2 mt-2 border-t border-border-light relative">
           <div
             onClick={() => setIsProfileOpen(!isProfileOpen)}
-            className="flex items-center justify-between p-2 rounded-xl hover:bg-[#f8f8fc] transition-colors cursor-pointer select-none"
+            className="flex items-center justify-between p-2 rounded-xl hover:bg-light transition-colors cursor-pointer select-none"
           >
             <div className="flex items-center gap-2.5 min-w-0">
-              <div className="w-8 h-8 rounded-full bg-[#ecebfa] text-[#5B5CE2] flex items-center justify-center font-bold text-xs shrink-0">
+              <div className="w-8 h-8 rounded-full bg-brand-purple/10 text-brand-purple flex items-center justify-center font-bold text-xs shrink-0">
                 {usrInitials}
               </div>
               <div className="min-w-0">
-                <h5 className="text-[13px] font-semibold text-[#0f0f1a] truncate leading-tight">
+                <h5 className="text-[13px] font-semibold text-heading truncate leading-tight">
                   {usrName}
                 </h5>
-                <p className="text-[11.5px] text-[#6b7280] truncate leading-tight mt-0.5">
+                <p className="text-[11.5px] text-body truncate leading-tight mt-0.5">
                   {usrEmail}
                 </p>
               </div>
@@ -217,7 +217,7 @@ export const WorkspaceSidebar: React.FC<WorkspaceSidebarProps> = ({
                 e.stopPropagation();
                 setIsProfileOpen(!isProfileOpen);
               }}
-              className="text-[#9ca3af] hover:text-[#0f0f1a] p-1.5 rounded-lg hover:bg-[#e5e7eb]/50 transition-colors cursor-pointer"
+              className="text-muted hover:text-heading p-1.5 rounded-lg hover:bg-border-default/50 transition-colors cursor-pointer"
             >
               <MoreHorizontal className="w-4 h-4" />
             </button>

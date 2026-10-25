@@ -95,8 +95,8 @@ function PublicDemoPlayerContent({
 
   if (loading) {
     return (
-      <div className="min-h-screen w-full bg-[#0a0a10] flex flex-col items-center justify-center text-white font-sans">
-        <div className="w-10 h-10 rounded-full border-3 border-[#5B5CE2] border-t-transparent animate-spin mb-4" />
+      <div className="min-h-screen w-full bg-dark flex flex-col items-center justify-center text-white font-sans">
+        <div className="w-10 h-10 rounded-full border-3 border-brand-purple border-t-transparent animate-spin mb-4" />
         <p className="text-white/60 text-sm font-medium">Loading interactive demo...</p>
       </div>
     );
@@ -104,8 +104,8 @@ function PublicDemoPlayerContent({
 
   if (error || !snapshot) {
     return (
-      <div className="min-h-screen w-full bg-[#0a0a10] flex flex-col items-center justify-center text-white p-6 font-sans text-center">
-        <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mb-4 text-[#5B5CE2]">
+      <div className="min-h-screen w-full bg-dark flex flex-col items-center justify-center text-white p-6 font-sans text-center">
+        <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mb-4 text-brand-purple">
           <Code2 className="w-8 h-8" />
         </div>
         <h1 className="text-2xl font-bold mb-2">Demo Unavailable</h1>
@@ -114,7 +114,7 @@ function PublicDemoPlayerContent({
         </p>
         <Link
           href="/"
-          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#5B5CE2] text-white text-sm font-semibold hover:bg-[#4a4bd4] transition-colors"
+          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-brand-purple text-white text-sm font-semibold hover:bg-brand-purple-hover transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
           Back to Preveuo Home
@@ -124,12 +124,12 @@ function PublicDemoPlayerContent({
   }
 
   return (
-    <div className="min-h-screen w-full bg-[#07070b] flex flex-col font-sans select-none">
+    <div className="min-h-screen w-full bg-dark flex flex-col font-sans select-none">
       {/* Top Bar */}
-      <header className="h-14 px-6 border-b border-white/10 bg-[#0e0e17] flex items-center justify-between shrink-0">
+      <header className="h-14 px-6 border-b border-white/10 bg-dark flex items-center justify-between shrink-0">
         <div className="flex items-center gap-3">
           <Link href="/" className="flex items-center gap-2">
-            <span className="w-7 h-7 rounded-lg bg-[#5B5CE2] flex items-center justify-center text-white font-extrabold text-sm shadow-md">
+            <span className="w-7 h-7 rounded-lg bg-brand-purple flex items-center justify-center text-white font-extrabold text-sm shadow-md">
               P
             </span>
             <span className="font-extrabold text-white text-[15px] tracking-tight">Preveuo</span>
@@ -187,7 +187,7 @@ function PublicDemoPlayerContent({
       {/* Embed Modal */}
       {showEmbedModal && (
         <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-[#12121a] border border-white/15 rounded-2xl max-w-md w-full p-6 text-white shadow-2xl">
+          <div className="bg-dark border border-white/15 rounded-2xl max-w-md w-full p-6 text-white shadow-2xl">
             <h3 className="text-lg font-bold mb-1">Embed Interactive Demo</h3>
             <p className="text-white/60 text-xs mb-4">
               Copy this snippet to embed this live walkthrough on your marketing website, docs, or blog.
@@ -208,7 +208,7 @@ function PublicDemoPlayerContent({
               <button
                 type="button"
                 onClick={handleCopyEmbed}
-                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#5B5CE2] hover:bg-[#4a4bd4] text-white text-xs font-bold shadow-md"
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-brand-purple hover:bg-brand-purple-hover text-white text-xs font-bold shadow-md"
               >
                 {copiedEmbed ? <Check className="w-3.5 h-3.5" /> : null}
                 <span>{copiedEmbed ? 'Snippet Copied!' : 'Copy Embed Code'}</span>
@@ -227,8 +227,8 @@ export default function PublicDemoPlayerPage(props: {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-[#07070b] flex items-center justify-center text-white">
-          <div className="w-8 h-8 rounded-full border-2 border-[#5B5CE2] border-t-transparent animate-spin" />
+        <div className="min-h-screen bg-dark flex items-center justify-center text-white">
+          <div className="w-8 h-8 rounded-full border-2 border-brand-purple border-t-transparent animate-spin" />
         </div>
       }
     >

@@ -7,14 +7,14 @@ export const HowItWorksHero: React.FC = () => {
   return (
     <section className="pt-16 pb-24 px-6 text-center">
       <div className="max-w-[850px] mx-auto">
-        <p className="text-[10.5px] font-bold uppercase tracking-[0.2em] text-[#5B5CE2] mb-5">
+        <p className="text-[10.5px] font-bold uppercase tracking-[0.2em] text-brand-purple mb-5">
           HOW PREVEUO WORKS
         </p>
-        <h1 className="text-[42px] sm:text-[56px] lg:text-[62px] font-extrabold tracking-[-0.035em] text-[#0f0f1a] leading-[1.08] mb-6">
+        <h1 className="text-[42px] sm:text-[56px] lg:text-[62px] font-extrabold tracking-[-0.035em] text-heading leading-[1.08] mb-6">
           A complete product story,<br />
           from capture to conversion.
         </h1>
-        <p className="text-[16px] sm:text-[18px] text-[#6b7280] leading-relaxed max-w-[620px] mx-auto mb-9">
+        <p className="text-[16px] sm:text-[18px] text-body leading-relaxed max-w-[620px] mx-auto mb-9">
           Give every team the tools to create, personalize, publish, and improve interactive demos—without a production bottleneck.
         </p>
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3">

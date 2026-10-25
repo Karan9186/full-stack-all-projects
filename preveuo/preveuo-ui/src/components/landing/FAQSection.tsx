@@ -38,7 +38,7 @@ export default function FAQSection() {
   };
 
   return (
-    <section id="faq" className="py-24 bg-slate-50/50 dark:bg-[#07090E] border-t border-slate-200/80 dark:border-slate-800/80">
+    <section id="faq" className="py-24 bg-slate-50/50 dark:bg-dark border-t border-slate-200/80 dark:border-slate-800/80">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-50 dark:bg-indigo-950/80 border border-indigo-200 dark:border-indigo-800 text-xs font-semibold text-indigo-700 dark:text-indigo-300 mb-4">

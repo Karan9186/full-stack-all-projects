@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { HotspotPointerStyle } from '@/types/demo';
-import { Radio, MousePointer2, Pointer, Target } from 'lucide-react';
+import { Radio, MousePointer2, Pointer, Target, Waves } from 'lucide-react';
 
 interface PointerStyleOption {
   value: HotspotPointerStyle;
@@ -13,10 +13,16 @@ interface PointerStyleOption {
 
 const POINTER_OPTIONS: PointerStyleOption[] = [
   {
+    value: 'ripple',
+    label: 'Ripple',
+    icon: <Waves className="w-4 h-4" />,
+    description: 'Concentric expanding ripples for radar-like, soft indeterminate progress',
+  },
+  {
     value: 'beacon',
     label: 'Beacon',
     icon: <Radio className="w-4 h-4" />,
-    description: 'Pulsing sonar beacon that draws attention without an arrow',
+    description: 'Pulsing sonar beacon with concentric expanding ripples',
   },
   {
     value: 'cursor',
@@ -74,7 +80,7 @@ export const PointerStyleSelector: React.FC<PointerStyleSelectorProps> = ({
       <div
         role="radiogroup"
         aria-label="Pointer Visual Style"
-        className={`relative grid grid-cols-4 p-1 rounded-xl bg-[#f0f0f4] border border-[#e5e7eb] h-[42px] transition-all ${
+        className={`relative grid grid-cols-5 p-1 rounded-xl bg-border-light border border-border-default h-[42px] transition-all ${
           disabled ? 'opacity-50 pointer-events-none' : ''
         }`}
       >
@@ -92,15 +98,15 @@ export const PointerStyleSelector: React.FC<PointerStyleSelectorProps> = ({
               onKeyDown={(e) => handleKeyDown(e, idx)}
               onMouseEnter={() => setHoveredOption(opt)}
               onMouseLeave={() => setHoveredOption(null)}
-              className={`relative flex items-center justify-center gap-1.5 h-full rounded-lg text-xs font-semibold transition-all duration-150 cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-[#5B5CE2] focus-visible:ring-offset-1 ${
+              className={`relative flex items-center justify-center gap-1.5 h-full rounded-lg text-xs font-semibold transition-all duration-150 cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-brand-purple focus-visible:ring-offset-1 ${
                 isSelected
-                  ? 'bg-white text-[#0f0f1a] shadow-xs font-bold border border-slate-200/60'
-                  : 'text-[#6b7280] hover:text-[#0f0f1a] hover:bg-white/50'
+                  ? 'bg-white text-heading shadow-xs font-bold border border-slate-200/60'
+                  : 'text-body hover:text-heading hover:bg-white/50'
               }`}
             >
               <span
                 className={`transition-colors shrink-0 ${
-                  isSelected ? 'text-[#5B5CE2]' : 'text-[#6b7280]'
+                  isSelected ? 'text-brand-purple' : 'text-body'
                 }`}
               >
                 {opt.icon}
@@ -112,7 +118,7 @@ export const PointerStyleSelector: React.FC<PointerStyleSelectorProps> = ({
       </div>
 
       {/* Dynamic Accessible Micro-Help / Tooltip Explanation */}
-      <div className="min-h-[16px] px-1 text-[11px] text-[#6b7280] leading-snug transition-opacity">
+      <div className="min-h-[16px] px-1 text-[11px] text-body leading-snug transition-opacity">
         {hoveredOption
           ? hoveredOption.description
           : POINTER_OPTIONS.find((o) => o.value === normalizedValue)?.description ||

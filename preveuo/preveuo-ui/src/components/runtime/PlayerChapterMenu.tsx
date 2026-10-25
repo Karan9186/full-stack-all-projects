@@ -41,12 +41,12 @@ export const PlayerChapterMenu: React.FC<PlayerChapterMenuProps> = ({
     <div className="absolute inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-200">
       <div
         ref={menuRef}
-        className="w-full max-w-md bg-[#111119] border border-white/10 rounded-3xl p-5 shadow-2xl text-white flex flex-col max-h-[85vh] animate-in zoom-in-95 duration-200"
+        className="w-full max-w-md bg-dark border border-white/10 rounded-3xl p-5 shadow-2xl text-white flex flex-col max-h-[85vh] animate-in zoom-in-95 duration-200"
       >
         {/* Header */}
         <div className="flex items-center justify-between pb-3.5 border-b border-white/10">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-xl bg-[#5B5CE2]/15 text-[#5B5CE2] flex items-center justify-center">
+            <div className="w-8 h-8 rounded-xl bg-brand-purple/15 text-brand-purple flex items-center justify-center">
               <Layers className="w-4 h-4" />
             </div>
             <div>
@@ -97,7 +97,7 @@ export const PlayerChapterMenu: React.FC<PlayerChapterMenuProps> = ({
                 }}
                 className={`w-full text-left p-3 rounded-2xl border transition-all cursor-pointer flex items-center justify-between gap-3 group ${
                   isActive
-                    ? 'bg-[#5B5CE2]/15 border-[#5B5CE2] text-white shadow-xs'
+                    ? 'bg-brand-purple/15 border-brand-purple text-white shadow-xs'
                     : 'bg-white/5 border-white/5 hover:bg-white/10 hover:border-white/15 text-white/80'
                 }`}
               >
@@ -105,7 +105,7 @@ export const PlayerChapterMenu: React.FC<PlayerChapterMenuProps> = ({
                   <div
                     className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 text-xs font-bold font-mono transition-colors ${
                       isActive
-                        ? 'bg-[#5B5CE2] text-white shadow-xs'
+                        ? 'bg-brand-purple text-white shadow-xs'
                         : 'bg-white/10 text-white/60 group-hover:text-white'
                     }`}
                   >
@@ -137,7 +137,7 @@ export const PlayerChapterMenu: React.FC<PlayerChapterMenuProps> = ({
 
                 <div className="shrink-0 flex items-center gap-1.5">
                   {isActive ? (
-                    <span className="w-2 h-2 rounded-full bg-[#5B5CE2] animate-pulse" />
+                    <span className="w-2 h-2 rounded-full bg-brand-purple animate-pulse" />
                   ) : (
                     <ChevronRight className="w-4 h-4 text-white/30 group-hover:text-white/80 transition-transform group-hover:translate-x-0.5" />
                   )}

@@ -87,12 +87,12 @@ export const ChapterPropertiesPanel: React.FC<ChapterPropertiesPanelProps> = ({
   };
 
   return (
-    <aside className="w-80 border-l border-[#e5e7eb] bg-white flex flex-col shrink-0 h-full overflow-hidden select-none">
+    <aside className="w-80 border-l border-border-default bg-white flex flex-col shrink-0 h-full overflow-hidden select-none">
       {/* Header */}
-      <div className="h-14 px-5 border-b border-[#f0f0f4] flex items-center justify-between shrink-0 bg-[#fafafc]">
+      <div className="h-14 px-5 border-b border-border-light flex items-center justify-between shrink-0 bg-canvas">
         <div className="flex items-center gap-2">
-          <SlidersHorizontal className="w-4 h-4 text-[#5B5CE2]" />
-          <h3 className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#0f0f1a]">
+          <SlidersHorizontal className="w-4 h-4 text-brand-purple" />
+          <h3 className="text-[11px] font-semibold uppercase tracking-[0.16em] text-heading">
             Chapter Settings
           </h3>
         </div>
@@ -109,7 +109,7 @@ export const ChapterPropertiesPanel: React.FC<ChapterPropertiesPanelProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 rounded-lg text-[#9ca3af] hover:text-[#0f0f1a] hover:bg-white transition-colors cursor-pointer"
+            className="p-1.5 rounded-lg text-muted hover:text-heading hover:bg-white transition-colors cursor-pointer"
             title="Close panel"
           >
             <X className="w-4 h-4" />
@@ -121,7 +121,7 @@ export const ChapterPropertiesPanel: React.FC<ChapterPropertiesPanelProps> = ({
       <div className="flex-1 overflow-y-auto p-5 space-y-6">
         {/* 1. CONTENT SECTION */}
         <section className="space-y-3.5">
-          <span className="text-[10.5px] font-semibold uppercase tracking-[0.16em] text-[#5B5CE2]">
+          <span className="text-[10.5px] font-semibold uppercase tracking-[0.16em] text-brand-purple">
             Content
           </span>
 
@@ -143,13 +143,13 @@ export const ChapterPropertiesPanel: React.FC<ChapterPropertiesPanelProps> = ({
           {/* Buttons List */}
           <div className="space-y-2.5 pt-2">
             <div className="flex items-center justify-between">
-              <label className="text-[12.5px] font-medium text-[#374151]">
+              <label className="text-[12.5px] font-medium text-gray-700">
                 Buttons ({buttons.length})
               </label>
               <button
                 type="button"
                 onClick={handleAddButton}
-                className="inline-flex items-center gap-1 text-xs font-semibold text-[#5B5CE2] hover:text-[#4a4bd4] cursor-pointer"
+                className="inline-flex items-center gap-1 text-xs font-semibold text-brand-purple hover:text-brand-purple-hover cursor-pointer"
               >
                 <Plus className="w-3.5 h-3.5" />
                 <span>Add Button</span>
@@ -159,14 +159,14 @@ export const ChapterPropertiesPanel: React.FC<ChapterPropertiesPanelProps> = ({
             {buttons.map((btn, bIdx) => (
               <div
                 key={btn.id}
-                className="p-3 bg-[#fafafc] rounded-xl border border-[#e5e7eb] space-y-2.5 text-xs"
+                className="p-3 bg-canvas rounded-xl border border-border-default space-y-2.5 text-xs"
               >
                 <div className="flex items-center justify-between">
-                  <span className="font-medium text-[#0f0f1a]">Button #{bIdx + 1}</span>
+                  <span className="font-medium text-heading">Button {bIdx + 1}</span>
                   <button
                     type="button"
                     onClick={() => handleDeleteButton(btn.id)}
-                    className="text-[#9ca3af] hover:text-red-500 cursor-pointer"
+                    className="text-muted hover:text-red-500 cursor-pointer"
                     title="Delete button"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
@@ -267,14 +267,14 @@ export const ChapterPropertiesPanel: React.FC<ChapterPropertiesPanelProps> = ({
         </section>
 
         {/* 2. APPEARANCE SECTION */}
-        <section className="space-y-4 pt-4 border-t border-[#f0f0f4]">
-          <span className="text-[10.5px] font-semibold uppercase tracking-[0.16em] text-[#5B5CE2]">
+        <section className="space-y-4 pt-4 border-t border-border-light">
+          <span className="text-[10.5px] font-semibold uppercase tracking-[0.16em] text-brand-purple">
             Appearance
           </span>
 
           {/* Chapter Type */}
           <div>
-            <label className="block text-[12.5px] font-medium text-[#374151] mb-1.5">
+            <label className="block text-[12.5px] font-medium text-gray-700 mb-1.5">
               Chapter Type
             </label>
             <SegmentedControl
@@ -291,8 +291,8 @@ export const ChapterPropertiesPanel: React.FC<ChapterPropertiesPanelProps> = ({
 
           {/* Form Chapter Configuration */}
           {chapter.type === 'form' && (
-            <div className="p-3 bg-[#fafafc] rounded-xl border border-[#e5e7eb] space-y-2.5 text-xs">
-              <span className="font-medium text-[#0f0f1a]">Lead Capture Settings</span>
+            <div className="p-3 bg-canvas rounded-xl border border-border-default space-y-2.5 text-xs">
+              <span className="font-medium text-heading">Lead Capture Settings</span>
               <Input
                 label="Submit Button Text"
                 value={chapter.formConfig?.buttonLabel || 'Access Demo'}
@@ -337,8 +337,8 @@ export const ChapterPropertiesPanel: React.FC<ChapterPropertiesPanelProps> = ({
 
           {/* Embed Chapter Configuration */}
           {chapter.type === 'embed' && (
-            <div className="p-3 bg-[#fafafc] rounded-xl border border-[#e5e7eb] space-y-2.5 text-xs">
-              <span className="font-medium text-[#0f0f1a]">Embed Settings</span>
+            <div className="p-3 bg-canvas rounded-xl border border-border-default space-y-2.5 text-xs">
+              <span className="font-medium text-heading">Embed Settings</span>
               <Input
                 label="Embed / Video URL"
                 value={chapter.embedConfig?.embedUrl || ''}
@@ -356,8 +356,8 @@ export const ChapterPropertiesPanel: React.FC<ChapterPropertiesPanelProps> = ({
 
           {/* Password Gate Chapter Configuration */}
           {chapter.type === 'password' && (
-            <div className="p-3 bg-[#fafafc] rounded-xl border border-[#e5e7eb] space-y-2.5 text-xs">
-              <span className="font-medium text-[#0f0f1a]">Password Gate Settings</span>
+            <div className="p-3 bg-canvas rounded-xl border border-border-default space-y-2.5 text-xs">
+              <span className="font-medium text-heading">Password Gate Settings</span>
               <Input
                 label="Passcode"
                 type="password"
@@ -390,7 +390,7 @@ export const ChapterPropertiesPanel: React.FC<ChapterPropertiesPanelProps> = ({
 
           {/* Layout */}
           <div>
-            <label className="block text-[12.5px] font-medium text-[#374151] mb-1.5">Layout</label>
+            <label className="block text-[12.5px] font-medium text-gray-700 mb-1.5">Layout</label>
             <SegmentedControl
               value={chapter.layout || 'center'}
               onChange={(val) => onUpdate({ layout: val as ChapterLayout })}
@@ -404,7 +404,7 @@ export const ChapterPropertiesPanel: React.FC<ChapterPropertiesPanelProps> = ({
 
           {/* Theme */}
           <div>
-            <label className="block text-[12.5px] font-medium text-[#374151] mb-1.5">Theme</label>
+            <label className="block text-[12.5px] font-medium text-gray-700 mb-1.5">Theme</label>
             <SegmentedControl
               value={chapter.theme || 'dark'}
               onChange={(val) => onUpdate({ theme: val as ChapterTheme })}
@@ -419,8 +419,8 @@ export const ChapterPropertiesPanel: React.FC<ChapterPropertiesPanelProps> = ({
           {/* Opacity */}
           <div>
             <div className="flex items-center justify-between mb-1.5">
-              <label className="text-[12.5px] font-medium text-[#374151]">Overlay Opacity</label>
-              <span className="text-xs font-mono font-medium text-[#5B5CE2]">
+              <label className="text-[12.5px] font-medium text-gray-700">Overlay Opacity</label>
+              <span className="text-xs font-mono font-medium text-brand-purple">
                 {chapter.opacity ?? 24}%
               </span>
             </div>
@@ -430,7 +430,7 @@ export const ChapterPropertiesPanel: React.FC<ChapterPropertiesPanelProps> = ({
               max="100"
               value={chapter.opacity ?? 24}
               onChange={(e) => onUpdate({ opacity: Number(e.target.value) })}
-              className="w-full accent-[#5B5CE2] cursor-pointer"
+              className="w-full accent-brand-purple cursor-pointer"
             />
           </div>
 
@@ -459,7 +459,7 @@ export const ChapterPropertiesPanel: React.FC<ChapterPropertiesPanelProps> = ({
             />
 
             {chapter.logo?.visible !== false && (
-              <div className="space-y-2.5 pl-2 border-l-2 border-[#5B5CE2]/30">
+              <div className="space-y-2.5 pl-2 border-l-2 border-brand-purple/30">
                 <Input
                   label="Logo Image URL"
                   value={chapter.logo?.assetUrl || ''}
@@ -492,7 +492,7 @@ export const ChapterPropertiesPanel: React.FC<ChapterPropertiesPanelProps> = ({
 
           {/* Cover Image Settings */}
           <div className="space-y-3 pt-2">
-            <label className="block text-[12.5px] font-medium text-[#374151] mb-1">
+            <label className="block text-[12.5px] font-medium text-gray-700 mb-1">
               Cover Image
             </label>
             <SegmentedControl
@@ -547,14 +547,14 @@ export const ChapterPropertiesPanel: React.FC<ChapterPropertiesPanelProps> = ({
               />
             )}
 
-            <p className="text-[11px] text-[#9ca3af] italic">
+            <p className="text-[11px] text-muted italic">
               Cover image will not be visible on mobile view.
             </p>
           </div>
         </section>
 
         {/* 3. DANGER ZONE */}
-        <section className="pt-4 border-t border-[#f0f0f4]">
+        <section className="pt-4 border-t border-border-light">
           <Button
             variant="danger"
             size="sm"

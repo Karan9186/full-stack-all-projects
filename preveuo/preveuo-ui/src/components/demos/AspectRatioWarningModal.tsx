@@ -47,7 +47,7 @@ export const AspectRatioWarningModal: React.FC<AspectRatioWarningModalProps> = (
       aria-labelledby="aspect-ratio-warning-title"
       className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-200"
     >
-      <div className="bg-white rounded-3xl p-6 sm:p-7 max-w-lg w-full shadow-2xl border border-[#e5e7eb] animate-in zoom-in-95 duration-200 text-left relative">
+      <div className="bg-white rounded-3xl p-6 sm:p-7 max-w-lg w-full shadow-2xl border border-border-default animate-in zoom-in-95 duration-200 text-left relative">
         {/* Warning Icon Badge - Amber Outlined */}
         <div className="w-12 h-12 rounded-2xl bg-amber-50 border border-amber-200/90 flex items-center justify-center text-amber-600 mb-4 shadow-2xs">
           <AlertTriangle className="w-6 h-6 stroke-[2.2]" />
@@ -56,13 +56,13 @@ export const AspectRatioWarningModal: React.FC<AspectRatioWarningModalProps> = (
         {/* Modal Title */}
         <h3
           id="aspect-ratio-warning-title"
-          className="text-xl font-bold text-[#0f0f1a] tracking-tight mb-2"
+          className="text-xl font-bold text-heading tracking-tight mb-2"
         >
           Aspect ratio warning
         </h3>
 
         {/* Explanatory Body Copy */}
-        <p className="text-[13px] sm:text-[14px] text-[#4b5563] leading-relaxed mb-6 font-normal">
+        <p className="text-[13px] sm:text-[14px] text-gray-600 leading-relaxed mb-6 font-normal">
           Your new media has a different aspect ratio than your current Preveuo demo.
           To prevent hotspot and slide misalignment, upload or crop content to match
           the current aspect ratio—Preveuo uses the first slide to set the aspect
@@ -71,7 +71,7 @@ export const AspectRatioWarningModal: React.FC<AspectRatioWarningModalProps> = (
             href="https://preveuo.com/resources/aspect-ratios"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-[#5B5CE2] hover:underline font-medium inline-block"
+            className="text-brand-purple hover:underline font-medium inline-block"
           >
             Learn more
           </a>
@@ -80,29 +80,29 @@ export const AspectRatioWarningModal: React.FC<AspectRatioWarningModalProps> = (
         {/* Side-by-side Dimension & Ratio Comparison Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto_1fr] items-center gap-3 sm:gap-2 mb-6">
           {/* Current Card */}
-          <div className="bg-[#f8f9fc] border border-[#e5e7eb] rounded-2xl p-4 sm:p-5 text-left">
-            <span className="text-xs font-semibold text-[#6b7280] block">Current</span>
-            <div className="text-xl sm:text-2xl font-bold text-[#0f0f1a] mt-1 tabular-nums tracking-tight">
+          <div className="bg-light border border-border-default rounded-2xl p-4 sm:p-5 text-left">
+            <span className="text-xs font-semibold text-body block">Current</span>
+            <div className="text-xl sm:text-2xl font-bold text-heading mt-1 tabular-nums tracking-tight">
               {currentInfo.width} × {currentInfo.height}
             </div>
-            <div className="text-xs sm:text-[13px] text-[#6b7280] mt-1 font-medium">
+            <div className="text-xs sm:text-[13px] text-body mt-1 font-medium">
               With aspect ratio of {currentInfo.label}
             </div>
           </div>
 
           {/* Transition Arrow */}
-          <div className="flex items-center justify-center py-1 sm:py-0 text-[#9ca3af]">
+          <div className="flex items-center justify-center py-1 sm:py-0 text-muted">
             <ArrowRight className="w-5 h-5 hidden sm:block" />
-            <div className="w-full h-px bg-[#e5e7eb] sm:hidden my-1" />
+            <div className="w-full h-px bg-border-default sm:hidden my-1" />
           </div>
 
           {/* New Card */}
-          <div className="bg-[#f8f9fc] border border-[#e5e7eb] rounded-2xl p-4 sm:p-5 text-left">
-            <span className="text-xs font-semibold text-[#6b7280] block">New</span>
-            <div className="text-xl sm:text-2xl font-bold text-[#0f0f1a] mt-1 tabular-nums tracking-tight">
+          <div className="bg-light border border-border-default rounded-2xl p-4 sm:p-5 text-left">
+            <span className="text-xs font-semibold text-body block">New</span>
+            <div className="text-xl sm:text-2xl font-bold text-heading mt-1 tabular-nums tracking-tight">
               {newInfo.width} × {newInfo.height}
             </div>
-            <div className="text-xs sm:text-[13px] text-[#6b7280] mt-1 font-medium">
+            <div className="text-xs sm:text-[13px] text-body mt-1 font-medium">
               With aspect ratio of {newInfo.label}
             </div>
           </div>
@@ -124,7 +124,7 @@ export const AspectRatioWarningModal: React.FC<AspectRatioWarningModalProps> = (
             <Button
               variant="outline"
               size="md"
-              leftIcon={<Crop className="w-4 h-4 text-[#5B5CE2]" />}
+              leftIcon={<Crop className="w-4 h-4 text-brand-purple" />}
               onClick={onCropToMatch}
               disabled={isProcessing}
               className="w-full sm:w-auto"

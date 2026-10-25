@@ -17,8 +17,8 @@ export const PricingCard: React.FC<PricingCardProps> = ({ plan, billingCycle }) 
         rounded-3xl p-8 sm:p-9 flex flex-col justify-between transition-all duration-200 relative
         ${
           plan.popular
-            ? 'bg-[#5B5CE2] text-white shadow-xl shadow-[#5B5CE2]/20 ring-2 ring-[#5B5CE2] -translate-y-2'
-            : 'bg-white border border-[#e5e7eb] text-[#0f0f1a] hover:border-[#d1d5db] shadow-xs'
+            ? 'bg-brand-purple text-white shadow-xl shadow-brand-purple/20 ring-2 ring-brand-purple -translate-y-2'
+            : 'bg-white border border-border-default text-heading hover:border-border-input shadow-xs'
         }
       `}
     >
@@ -27,13 +27,13 @@ export const PricingCard: React.FC<PricingCardProps> = ({ plan, billingCycle }) 
         <div className="flex items-center justify-between mb-4">
           <span
             className={`text-[12px] font-bold uppercase tracking-wider ${
-              plan.popular ? 'text-white/80' : 'text-[#5B5CE2]'
+              plan.popular ? 'text-white/80' : 'text-brand-purple'
             }`}
           >
             {plan.name}
           </span>
           {plan.badge && (
-            <span className="text-[10px] font-bold tracking-wider px-2.5 py-0.5 rounded-full bg-white text-[#5B5CE2] shadow-xs">
+            <span className="text-[10px] font-bold tracking-wider px-2.5 py-0.5 rounded-full bg-white text-brand-purple shadow-xs">
               {plan.badge}
             </span>
           )}
@@ -46,7 +46,7 @@ export const PricingCard: React.FC<PricingCardProps> = ({ plan, billingCycle }) 
           </span>
           <span
             className={`text-[13.5px] font-medium ${
-              plan.popular ? 'text-white/80' : 'text-[#9ca3af]'
+              plan.popular ? 'text-white/80' : 'text-muted'
             }`}
           >
             {plan.perSeat ? '/user /month' : '/month'}
@@ -55,7 +55,7 @@ export const PricingCard: React.FC<PricingCardProps> = ({ plan, billingCycle }) 
 
         <p
           className={`text-[13.5px] leading-relaxed mb-8 ${
-            plan.popular ? 'text-white/90' : 'text-[#6b7280]'
+            plan.popular ? 'text-white/90' : 'text-body'
           }`}
         >
           {plan.description}
@@ -67,7 +67,7 @@ export const PricingCard: React.FC<PricingCardProps> = ({ plan, billingCycle }) 
             {plan.popular ? (
               <button
                 type="button"
-                className="w-full py-3.5 px-6 rounded-xl bg-white hover:bg-[#f8f8fc] text-[#5B5CE2] font-bold text-[14.5px] shadow-sm hover:shadow transition-all duration-150 cursor-pointer"
+                className="w-full py-3.5 px-6 rounded-xl bg-white hover:bg-light text-brand-purple font-bold text-[14.5px] shadow-sm hover:shadow transition-all duration-150 cursor-pointer"
               >
                 {plan.ctaText}
               </button>
@@ -86,12 +86,12 @@ export const PricingCard: React.FC<PricingCardProps> = ({ plan, billingCycle }) 
         {/* Features divider */}
         <div
           className={`border-t pt-7 mb-4 ${
-            plan.popular ? 'border-white/20' : 'border-[#f0f0f4]'
+            plan.popular ? 'border-white/20' : 'border-border-light'
           }`}
         >
           <span
             className={`text-[11.5px] font-bold uppercase tracking-wider block mb-4 ${
-              plan.popular ? 'text-white/80' : 'text-[#9ca3af]'
+              plan.popular ? 'text-white/80' : 'text-muted'
             }`}
           >
             Features included:
@@ -114,7 +114,7 @@ export const PricingCard: React.FC<PricingCardProps> = ({ plan, billingCycle }) 
                     strokeLinejoin="round"
                   />
                 </svg>
-                <span className={plan.popular ? 'text-white/95' : 'text-[#4b5563]'}>
+                <span className={plan.popular ? 'text-white/95' : 'text-gray-600'}>
                   {feat}
                 </span>
               </li>

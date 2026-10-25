@@ -55,7 +55,7 @@ export const Avatar: React.FC<AvatarProps> = ({
 
   return (
     <div
-      className={`relative inline-flex items-center justify-center rounded-full shrink-0 select-none overflow-hidden bg-[#5B5CE2]/10 text-[#5B5CE2] font-semibold ${sizeStyles[size]} ${className}`}
+      className={`relative inline-flex items-center justify-center rounded-full shrink-0 select-none overflow-hidden bg-brand-purple/10 text-brand-purple font-semibold ${sizeStyles[size]} ${className}`}
       {...props}
     >
       {src && !imgError ? (
@@ -114,7 +114,7 @@ export const AvatarGroup: React.FC<AvatarGroupProps> = ({
       ))}
       {remainingCount > 0 && (
         <div
-          className={`inline-flex items-center justify-center rounded-full bg-[#f3f4f6] text-[#4b5563] font-semibold ring-2 ring-white select-none ${sizeStyles[size]}`}
+          className={`inline-flex items-center justify-center rounded-full bg-gray-100 text-gray-600 font-semibold ring-2 ring-white select-none ${sizeStyles[size]}`}
         >
           +{remainingCount}
         </div>

@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { HotspotPointerStyle, PointerAnimationSettings } from '@/types/demo';
+import { Ripple } from '@/components/loading-ui/ripple';
+import { PRIMARY_COLOR } from '@/lib/constants/theme';
 
 export interface PointerRendererProps {
   style?: HotspotPointerStyle;
@@ -20,8 +22,8 @@ export interface PointerRendererProps {
 }
 
 export const PointerRenderer: React.FC<PointerRendererProps> = ({
-  style = 'beacon',
-  color = '#5B5CE2',
+  style = 'ripple',
+  color = PRIMARY_COLOR,
   size = 'md',
   isEditor = false,
   isDragging = false,
@@ -34,8 +36,8 @@ export const PointerRenderer: React.FC<PointerRendererProps> = ({
   onPointerClick,
   className = '',
 }) => {
-  // Normalize style aliases
-  const canonicalStyle = style === 'bullseye' ? 'target' : style;
+  // Normalize style aliases: all hotspot pointer styles default to infinite ripple
+  const canonicalStyle = style === 'cursor' || style === 'hand' ? style : 'ripple';
 
   // Check reduced motion preference
   const [reducedMotion, setReducedMotion] = useState(false);
@@ -57,8 +59,8 @@ export const PointerRenderer: React.FC<PointerRendererProps> = ({
     animationSettings?.speed === 'fast'
       ? 380
       : animationSettings?.speed === 'slow'
-      ? 750
-      : 520;
+        ? 750
+        : 520;
 
   // Sizing tokens
   const sizeConfig = {
@@ -185,72 +187,11 @@ export const PointerRenderer: React.FC<PointerRendererProps> = ({
     motionPhase === 'moving'
       ? `transform ${speedMs}ms cubic-bezier(0.22, 1, 0.36, 1)`
       : motionPhase === 'clicking'
-      ? 'transform 120ms ease-out'
-      : 'transform 0.25s ease-out';
+        ? 'transform 120ms ease-out'
+        : 'transform 0.25s ease-out';
 
   // =========================================================================
-  // 1. BEACON STYLE — ALWAYS 100% VISIBLE
-  // =========================================================================
-  if (canonicalStyle === 'beacon') {
-    return (
-      <div className={`relative flex items-center justify-center select-none ${className}`}>
-        {/* Continuous Sonar Breathing Waves */}
-        {!isDragging && !reducedMotion && (
-          <>
-            <span
-              style={{
-                borderColor: color,
-                backgroundColor: `${color}18`,
-              }}
-              className="absolute w-8 h-8 rounded-full border border-current animate-hotspot-sonar pointer-events-none"
-            />
-            <span
-              style={{
-                borderColor: color,
-                backgroundColor: `${color}0f`,
-              }}
-              className="absolute w-11 h-11 rounded-full border border-current animate-hotspot-sonar-delayed pointer-events-none"
-            />
-          </>
-        )}
-
-        {/* Entrance / Click Feedback Ripple */}
-        {(showRipple || motionPhase === 'clicking') && (
-          <span
-            style={{ borderColor: color, backgroundColor: `${color}35` }}
-            className="absolute w-12 h-12 rounded-full border-2 animate-hotspot-ripple pointer-events-none"
-          />
-        )}
-
-        {/* High-Contrast Beacon Center Disc — fully visible */}
-        <div
-          style={{
-            width: `${sizeConfig.beacon}px`,
-            height: `${sizeConfig.beacon}px`,
-            backgroundColor: color,
-            boxShadow: `0 0 0 2.5px #ffffff, 0 4px 14px ${color}85, 0 1px 4px rgba(0,0,0,0.4)`,
-            transform: getBeaconTransform(),
-            transition: motionTransition,
-          }}
-          className={`rounded-full flex items-center justify-center text-white origin-center ${
-            isDragging
-              ? 'scale-125 ring-3 ring-[#5B5CE2]/50 shadow-xl'
-              : isSelected
-              ? 'scale-115 ring-2 ring-[#5B5CE2]/40'
-              : 'group-hover:scale-115'
-          } ${!isDragging && !reducedMotion ? 'animate-hotspot-breathe' : ''}`}
-        >
-          <span
-            style={{ width: `${sizeConfig.dot}px`, height: `${sizeConfig.dot}px` }}
-            className="rounded-full bg-white pointer-events-none shadow-xs"
-          />
-        </div>
-      </div>
-    );
-  }
-
-  // =========================================================================
-  // 2. CURSOR STYLE — ALWAYS 100% VISIBLE
+  // 1. CURSOR STYLE — ALWAYS 100% VISIBLE WHEN EXPLICITLY CHOSEN
   // =========================================================================
   if (canonicalStyle === 'cursor') {
     return (
@@ -269,9 +210,8 @@ export const PointerRenderer: React.FC<PointerRendererProps> = ({
             transform: getCursorTransform(),
             transition: motionTransition,
           }}
-          className={`relative filter drop-shadow-[0_4px_12px_rgba(0,0,0,0.45)] origin-top-left -translate-x-1 -translate-y-1 ${
-            isDragging ? 'scale-125' : isSelected ? 'scale-110' : 'group-hover:scale-105'
-          }`}
+          className={`relative filter drop-shadow-[0_4px_12px_rgba(0,0,0,0.45)] origin-top-left -translate-x-1 -translate-y-1 ${isDragging ? 'scale-125' : isSelected ? 'scale-110' : 'group-hover:scale-105'
+            }`}
         >
           <svg
             width={sizeConfig.icon}
@@ -283,7 +223,7 @@ export const PointerRenderer: React.FC<PointerRendererProps> = ({
             <path
               d="M3 2L10.5 20L13.5 13L20.5 10.5L3 2Z"
               fill={color}
-              stroke="#ffffff"
+              stroke="white"
               strokeWidth="2.2"
               strokeLinejoin="round"
             />
@@ -300,7 +240,7 @@ export const PointerRenderer: React.FC<PointerRendererProps> = ({
   }
 
   // =========================================================================
-  // 3. HAND STYLE — ALWAYS 100% VISIBLE
+  // 2. HAND STYLE — ALWAYS 100% VISIBLE WHEN EXPLICITLY CHOSEN
   // =========================================================================
   if (canonicalStyle === 'hand') {
     return (
@@ -319,14 +259,13 @@ export const PointerRenderer: React.FC<PointerRendererProps> = ({
             transform: getHandTransform(),
             transition: motionTransition,
           }}
-          className={`relative filter drop-shadow-[0_4px_12px_rgba(0,0,0,0.38)] origin-bottom-right -translate-x-2 -translate-y-2.5 ${
-            isDragging ? 'scale-125' : isSelected ? 'scale-110' : 'group-hover:scale-110'
-          }`}
+          className={`relative filter drop-shadow-[0_4px_12px_rgba(0,0,0,0.38)] origin-bottom-right -translate-x-2 -translate-y-2.5 ${isDragging ? 'scale-125' : isSelected ? 'scale-110' : 'group-hover:scale-110'
+            }`}
         >
           <div
             style={{
               backgroundColor: color,
-              boxShadow: `0 0 0 2.5px #ffffff, 0 4px 14px ${color}70`,
+              boxShadow: `0 0 0 2.5px white, 0 4px 14px ${color}70`,
             }}
             className="w-7 h-7 rounded-full flex items-center justify-center text-white"
           >
@@ -352,65 +291,34 @@ export const PointerRenderer: React.FC<PointerRendererProps> = ({
   }
 
   // =========================================================================
-  // 4. TARGET STYLE — ALWAYS 100% VISIBLE
+  // 3. DEFAULT & PRIMARY: INFINITE CONCENTRIC RIPPLE ANIMATION
+  // (EXACT LOADING-UI.COM SVG: https://www.loading-ui.com/docs/components/ripple)
+  // Operates infinitely non-stop in both studio edit time & preview demo runtime
   // =========================================================================
+  const rippleClass =
+    size === 'sm' ? 'w-10 h-10' : size === 'lg' ? 'w-16 h-16' : 'w-14 h-14';
+
   return (
-    <div className={`relative flex items-center justify-center select-none ${className}`}>
-      {/* Precision Crosshair Lines extending in 4 directions */}
-      <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
-        <span
-          style={{ backgroundColor: color }}
-          className="absolute w-7 h-[1.5px] rounded-full opacity-60"
-        />
-        <span
-          style={{ backgroundColor: color }}
-          className="absolute h-7 w-[1.5px] rounded-full opacity-60"
-        />
-      </div>
+    <div
+      className={`relative flex items-center justify-center select-none pointer-events-auto cursor-pointer ${isDragging ? 'scale-115' : isSelected ? 'scale-110' : 'hover:scale-105'
+        } ${className}`}
+      style={{
+        width: size === 'sm' ? '40px' : size === 'lg' ? '64px' : '56px',
+        height: size === 'sm' ? '40px' : size === 'lg' ? '64px' : '56px',
+      }}
+    >
+      <Ripple
+        className={`${rippleClass} w-full h-full`}
+        color={color || PRIMARY_COLOR}
+      />
 
-      {/* Rotating Outer Dashed Guidance Ring */}
-      {!isDragging && !reducedMotion && (
-        <span
-          style={{ borderColor: color }}
-          className="absolute w-9 h-9 rounded-full border border-dashed animate-spin opacity-50 duration-[12s] pointer-events-none"
-        />
-      )}
-
-      {/* Target Lock Flash Ripple */}
+      {/* Entrance / Click Feedback Ripple */}
       {(showRipple || motionPhase === 'clicking') && (
         <span
-          style={{ borderColor: color, backgroundColor: `${color}35` }}
-          className="absolute w-12 h-12 rounded-full border-2 animate-hotspot-ripple pointer-events-none"
+          style={{ borderColor: color || PRIMARY_COLOR, backgroundColor: `${color || PRIMARY_COLOR}35` }}
+          className="absolute inset-0 rounded-full border-2 animate-hotspot-ripple pointer-events-none z-20"
         />
       )}
-
-      {/* Reticle Focus Ring that Locks Down onto Target — fully visible */}
-      <div
-        style={{
-          width: `${sizeConfig.target}px`,
-          height: `${sizeConfig.target}px`,
-          borderColor: color,
-          boxShadow: `0 0 0 2.5px #ffffff, 0 3px 12px ${color}60`,
-          transform: getTargetTransform(),
-          transition: motionTransition,
-        }}
-        className={`rounded-full border-2 bg-white flex items-center justify-center shadow-md origin-center ${
-          isDragging
-            ? 'scale-125 ring-3 ring-[#5B5CE2]/50'
-            : isSelected
-            ? 'scale-115 ring-2 ring-[#5B5CE2]/40'
-            : 'group-hover:scale-115'
-        }`}
-      >
-        <span
-          style={{
-            width: `${sizeConfig.dot + 2}px`,
-            height: `${sizeConfig.dot + 2}px`,
-            backgroundColor: color,
-          }}
-          className="rounded-full shadow-xs"
-        />
-      </div>
     </div>
   );
 };

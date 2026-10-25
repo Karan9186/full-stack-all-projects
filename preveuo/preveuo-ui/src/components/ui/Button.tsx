@@ -27,22 +27,22 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ) => {
     // Base styles
     const baseStyles =
-      'inline-flex items-center justify-center font-semibold rounded-xl transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-[#5B5CE2]/20 disabled:opacity-50 disabled:cursor-not-allowed select-none cursor-pointer';
+      'inline-flex items-center justify-center font-semibold rounded-xl transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-brand-purple/20 disabled:opacity-50 disabled:cursor-not-allowed select-none cursor-pointer';
 
     // Variant styles matching Preveuo Design System
     const variantStyles = {
       primary:
-        'bg-[#5B5CE2] hover:bg-[#4a4bd4] text-white shadow-sm hover:shadow-md hover:-translate-y-[0.5px] active:translate-y-0',
+        'bg-brand-purple hover:bg-brand-purple-hover text-white shadow-sm hover:shadow-md hover:-translate-y-[0.5px] active:translate-y-0',
       secondary:
-        'border border-[#d1d5db] bg-white text-[#0f0f1a] hover:border-[#5B5CE2] hover:text-[#5B5CE2] shadow-2xs hover:bg-[#fafafc]',
+        'border border-border-input bg-white text-heading hover:border-brand-purple hover:text-brand-purple shadow-2xs hover:bg-canvas',
       outline:
-        'border border-[#e5e7eb] bg-white text-[#374151] hover:border-[#5B5CE2] hover:text-[#5B5CE2] hover:bg-[#f8f8fc]',
+        'border border-border-default bg-white text-gray-700 hover:border-brand-purple hover:text-brand-purple hover:bg-light',
       ghost:
-        'text-[#4b5563] hover:text-[#0f0f1a] hover:bg-[#f3f4f6]',
+        'text-gray-600 hover:text-heading hover:bg-gray-100',
       danger:
         'bg-red-600 hover:bg-red-700 text-white shadow-sm',
       social:
-        'border border-[#e5e7eb] bg-white hover:bg-[#f8f8fc] text-[#0f0f1a] font-medium shadow-2xs hover:border-[#d1d5db]',
+        'border border-border-default bg-white hover:bg-light text-heading font-medium shadow-2xs hover:border-border-input',
     };
 
     // Size styles

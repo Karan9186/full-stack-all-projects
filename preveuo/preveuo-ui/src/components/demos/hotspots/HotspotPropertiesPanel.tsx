@@ -45,6 +45,7 @@ import {
 } from 'lucide-react';
 import { PointerStyleSelector } from './PointerStyleSelector';
 import { PointerMiniPreview } from './PointerMiniPreview';
+import { PRIMARY_COLOR, THEME_COLORS, PRESET_HOTSPOT_COLORS, PRESET_TEXT_COLORS } from '@/lib/constants/theme';
 
 interface HotspotPropertiesPanelProps {
   element: IDemoElement;
@@ -76,8 +77,8 @@ export const HotspotPropertiesPanel: React.FC<HotspotPropertiesPanelProps> = ({
       textAlign: 'left',
     },
     appearance: {
-      background: element.style?.backgroundColor || '#5B5CE2',
-      textColor: element.style?.color || '#ffffff',
+      background: element.style?.backgroundColor || PRIMARY_COLOR,
+      textColor: element.style?.color || THEME_COLORS.white,
       backdrop: false,
       borderRadius: 'rounded',
       width: 'medium',
@@ -89,15 +90,15 @@ export const HotspotPropertiesPanel: React.FC<HotspotPropertiesPanelProps> = ({
       nextButton: {
         enabled: true,
         text: 'Continue',
-        background: '#ffffff',
-        textColor: '#5B5CE2',
+        background: THEME_COLORS.white,
+        textColor: PRIMARY_COLOR,
         action: 'nextStep',
       },
       backButton: {
         enabled: false,
         text: 'Back',
-        background: '#ffffff',
-        textColor: '#6b7280',
+        background: THEME_COLORS.white,
+        textColor: THEME_COLORS.textBody,
         action: 'previousStep',
       },
     },
@@ -140,19 +141,19 @@ export const HotspotPropertiesPanel: React.FC<HotspotPropertiesPanelProps> = ({
   const isArea = config.type === 'area';
 
   return (
-    <aside className="w-80 border-l border-[#e5e7eb] bg-white flex flex-col shrink-0 h-full overflow-hidden select-none">
+    <aside className="w-80 border-l border-border-default bg-white flex flex-col shrink-0 h-full overflow-hidden select-none">
       {/* Header */}
-      <div className="h-14 px-5 border-b border-[#f0f0f4] flex items-center justify-between shrink-0 bg-[#fafafc]">
+      <div className="h-14 px-5 border-b border-border-light flex items-center justify-between shrink-0 bg-canvas">
         <div className="flex items-center gap-2">
-          <SlidersHorizontal className="w-4 h-4 text-[#5B5CE2]" />
-          <h3 className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#0f0f1a]">
+          <SlidersHorizontal className="w-4 h-4 text-brand-purple" />
+          <h3 className="text-[11px] font-semibold uppercase tracking-[0.16em] text-heading">
             Hotspot Settings
           </h3>
         </div>
         <button
           type="button"
           onClick={onClose}
-          className="p-1.5 rounded-lg text-[#9ca3af] hover:text-[#0f0f1a] hover:bg-white transition-colors cursor-pointer"
+          className="p-1.5 rounded-lg text-muted hover:text-heading hover:bg-white transition-colors cursor-pointer"
           title="Close panel"
         >
           <X className="w-4 h-4" />
@@ -163,7 +164,7 @@ export const HotspotPropertiesPanel: React.FC<HotspotPropertiesPanelProps> = ({
       <div className="flex-1 overflow-y-auto p-5 space-y-6">
         {/* 1. CONTENT SECTION */}
         <section className="space-y-3.5">
-          <span className="text-[10.5px] font-semibold uppercase tracking-[0.16em] text-[#5B5CE2]">
+          <span className="text-[10.5px] font-semibold uppercase tracking-[0.16em] text-brand-purple">
             Content
           </span>
 
@@ -216,7 +217,7 @@ export const HotspotPropertiesPanel: React.FC<HotspotPropertiesPanelProps> = ({
           />
 
           <div>
-            <label className="block text-[12.5px] font-medium text-[#374151] mb-1.5">
+            <label className="block text-[12.5px] font-medium text-gray-700 mb-1.5">
               Text Alignment
             </label>
             <SegmentedControl
@@ -232,13 +233,13 @@ export const HotspotPropertiesPanel: React.FC<HotspotPropertiesPanelProps> = ({
         </section>
 
         {/* 2. APPEARANCE SECTION */}
-        <section className="space-y-4 pt-4 border-t border-[#f0f0f4]">
-          <span className="text-[10.5px] font-semibold uppercase tracking-[0.16em] text-[#5B5CE2]">
+        <section className="space-y-4 pt-4 border-t border-border-light">
+          <span className="text-[10.5px] font-semibold uppercase tracking-[0.16em] text-brand-purple">
             Appearance
           </span>
 
           <div>
-            <label className="block text-[12.5px] font-medium text-[#374151] mb-1.5">
+            <label className="block text-[12.5px] font-medium text-gray-700 mb-1.5">
               Hotspot Style
             </label>
             <SegmentedControl
@@ -255,13 +256,13 @@ export const HotspotPropertiesPanel: React.FC<HotspotPropertiesPanelProps> = ({
           {config.type === 'pointer' && (
             <div className="space-y-3.5">
               <PointerStyleSelector
-                value={config.appearance.pointerStyle || 'beacon'}
+                value={config.appearance.pointerStyle || 'ripple'}
                 onChange={(val) => updateAppearance({ pointerStyle: val })}
               />
 
               <PointerMiniPreview
-                style={config.appearance.pointerStyle || 'beacon'}
-                color={config.appearance.background || '#5B5CE2'}
+                style={config.appearance.pointerStyle || 'ripple'}
+                color={config.appearance.background || PRIMARY_COLOR}
                 size={config.appearance.pointerAnimation?.size || 'md'}
                 animationSettings={config.appearance.pointerAnimation}
                 onAnimationChange={(animUpdates: Partial<PointerAnimationSettings>) => {
@@ -278,16 +279,16 @@ export const HotspotPropertiesPanel: React.FC<HotspotPropertiesPanelProps> = ({
 
           <ColorField
             label="Tooltip Background Color"
-            value={config.appearance.background || '#18181b'}
+            value={config.appearance.background || THEME_COLORS.bgDark}
             onChange={(color) => updateAppearance({ background: color })}
-            presetColors={['#18181b', '#0f0f1a', '#5B5CE2', '#1e1b4b', '#2563eb', '#059669', '#d97706', '#dc2626']}
+            presetColors={PRESET_HOTSPOT_COLORS as unknown as string[]}
           />
 
           <ColorField
             label="Text Color"
-            value={config.appearance.textColor || '#ffffff'}
+            value={config.appearance.textColor || THEME_COLORS.white}
             onChange={(color) => updateAppearance({ textColor: color })}
-            presetColors={['#ffffff', '#f8fafc', '#e2e8f0', '#0f0f1a', '#475569']}
+            presetColors={PRESET_TEXT_COLORS as unknown as string[]}
           />
 
           <Switch
@@ -298,7 +299,7 @@ export const HotspotPropertiesPanel: React.FC<HotspotPropertiesPanelProps> = ({
           />
 
           <div>
-            <label className="block text-[12.5px] font-medium text-[#374151] mb-1.5">
+            <label className="block text-[12.5px] font-medium text-gray-700 mb-1.5">
               Border Radius
             </label>
             <SegmentedControl
@@ -313,7 +314,7 @@ export const HotspotPropertiesPanel: React.FC<HotspotPropertiesPanelProps> = ({
           </div>
 
           <div>
-            <label className="block text-[12.5px] font-medium text-[#374151] mb-1.5">
+            <label className="block text-[12.5px] font-medium text-gray-700 mb-1.5">
               Animation
             </label>
             <SegmentedControl
@@ -329,7 +330,7 @@ export const HotspotPropertiesPanel: React.FC<HotspotPropertiesPanelProps> = ({
           </div>
 
           <div>
-            <label className="block text-[12.5px] font-medium text-[#374151] mb-1.5">
+            <label className="block text-[12.5px] font-medium text-gray-700 mb-1.5">
               Visibility
             </label>
             <Select
@@ -346,7 +347,7 @@ export const HotspotPropertiesPanel: React.FC<HotspotPropertiesPanelProps> = ({
 
           {!isArea && (
             <div>
-              <label className="block text-[12.5px] font-medium text-[#374151] mb-1.5">
+              <label className="block text-[12.5px] font-medium text-gray-700 mb-1.5">
                 Callout Width
               </label>
               <SegmentedControl
@@ -363,13 +364,13 @@ export const HotspotPropertiesPanel: React.FC<HotspotPropertiesPanelProps> = ({
         </section>
 
         {/* 3. POSITION & ANCHOR SECTION */}
-        <section className="space-y-3.5 pt-4 border-t border-[#f0f0f4]">
+        <section className="space-y-3.5 pt-4 border-t border-border-light">
           <div className="flex items-center justify-between">
-            <span className="text-[10.5px] font-semibold uppercase tracking-[0.16em] text-[#5B5CE2]">
+            <span className="text-[10.5px] font-semibold uppercase tracking-[0.16em] text-brand-purple">
               Position & Anchor
             </span>
-            <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-[#5B5CE2]/10 text-[#5B5CE2] text-[10.5px] font-medium">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#5B5CE2]" />
+            <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-brand-purple/10 text-brand-purple text-[10.5px] font-medium">
+              <span className="w-1.5 h-1.5 rounded-full bg-brand-purple" />
               Anchor Point
             </div>
           </div>
@@ -414,9 +415,9 @@ export const HotspotPropertiesPanel: React.FC<HotspotPropertiesPanelProps> = ({
           </div>
 
           {/* Anchor Interpretation Info */}
-          <div className="p-2.5 bg-[#f8f8fc] rounded-xl border border-[#e5e7eb] flex items-center justify-between text-xs text-[#6b7280]">
+          <div className="p-2.5 bg-light rounded-xl border border-border-default flex items-center justify-between text-xs text-body">
             <span className="font-medium">Anchor Interpretation</span>
-            <span className="font-bold text-[#0f0f1a] bg-white px-2 py-0.5 rounded border border-[#e5e7eb] shadow-2xs">
+            <span className="font-bold text-heading bg-white px-2 py-0.5 rounded border border-border-default shadow-2xs">
               {isArea ? 'Top-Left Origin' : '● Center Anchor'}
             </span>
           </div>
@@ -458,8 +459,8 @@ export const HotspotPropertiesPanel: React.FC<HotspotPropertiesPanelProps> = ({
         </section>
 
         {/* 4. NAVIGATION SECTION */}
-        <section className="space-y-4 pt-4 border-t border-[#f0f0f4]">
-          <span className="text-[10.5px] font-semibold uppercase tracking-[0.16em] text-[#5B5CE2]">
+        <section className="space-y-4 pt-4 border-t border-border-light">
+          <span className="text-[10.5px] font-semibold uppercase tracking-[0.16em] text-brand-purple">
             Navigation Buttons
           </span>
 
@@ -472,8 +473,8 @@ export const HotspotPropertiesPanel: React.FC<HotspotPropertiesPanelProps> = ({
 
           {/* Next Button Config */}
           {config.navigation.showNext && (
-            <div className="p-3.5 bg-[#fafafc] rounded-2xl border border-[#e5e7eb] space-y-3">
-              <span className="text-xs font-medium text-[#0f0f1a] block">
+            <div className="p-3.5 bg-canvas rounded-2xl border border-border-default space-y-3">
+              <span className="text-xs font-medium text-heading block">
                 Next Button Settings
               </span>
 
@@ -485,8 +486,8 @@ export const HotspotPropertiesPanel: React.FC<HotspotPropertiesPanelProps> = ({
                     nextButton: {
                       ...config.navigation.nextButton,
                       enabled: true,
-                      background: config.navigation.nextButton?.background || '#ffffff',
-                      textColor: config.navigation.nextButton?.textColor || '#5B5CE2',
+                      background: config.navigation.nextButton?.background || THEME_COLORS.white,
+                      textColor: config.navigation.nextButton?.textColor || PRIMARY_COLOR,
                       text: e.target.value,
                       action: config.navigation.nextButton?.action || 'nextStep',
                     },
@@ -497,7 +498,7 @@ export const HotspotPropertiesPanel: React.FC<HotspotPropertiesPanelProps> = ({
               <div className="grid grid-cols-2 gap-2">
                 <ColorField
                   label="Button Bg"
-                  value={config.navigation.nextButton?.background || '#ffffff'}
+                  value={config.navigation.nextButton?.background || THEME_COLORS.white}
                   onChange={(color) =>
                     updateNavigation({
                       nextButton: {
@@ -506,11 +507,11 @@ export const HotspotPropertiesPanel: React.FC<HotspotPropertiesPanelProps> = ({
                       },
                     })
                   }
-                  presetColors={['#ffffff', '#5B5CE2', '#0f0f1a']}
+                  presetColors={[THEME_COLORS.white, PRIMARY_COLOR, THEME_COLORS.bgDark]}
                 />
                 <ColorField
                   label="Button Text"
-                  value={config.navigation.nextButton?.textColor || '#5B5CE2'}
+                  value={config.navigation.nextButton?.textColor || PRIMARY_COLOR}
                   onChange={(color) =>
                     updateNavigation({
                       nextButton: {
@@ -519,7 +520,7 @@ export const HotspotPropertiesPanel: React.FC<HotspotPropertiesPanelProps> = ({
                       },
                     })
                   }
-                  presetColors={['#5B5CE2', '#ffffff', '#0f0f1a']}
+                  presetColors={[PRIMARY_COLOR, THEME_COLORS.white, THEME_COLORS.bgDark]}
                 />
               </div>
 
@@ -619,7 +620,7 @@ export const HotspotPropertiesPanel: React.FC<HotspotPropertiesPanelProps> = ({
           )}
 
           {/* Back Button Config */}
-          <div className="p-3.5 bg-[#fafafc] rounded-2xl border border-[#e5e7eb] space-y-3">
+          <div className="p-3.5 bg-canvas rounded-2xl border border-border-default space-y-3">
             <Switch
               label="Display Back Button"
               checked={config.navigation.backButton?.enabled ?? false}
@@ -629,8 +630,8 @@ export const HotspotPropertiesPanel: React.FC<HotspotPropertiesPanelProps> = ({
                     ...config.navigation.backButton,
                     enabled: checked,
                     text: config.navigation.backButton?.text || 'Back',
-                    background: config.navigation.backButton?.background || '#ffffff',
-                    textColor: config.navigation.backButton?.textColor || '#6b7280',
+                    background: config.navigation.backButton?.background || THEME_COLORS.white,
+                    textColor: config.navigation.backButton?.textColor || THEME_COLORS.textBody,
                     action: config.navigation.backButton?.action || 'previousStep',
                   },
                 })
@@ -697,7 +698,7 @@ export const HotspotPropertiesPanel: React.FC<HotspotPropertiesPanelProps> = ({
       </div>
 
       {/* Footer Action Buttons */}
-      <div className="p-4 border-t border-[#f0f0f4] bg-[#fafafc] flex items-center justify-between gap-2 shrink-0">
+      <div className="p-4 border-t border-border-light bg-canvas flex items-center justify-between gap-2 shrink-0">
         <button
           type="button"
           onClick={onDelete}

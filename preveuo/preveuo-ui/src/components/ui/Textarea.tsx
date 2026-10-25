@@ -51,13 +51,13 @@ export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
           <div className="flex items-center justify-between">
             <label
               htmlFor={inputId}
-              className="block text-[12.5px] font-medium text-[#374151]"
+              className="block text-[12.5px] font-medium text-gray-700"
             >
               {label}
-              {required && <span className="text-[#5B5CE2] ml-1">*</span>}
+              {required && <span className="text-brand-purple ml-1">*</span>}
             </label>
             {showCount && maxLength && (
-              <span className="text-[11.5px] font-medium text-[#9ca3af]">
+              <span className="text-[11.5px] font-medium text-muted">
                 {charCount}/{maxLength}
               </span>
             )}
@@ -76,13 +76,13 @@ export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
             value={value}
             defaultValue={defaultValue}
             className={`
-              w-full px-3.5 py-3 rounded-xl border text-[14px] text-[#0f0f1a]
-              bg-white placeholder-[#9ca3af] transition-all duration-150 resize-y
-              focus:outline-none focus:ring-2 disabled:bg-[#f8f8fc] disabled:cursor-not-allowed
+              w-full px-3.5 py-3 rounded-xl border text-[14px] text-heading
+              bg-white placeholder-muted transition-all duration-150 resize-y
+              focus:outline-none focus:ring-2 disabled:bg-light disabled:cursor-not-allowed
               ${
                 error
                   ? 'border-red-400 focus:border-red-500 focus:ring-red-500/10'
-                  : 'border-[#d1d5db] hover:border-[#9ca3af] focus:border-[#5B5CE2] focus:ring-[#5B5CE2]/15'
+                  : 'border-border-input hover:border-muted focus:border-brand-purple focus:ring-brand-purple/15'
               }
               ${className}
             `}
@@ -105,7 +105,7 @@ export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
             {error}
           </p>
         ) : helperText ? (
-          <p className="text-[12px] text-[#6b7280] mt-0.5">{helperText}</p>
+          <p className="text-[12px] text-body mt-0.5">{helperText}</p>
         ) : null}
       </div>
     );

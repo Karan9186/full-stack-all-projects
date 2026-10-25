@@ -28,7 +28,7 @@ export default function ResourcesPage() {
   });
 
   return (
-    <div className="min-h-screen bg-white text-[#0f0f1a] flex flex-col font-sans selection:bg-[#5B5CE2] selection:text-white">
+    <div className="min-h-screen bg-white text-heading flex flex-col font-sans selection:bg-brand-purple selection:text-white">
       <Navbar />
 
       <main className="flex-1 pt-24 pb-20">

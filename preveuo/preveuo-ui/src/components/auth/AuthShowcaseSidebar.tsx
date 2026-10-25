@@ -7,14 +7,14 @@ interface AuthShowcaseSidebarProps {
 
 export const AuthShowcaseSidebar: React.FC<AuthShowcaseSidebarProps> = ({ mode = 'login' }) => {
   return (
-    <div className="hidden lg:flex lg:w-1/2 bg-[#0f0f1a] text-white p-12 flex-col justify-between relative overflow-hidden">
+    <div className="hidden lg:flex lg:w-1/2 bg-dark text-white p-12 flex-col justify-between relative overflow-hidden">
       {/* Decorative background glow */}
-      <div className="absolute top-1/4 -right-20 w-96 h-96 bg-[#5B5CE2]/20 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-10 left-10 w-80 h-80 bg-[#5B5CE2]/15 rounded-full blur-2xl pointer-events-none" />
+      <div className="absolute top-1/4 -right-20 w-96 h-96 bg-brand-purple/20 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-10 left-10 w-80 h-80 bg-brand-purple/15 rounded-full blur-2xl pointer-events-none" />
 
       {/* Top Tagline */}
       <div className="relative z-10">
-        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 border border-white/10 text-[12px] font-semibold text-[#8B8DF9] mb-4">
+        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 border border-white/10 text-[12px] font-semibold text-brand-purple mb-4">
           <Sparkles className="w-3.5 h-3.5" />
           <span>Interactive Product Stories</span>
         </div>
@@ -32,7 +32,7 @@ export const AuthShowcaseSidebar: React.FC<AuthShowcaseSidebarProps> = ({ mode =
 
       {/* Showcase Demo Simulation Card */}
       <div className="relative z-10 my-8">
-        <div className="bg-[#181826] border border-white/10 rounded-2xl p-6 shadow-2xl">
+        <div className="bg-dark border border-white/10 rounded-2xl p-6 shadow-2xl">
           <div className="flex items-center justify-between pb-4 border-b border-white/10 mb-4">
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-red-400/80" />
@@ -53,11 +53,11 @@ export const AuthShowcaseSidebar: React.FC<AuthShowcaseSidebarProps> = ({ mode =
               <span className="text-gray-400">Completion: 76%</span>
             </div>
             <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
-              <div className="h-full bg-[#5B5CE2] rounded-full w-3/4" />
+              <div className="h-full bg-brand-purple rounded-full w-3/4" />
             </div>
 
-            <div className="bg-[#212136] rounded-xl p-4 border border-white/5 flex items-start gap-3">
-              <div className="w-8 h-8 rounded-lg bg-[#5B5CE2] flex items-center justify-center shrink-0">
+            <div className="bg-zinc-800 rounded-xl p-4 border border-white/5 flex items-start gap-3">
+              <div className="w-8 h-8 rounded-lg bg-brand-purple flex items-center justify-center shrink-0">
                 <CheckCircle2 className="w-4 h-4 text-white" />
               </div>
               <div>

@@ -13,18 +13,18 @@ export const AnalyticsHeader: React.FC<AnalyticsHeaderProps> = ({
   onTimeRangeChange,
 }) => {
   return (
-    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-10 pb-6 border-b border-[#e5e7eb]">
+    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-10 pb-6 border-b border-border-default">
       <div>
         <div className="flex items-center gap-2 mb-2">
           <Badge variant="purple" size="sm" dot>
             Performance Insights
           </Badge>
-          <span className="text-xs text-[#9ca3af] font-mono">Live Sync</span>
+          <span className="text-xs text-muted font-mono">Live Sync</span>
         </div>
-        <h1 className="text-3xl font-extrabold tracking-tight text-[#0f0f1a]">
+        <h1 className="text-3xl font-extrabold tracking-tight text-heading">
           Walkthrough Funnel Analytics
         </h1>
-        <p className="text-sm text-[#6b7280] mt-1">
+        <p className="text-sm text-body mt-1">
           Analyze engagement dwell time, step drop-off points, and pipeline conversion.
         </p>
       </div>
@@ -34,7 +34,7 @@ export const AnalyticsHeader: React.FC<AnalyticsHeaderProps> = ({
           <select
             value={timeRange}
             onChange={(e) => onTimeRangeChange(e.target.value as TimeRangeOption)}
-            className="px-3.5 py-2 rounded-xl text-xs font-semibold bg-white border border-[#d1d5db] text-[#0f0f1a] shadow-xs cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#5B5CE2]/15"
+            className="px-3.5 py-2 rounded-xl text-xs font-semibold bg-white border border-border-input text-heading shadow-xs cursor-pointer focus:outline-none focus:ring-2 focus:ring-brand-purple/15"
           >
             <option value="Last 7 Days">Last 7 Days</option>
             <option value="Last 30 Days">Last 30 Days</option>

@@ -15,7 +15,7 @@ import {
 
 export default function HowItWorksPage() {
   return (
-    <div className="min-h-screen bg-white text-[#0f0f1a] flex flex-col font-sans selection:bg-[#5B5CE2] selection:text-white">
+    <div className="min-h-screen bg-white text-heading flex flex-col font-sans selection:bg-brand-purple selection:text-white">
       <Navbar />
 
       <main className="flex-1 pt-24 pb-20">
@@ -27,7 +27,7 @@ export default function HowItWorksPage() {
           <WalkthroughStep
             stepNumber="01"
             icon={
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#5B5CE2" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-brand-purple">
                 <path d="m22 8-6 4 6 4V8Z" />
                 <rect width="14" height="12" x="2" y="6" rx="2" />
               </svg>
@@ -42,7 +42,7 @@ export default function HowItWorksPage() {
           <WalkthroughStep
             stepNumber="02"
             icon={
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#5B5CE2" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-brand-purple">
                 <circle cx="18" cy="18" r="3" />
                 <circle cx="6" cy="6" r="3" />
                 <path d="M18 15v-1a4 4 0 0 0-4-4H8" />
@@ -60,7 +60,7 @@ export default function HowItWorksPage() {
           <WalkthroughStep
             stepNumber="03"
             icon={
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#5B5CE2" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-brand-purple">
                 <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
                 <circle cx="9" cy="7" r="4" />
                 <line x1="19" x2="19" y1="8" y2="14" />
@@ -77,7 +77,7 @@ export default function HowItWorksPage() {
           <WalkthroughStep
             stepNumber="04"
             icon={
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#5B5CE2" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-brand-purple">
                 <line x1="18" x2="18" y1="20" y2="10" />
                 <line x1="12" x2="12" y1="20" y2="4" />
                 <line x1="6" x2="6" y1="20" y2="14" />

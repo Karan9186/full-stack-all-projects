@@ -70,10 +70,10 @@ export const IntegrationsTabContent: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
-          <h2 className="text-[24px] sm:text-[28px] font-bold tracking-tight text-[#0f0f1a]">
+          <h2 className="text-[24px] sm:text-[28px] font-bold tracking-tight text-heading">
             Integrations & Apps
           </h2>
-          <p className="text-[13.5px] text-[#6b7280] font-normal mt-0.5">
+          <p className="text-[13.5px] text-body font-normal mt-0.5">
             Connect Preveuo with your tech stack to automate lead routing, analytics, and CRM data.
           </p>
         </div>
@@ -99,43 +99,43 @@ export const IntegrationsTabContent: React.FC = () => {
 
       {/* Metrics Row */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <div className="p-4 rounded-2xl bg-white border border-[#e5e7eb] flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-[#5B5CE2]/10 text-[#5B5CE2] flex items-center justify-center font-bold shrink-0">
+        <div className="p-4 rounded-2xl bg-white border border-border-default flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-brand-purple/10 text-brand-purple flex items-center justify-center font-bold shrink-0">
             <CheckCircle2 className="w-5 h-5" />
           </div>
           <div>
-            <div className="text-[11px] font-medium uppercase tracking-wider text-[#9ca3af]">Connected</div>
-            <div className="text-xl font-bold text-[#0f0f1a]">3 Active</div>
+            <div className="text-[11px] font-medium uppercase tracking-wider text-muted">Connected</div>
+            <div className="text-xl font-bold text-heading">3 Active</div>
           </div>
         </div>
 
-        <div className="p-4 rounded-2xl bg-white border border-[#e5e7eb] flex items-center gap-3">
+        <div className="p-4 rounded-2xl bg-white border border-border-default flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold shrink-0">
             <SlidersHorizontal className="w-5 h-5" />
           </div>
           <div>
-            <div className="text-[11px] font-medium uppercase tracking-wider text-[#9ca3af]">Leads Synced</div>
-            <div className="text-xl font-bold text-[#0f0f1a]">1,248</div>
+            <div className="text-[11px] font-medium uppercase tracking-wider text-muted">Leads Synced</div>
+            <div className="text-xl font-bold text-heading">1,248</div>
           </div>
         </div>
 
-        <div className="p-4 rounded-2xl bg-white border border-[#e5e7eb] flex items-center gap-3">
+        <div className="p-4 rounded-2xl bg-white border border-border-default flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold shrink-0">
             <Zap className="w-5 h-5" />
           </div>
           <div>
-            <div className="text-[11px] font-medium uppercase tracking-wider text-[#9ca3af]">Webhook Events</div>
-            <div className="text-xl font-bold text-[#0f0f1a]">42.1k / mo</div>
+            <div className="text-[11px] font-medium uppercase tracking-wider text-muted">Webhook Events</div>
+            <div className="text-xl font-bold text-heading">42.1k / mo</div>
           </div>
         </div>
 
-        <div className="p-4 rounded-2xl bg-white border border-[#e5e7eb] flex items-center gap-3">
+        <div className="p-4 rounded-2xl bg-white border border-border-default flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold shrink-0">
             <ShieldCheck className="w-5 h-5" />
           </div>
           <div>
-            <div className="text-[11px] font-medium uppercase tracking-wider text-[#9ca3af]">API Status</div>
-            <div className="text-xl font-bold text-[#0f0f1a]">99.98%</div>
+            <div className="text-[11px] font-medium uppercase tracking-wider text-muted">API Status</div>
+            <div className="text-xl font-bold text-heading">99.98%</div>
           </div>
         </div>
       </div>
@@ -150,8 +150,8 @@ export const IntegrationsTabContent: React.FC = () => {
               onClick={() => setActiveCategory(cat)}
               className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold capitalize transition-all cursor-pointer ${
                 activeCategory === cat
-                  ? 'bg-[#5B5CE2] text-white shadow-xs'
-                  : 'bg-white border border-[#e5e7eb] text-[#6b7280] hover:text-[#0f0f1a] hover:bg-[#fafafc]'
+                  ? 'bg-brand-purple text-white shadow-xs'
+                  : 'bg-white border border-border-default text-body hover:text-heading hover:bg-canvas'
               }`}
             >
               {cat === 'all' ? 'All Integrations' : cat}
@@ -160,13 +160,13 @@ export const IntegrationsTabContent: React.FC = () => {
         </div>
 
         <div className="relative w-full sm:w-72">
-          <Search className="w-4 h-4 text-[#9ca3af] absolute left-3.5 top-1/2 -translate-y-1/2" />
+          <Search className="w-4 h-4 text-muted absolute left-3.5 top-1/2 -translate-y-1/2" />
           <input
             type="text"
             placeholder="Search integrations..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 rounded-xl bg-white border border-[#e5e7eb] text-[13px] text-[#0f0f1a] placeholder-[#9ca3af] focus:outline-none focus:border-[#5B5CE2] focus:ring-1 focus:ring-[#5B5CE2] transition-colors"
+            className="w-full pl-9 pr-4 py-2 rounded-xl bg-white border border-border-default text-[13px] text-heading placeholder-muted focus:outline-none focus:border-brand-purple focus:ring-1 focus:ring-brand-purple transition-colors"
           />
         </div>
       </div>
@@ -180,22 +180,22 @@ export const IntegrationsTabContent: React.FC = () => {
           return (
             <div
               key={item.id}
-              className="p-5 rounded-2xl bg-white border border-[#e5e7eb] hover:border-[#d1d5db] transition-all flex flex-col justify-between"
+              className="p-5 rounded-2xl bg-white border border-border-default hover:border-border-input transition-all flex flex-col justify-between"
             >
               <div>
                 <div className="flex items-start justify-between gap-3 mb-3">
                   <div className="flex items-center gap-3">
-                    <div className="w-11 h-11 rounded-xl bg-[#f8f8fc] border border-[#f0f0f4] flex items-center justify-center font-bold text-sm text-[#0f0f1a]">
+                    <div className="w-11 h-11 rounded-xl bg-light border border-border-light flex items-center justify-center font-bold text-sm text-heading">
                       {item.name.substring(0, 2).toUpperCase()}
                     </div>
                     <div>
-                      <h4 className="text-[15px] font-semibold text-[#0f0f1a] flex items-center gap-2">
+                      <h4 className="text-[15px] font-semibold text-heading flex items-center gap-2">
                         {item.name}
                         {isConnected && (
                           <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                         )}
                       </h4>
-                      <span className="text-[11px] font-medium text-[#5B5CE2] uppercase tracking-wider">
+                      <span className="text-[11px] font-medium text-brand-purple uppercase tracking-wider">
                         {item.category}
                       </span>
                     </div>
@@ -209,13 +209,13 @@ export const IntegrationsTabContent: React.FC = () => {
                   </Badge>
                 </div>
 
-                <p className="text-[13px] text-[#6b7280] font-normal leading-relaxed mb-4">
+                <p className="text-[13px] text-body font-normal leading-relaxed mb-4">
                   {item.description}
                 </p>
               </div>
 
-              <div className="pt-4 border-t border-[#f0f0f4] flex items-center justify-between">
-                <span className="text-[11px] text-[#9ca3af] font-normal">
+              <div className="pt-4 border-t border-border-light flex items-center justify-between">
+                <span className="text-[11px] text-muted font-normal">
                   {item.lastSync || 'Not connected'}
                 </span>
 
@@ -233,27 +233,27 @@ export const IntegrationsTabContent: React.FC = () => {
       </div>
 
       {/* Developer API & Webhooks Section */}
-      <div className="p-6 rounded-2xl bg-white border border-[#e5e7eb]">
+      <div className="p-6 rounded-2xl bg-white border border-border-default">
         <div className="flex items-center gap-2.5 mb-2">
-          <div className="w-8 h-8 rounded-lg bg-[#5B5CE2]/10 text-[#5B5CE2] flex items-center justify-center">
+          <div className="w-8 h-8 rounded-lg bg-brand-purple/10 text-brand-purple flex items-center justify-center">
             <Key className="w-4 h-4" />
           </div>
-          <h3 className="text-[17px] font-semibold text-[#0f0f1a]">Developer API & Webhooks</h3>
+          <h3 className="text-[17px] font-semibold text-heading">Developer API & Webhooks</h3>
         </div>
-        <p className="text-[13px] text-[#6b7280] font-normal mb-6">
+        <p className="text-[13px] text-body font-normal mb-6">
           Stream real-time demo events directly to your endpoint or ingest Preveuo metrics programmatically.
         </p>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* API Key */}
           <div className="space-y-2">
-            <label className="text-[12.5px] font-semibold text-[#0f0f1a]">Live Workspace API Key</label>
+            <label className="text-[12.5px] font-semibold text-heading">Live Workspace API Key</label>
             <div className="flex items-center gap-2">
               <input
                 type="password"
                 readOnly
                 value="prev_live_sk98f21908234857bva02"
-                className="flex-1 px-3.5 py-2.5 rounded-xl bg-[#f8f8fc] border border-[#e5e7eb] font-mono text-[13px] text-[#0f0f1a] select-all"
+                className="flex-1 px-3.5 py-2.5 rounded-xl bg-light border border-border-default font-mono text-[13px] text-heading select-all"
               />
               <Button
                 variant="outline"
@@ -264,9 +264,9 @@ export const IntegrationsTabContent: React.FC = () => {
                 {copiedKey ? 'Copied' : 'Copy'}
               </Button>
             </div>
-            <p className="text-[11px] text-[#9ca3af]">
+            <p className="text-[11px] text-muted">
               Keep your secret key confidential. Read our{' '}
-              <a href="/resources" className="text-[#5B5CE2] underline font-medium">
+              <a href="/resources" className="text-brand-purple underline font-medium">
                 REST API Docs
               </a>
               .
@@ -275,12 +275,12 @@ export const IntegrationsTabContent: React.FC = () => {
 
           {/* Webhook Endpoint */}
           <div className="space-y-2">
-            <label className="text-[12.5px] font-bold text-[#0f0f1a]">Webhook Endpoint URL</label>
+            <label className="text-[12.5px] font-bold text-heading">Webhook Endpoint URL</label>
             <div className="flex items-center gap-2">
               <input
                 type="text"
                 defaultValue="https://api.acme.co/v1/webhooks/preveuo"
-                className="flex-1 px-3.5 py-2.5 rounded-xl bg-white border border-[#e5e7eb] text-[13px] text-[#0f0f1a] focus:outline-none focus:border-[#5B5CE2]"
+                className="flex-1 px-3.5 py-2.5 rounded-xl bg-white border border-border-default text-[13px] text-heading focus:outline-none focus:border-brand-purple"
               />
               <Button
                 variant="secondary"
@@ -291,7 +291,7 @@ export const IntegrationsTabContent: React.FC = () => {
                 {webhookSuccess ? 'Payload Sent ✓' : 'Test Ping'}
               </Button>
             </div>
-            <p className="text-[11px] text-[#9ca3af]">
+            <p className="text-[11px] text-muted">
               Events triggered: `lead.captured`, `demo.completed`, `step.dropoff`.
             </p>
           </div>

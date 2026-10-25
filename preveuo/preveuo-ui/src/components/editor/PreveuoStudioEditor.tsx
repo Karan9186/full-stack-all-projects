@@ -63,6 +63,7 @@ import {
   Play,
   Settings,
 } from 'lucide-react';
+import { PRIMARY_COLOR, THEME_COLORS } from '@/lib/constants/theme';
 
 interface PreveuoStudioEditorProps {
   initialData: FullDemoData;
@@ -1208,11 +1209,11 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
         sceneId: currentScene?.id || '',
         stepId: currentStep?.id,
         type: 'hotspot',
-        name: `Hotspot #${elements.length + 1}`,
+        name: `Hotspot ${elements.length + 1}`,
         position: { x: clampedX, y: clampedY, width: 28, height: 18 },
         style: {
-          backgroundColor: '#5B5CE2',
-          color: '#ffffff',
+          backgroundColor: PRIMARY_COLOR,
+          color: THEME_COLORS.white,
           borderRadius: 16,
           pulseAnimation: true,
         },
@@ -1223,12 +1224,13 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
             textAlign: 'left',
           },
           appearance: {
-            background: '#5B5CE2',
-            textColor: '#ffffff',
+            background: PRIMARY_COLOR,
+            textColor: THEME_COLORS.white,
             backdrop: false,
             borderRadius: 'rounded',
             width: 'medium',
             animation: 'ping',
+            pointerStyle: 'ripple',
           },
           visibility: 'always',
           navigation: {
@@ -1237,14 +1239,14 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
               enabled: true,
               text: '',
               background: 'rgba(255, 255, 255, 0.22)',
-              textColor: '#ffffff',
+              textColor: 'white',
               action: 'nextStep',
             },
             backButton: {
               enabled: false,
               text: 'Back',
-              background: '#ffffff',
-              textColor: '#6b7280',
+              background: 'white',
+              textColor: THEME_COLORS.textBody,
               action: 'previousStep',
             },
           },
@@ -1572,11 +1574,11 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
   // Helper to render "+ Add Step" dashed divider
   const renderAddStepDivider = (insertIndex: number) => (
     <div className="relative py-2 flex items-center justify-center group select-none">
-      <div className="absolute inset-x-3 h-px border-t border-dashed border-[#d1d5db] group-hover:border-[#5B5CE2] transition-colors" />
+      <div className="absolute inset-x-3 h-px border-t border-dashed border-border-input group-hover:border-brand-purple transition-colors" />
       <button
         type="button"
         onClick={() => handleAddStep(insertIndex)}
-        className="relative z-10 px-3 py-0.5 rounded-full bg-[#fafafc] hover:bg-white text-[11px] font-bold text-[#6b7280] group-hover:text-[#5B5CE2] transition-all cursor-pointer shadow-xs border border-transparent hover:border-[#5B5CE2]/30"
+        className="relative z-10 px-3 py-0.5 rounded-full bg-canvas hover:bg-white text-[11px] font-bold text-body group-hover:text-brand-purple transition-all cursor-pointer shadow-xs border border-transparent hover:border-brand-purple/30"
       >
         + Add Step
       </button>
@@ -1584,13 +1586,13 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
   );
 
   return (
-    <div className="h-screen w-screen flex flex-col bg-white text-[#0f0f1a] font-sans overflow-hidden select-none">
+    <div className="h-screen w-screen flex flex-col bg-white text-heading font-sans overflow-hidden select-none">
       {/* Top Studio Navbar */}
-      <header className="h-14 border-b border-[#e5e7eb] bg-white px-4 flex items-center justify-between shrink-0 z-30">
+      <header className="h-14 border-b border-border-default bg-white px-4 flex items-center justify-between shrink-0 z-30">
         <div className="flex items-center gap-3">
           <Link href="/demos">
             <IconButton variant="secondary" size="sm" aria-label="Back to Demos">
-              <ArrowLeft className="w-4 h-4 text-[#0f0f1a]" />
+              <ArrowLeft className="w-4 h-4 text-heading" />
             </IconButton>
           </Link>
 
@@ -1599,7 +1601,7 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
               type="text"
               value={demo.name}
               onChange={(e) => handleUpdateDemoName(e.target.value)}
-              className="text-[14px] sm:text-[15px] font-semibold text-[#0f0f1a] bg-transparent border-b border-transparent hover:border-[#d1d5db] focus:border-[#5B5CE2] focus:outline-none px-1 py-0.5 transition-colors max-w-xs sm:max-w-md"
+              className="text-[14px] sm:text-[15px] font-semibold text-heading bg-transparent border-b border-transparent hover:border-border-input focus:border-brand-purple focus:outline-none px-1 py-0.5 transition-colors max-w-xs sm:max-w-md"
             />
 
             {saveStatus === 'saving' && (
@@ -1625,7 +1627,7 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
           <div className="flex items-center gap-2">
             <button
               type="button"
-              className="w-8 h-8 rounded-lg hover:bg-[#f8f8fc] text-[#6b7280] hover:text-[#0f0f1a] flex items-center justify-center transition-colors cursor-pointer"
+              className="w-8 h-8 rounded-lg hover:bg-light text-body hover:text-heading flex items-center justify-center transition-colors cursor-pointer"
               title="Search"
             >
               <Search className="w-4 h-4" />
@@ -1634,16 +1636,16 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
             <button
               type="button"
               onClick={handleOpenPreview}
-              className="px-3.5 py-1.5 rounded-xl border border-[#d1d5db] bg-white text-xs font-semibold text-[#0f0f1a] hover:bg-[#f8f8fc] hover:border-[#5B5CE2] flex items-center gap-1.5 transition-all shadow-xs cursor-pointer"
+              className="px-3.5 py-1.5 rounded-xl border border-border-input bg-white text-xs font-semibold text-heading hover:bg-light hover:border-brand-purple flex items-center gap-1.5 transition-all shadow-xs cursor-pointer"
             >
-              <Eye className="w-3.5 h-3.5 text-[#6b7280]" />
+              <Eye className="w-3.5 h-3.5 text-body" />
               <span>Preview</span>
             </button>
 
             <button
               type="button"
               onClick={handleShare}
-              className="px-4 py-1.5 rounded-xl bg-[#5B5CE2] hover:bg-[#4a4bd4] text-xs font-semibold text-white flex items-center gap-1.5 transition-all shadow-sm cursor-pointer"
+              className="px-4 py-1.5 rounded-xl bg-brand-purple hover:bg-brand-purple-hover text-xs font-semibold text-white flex items-center gap-1.5 transition-all shadow-sm cursor-pointer"
             >
               <Share2 className="w-3.5 h-3.5 text-white" />
               <span>{copiedLink ? 'Copied!' : 'Share'}</span>
@@ -1652,7 +1654,7 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
             <button
               type="button"
               onClick={() => setShowPublishModal(true)}
-              className="w-8 h-8 rounded-lg hover:bg-[#f8f8fc] text-[#6b7280] hover:text-[#0f0f1a] flex items-center justify-center transition-colors cursor-pointer"
+              className="w-8 h-8 rounded-lg hover:bg-light text-body hover:text-heading flex items-center justify-center transition-colors cursor-pointer"
               title="More Options"
             >
               <MoreVertical className="w-4 h-4" />
@@ -1666,8 +1668,8 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
               onClick={() => setIsPlacingHotspot((prev) => !prev)}
               className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs transition-all cursor-pointer ${
                 isPlacingHotspot
-                  ? 'font-semibold bg-[#5B5CE2] text-white shadow-sm ring-2 ring-[#5B5CE2]/40'
-                  : 'font-medium bg-white hover:bg-[#f8f8fc] text-[#0f0f1a] border border-[#d1d5db]'
+                  ? 'font-semibold bg-brand-purple text-white shadow-sm ring-2 ring-brand-purple/40'
+                  : 'font-medium bg-white hover:bg-light text-heading border border-border-input'
               }`}
               title="Click to place a new hotspot on canvas"
             >
@@ -1690,8 +1692,8 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
                 }}
                 className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs transition-all cursor-pointer ${
                   activeTab === 'animation' && !selectedElementId && selectedNodeType === 'step'
-                    ? 'font-semibold bg-[#5B5CE2] text-white shadow-sm ring-2 ring-[#5B5CE2]/40'
-                    : 'font-medium bg-white hover:bg-[#f8f8fc] text-[#0f0f1a] border border-[#d1d5db]'
+                    ? 'font-semibold bg-brand-purple text-white shadow-sm ring-2 ring-brand-purple/40'
+                    : 'font-medium bg-white hover:bg-light text-heading border border-border-input'
                 }`}
                 title="Animation options: Zoom & Pan and Autoplay"
                 aria-expanded={isAnimationMenuOpen}
@@ -1708,12 +1710,12 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
 
               {/* Animation Options Dropdown Menu */}
               {isAnimationMenuOpen && (
-                <div className="absolute left-0 mt-2 w-72 bg-white rounded-2xl shadow-xl border border-[#e5e7eb] py-2 z-50 animate-in fade-in zoom-in-95 duration-150">
-                  <div className="px-3 py-1.5 border-b border-[#f0f0f4] flex items-center justify-between">
-                    <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-[#6b7280]">
+                <div className="absolute left-0 mt-2 w-72 bg-white rounded-2xl shadow-xl border border-border-default py-2 z-50 animate-in fade-in zoom-in-95 duration-150">
+                  <div className="px-3 py-1.5 border-b border-border-light flex items-center justify-between">
+                    <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-body">
                       Animation Modes
                     </span>
-                    <span className="text-[10px] font-medium text-[#9ca3af]">Select mode</span>
+                    <span className="text-[10px] font-medium text-muted">Select mode</span>
                   </div>
 
                   <div className="p-1.5 space-y-1">
@@ -1738,27 +1740,27 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
                       }}
                       className={`w-full flex items-start gap-3 p-2.5 rounded-xl text-left transition-colors cursor-pointer ${
                         activeTab === 'animation' && activeAnimationSection === 'zoomPan'
-                          ? 'bg-[#5B5CE2]/10 text-[#5B5CE2]'
-                          : 'hover:bg-[#f8f8fc] text-[#0f0f1a]'
+                          ? 'bg-brand-purple/10 text-brand-purple'
+                          : 'hover:bg-light text-heading'
                       }`}
                     >
-                      <div className="w-8 h-8 rounded-lg bg-[#5B5CE2]/10 text-[#5B5CE2] flex items-center justify-center shrink-0 mt-0.5">
+                      <div className="w-8 h-8 rounded-lg bg-brand-purple/10 text-brand-purple flex items-center justify-center shrink-0 mt-0.5">
                         <Maximize2 className="w-4 h-4" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between">
-                          <span className="text-xs font-bold text-[#0f0f1a]">Zoom & Pan</span>
+                          <span className="text-xs font-bold text-heading">Zoom & Pan</span>
                           {currentStep?.zoomPan?.enabled ? (
-                            <span className="text-[9.5px] font-semibold bg-[#10b981]/15 text-[#059669] px-1.5 py-0.5 rounded-full">
+                            <span className="text-[9.5px] font-semibold bg-emerald-500/15 text-emerald-600 px-1.5 py-0.5 rounded-full">
                               Active
                             </span>
                           ) : (
-                            <span className="text-[9.5px] font-medium text-[#9ca3af]">
+                            <span className="text-[9.5px] font-medium text-muted">
                               Off
                             </span>
                           )}
                         </div>
-                        <p className="text-[11px] text-[#6b7280] leading-snug mt-0.5">
+                        <p className="text-[11px] text-body leading-snug mt-0.5">
                           Focal camera magnification & cinematic glide
                         </p>
                       </div>
@@ -1772,25 +1774,25 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
                         setIsSettingsModalOpen(true);
                         setIsAnimationMenuOpen(false);
                       }}
-                      className="w-full flex items-start gap-3 p-2.5 rounded-xl text-left transition-colors cursor-pointer hover:bg-[#f8f8fc] text-[#0f0f1a]"
+                      className="w-full flex items-start gap-3 p-2.5 rounded-xl text-left transition-colors cursor-pointer hover:bg-light text-heading"
                     >
-                      <div className="w-8 h-8 rounded-lg bg-[#5B5CE2]/10 text-[#5B5CE2] flex items-center justify-center shrink-0 mt-0.5">
+                      <div className="w-8 h-8 rounded-lg bg-brand-purple/10 text-brand-purple flex items-center justify-center shrink-0 mt-0.5">
                         <Play className="w-4 h-4 fill-current" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between">
-                          <span className="text-xs font-bold text-[#0f0f1a]">Autoplay Settings</span>
+                          <span className="text-xs font-bold text-heading">Autoplay Settings</span>
                           {demo.settings?.autoplay ? (
-                            <span className="text-[9.5px] font-semibold bg-[#10b981]/15 text-[#059669] px-1.5 py-0.5 rounded-full">
+                            <span className="text-[9.5px] font-semibold bg-emerald-500/15 text-emerald-600 px-1.5 py-0.5 rounded-full">
                               Active
                             </span>
                           ) : (
-                            <span className="text-[9.5px] font-medium text-[#9ca3af]">
+                            <span className="text-[9.5px] font-medium text-muted">
                               Off
                             </span>
                           )}
                         </div>
-                        <p className="text-[11px] text-[#6b7280] leading-snug mt-0.5">
+                        <p className="text-[11px] text-body leading-snug mt-0.5">
                           Slide timing, delays, loop & voiceover arbitration
                         </p>
                       </div>
@@ -1803,22 +1805,22 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
             {/* Blur & Annotate */}
             <button
               type="button"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium bg-white hover:bg-[#f8f8fc] text-[#0f0f1a] border border-[#d1d5db] transition-colors cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium bg-white hover:bg-light text-heading border border-border-input transition-colors cursor-pointer"
             >
-              <Droplets className="w-3.5 h-3.5 text-[#6b7280]" />
+              <Droplets className="w-3.5 h-3.5 text-body" />
               <span>Blur & Annotate</span>
             </button>
 
             {/* Voice... */}
             <button
               type="button"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium bg-white hover:bg-[#f8f8fc] text-[#0f0f1a] border border-[#d1d5db] transition-colors cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium bg-white hover:bg-light text-heading border border-border-input transition-colors cursor-pointer"
             >
-              <Mic className="w-3.5 h-3.5 text-[#6b7280]" />
+              <Mic className="w-3.5 h-3.5 text-body" />
               <span>Voice...</span>
             </button>
 
-            <div className="h-5 w-px bg-[#e5e7eb] mx-1" />
+            <div className="h-5 w-px bg-border-default mx-1" />
 
             {/* Settings Button (Opens Full Supademo-style Settings Modal) */}
             <Button
@@ -1828,7 +1830,7 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
                 setSettingsModalTab('autoplay');
                 setIsSettingsModalOpen(true);
               }}
-              leftIcon={<Settings className="w-3.5 h-3.5 text-[#5B5CE2]" />}
+              leftIcon={<Settings className="w-3.5 h-3.5 text-brand-purple" />}
             >
               Settings
             </Button>
@@ -1857,7 +1859,7 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
             <button
               type="button"
               onClick={() => setShowPublishModal(true)}
-              className="w-8 h-8 rounded-lg hover:bg-[#f8f8fc] text-[#6b7280] hover:text-[#0f0f1a] flex items-center justify-center transition-colors cursor-pointer"
+              className="w-8 h-8 rounded-lg hover:bg-light text-body hover:text-heading flex items-center justify-center transition-colors cursor-pointer"
               title="More Options"
             >
               <MoreVertical className="w-4 h-4" />
@@ -1870,32 +1872,32 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
       <div className="flex-1 flex overflow-hidden">
         {/* Left Rail: Chapters & Steps (only shown when steps exist) */}
         {steps.length > 0 && (
-          <aside className="w-64 sm:w-72 border-r border-[#e5e7eb] bg-[#fafafc] flex flex-col shrink-0 overflow-y-auto">
+          <aside className="w-64 sm:w-72 border-r border-border-default bg-canvas flex flex-col shrink-0 overflow-y-auto">
           {/* Add Step & Add Chapter Action Buttons */}
-          <div className="p-3 border-b border-[#f0f0f4] grid grid-cols-2 gap-2">
+          <div className="p-3 border-b border-border-light grid grid-cols-2 gap-2">
             <button
               type="button"
               onClick={() => handleOpenAddStepModal()}
-              className="py-2 px-2 rounded-xl bg-white hover:bg-[#f8f8fc] border border-[#e5e7eb] flex items-center justify-center gap-1.5 transition-all cursor-pointer group shadow-xs hover:border-[#5B5CE2] hover:shadow-sm"
+              className="py-2 px-2 rounded-xl bg-white hover:bg-light border border-border-default flex items-center justify-center gap-1.5 transition-all cursor-pointer group shadow-xs hover:border-brand-purple hover:shadow-sm"
               title="Add step with image or video"
             >
-              <div className="w-6 h-6 rounded-lg bg-[#5B5CE2]/10 group-hover:bg-[#5B5CE2] flex items-center justify-center transition-colors">
-                <Plus className="w-3.5 h-3.5 text-[#5B5CE2] group-hover:text-white" />
+              <div className="w-6 h-6 rounded-lg bg-brand-purple/10 group-hover:bg-brand-purple flex items-center justify-center transition-colors">
+                <Plus className="w-3.5 h-3.5 text-brand-purple group-hover:text-white" />
               </div>
-              <span className="text-xs font-medium text-[#0f0f1a] group-hover:text-[#5B5CE2]">
+              <span className="text-xs font-medium text-heading group-hover:text-brand-purple">
                 + Add Step
               </span>
             </button>
             <button
               type="button"
               onClick={() => handleAddChapter()}
-              className="py-2 px-2 rounded-xl bg-white hover:bg-[#f8f8fc] border border-[#e5e7eb] flex items-center justify-center gap-1.5 transition-all cursor-pointer group shadow-xs hover:border-[#5B5CE2] hover:shadow-sm"
+              className="py-2 px-2 rounded-xl bg-white hover:bg-light border border-border-default flex items-center justify-center gap-1.5 transition-all cursor-pointer group shadow-xs hover:border-brand-purple hover:shadow-sm"
               title="Add new chapter"
             >
-              <div className="w-6 h-6 rounded-lg bg-[#5B5CE2]/10 group-hover:bg-[#5B5CE2] flex items-center justify-center transition-colors">
-                <FolderPlus className="w-3.5 h-3.5 text-[#5B5CE2] group-hover:text-white" />
+              <div className="w-6 h-6 rounded-lg bg-brand-purple/10 group-hover:bg-brand-purple flex items-center justify-center transition-colors">
+                <FolderPlus className="w-3.5 h-3.5 text-brand-purple group-hover:text-white" />
               </div>
-              <span className="text-xs font-medium text-[#0f0f1a] group-hover:text-[#5B5CE2]">
+              <span className="text-xs font-medium text-heading group-hover:text-brand-purple">
                 + Chapter
               </span>
             </button>
@@ -1914,24 +1916,24 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
                     onClick={() => handleSelectChapter(ch.id)}
                     className={`relative rounded-xl p-3 border-2 transition-all cursor-pointer group ${
                       isChapterSelected
-                        ? 'border-[#5B5CE2] bg-white ring-2 ring-[#5B5CE2]/30 shadow-md'
-                        : 'border-[#e5e7eb] bg-white hover:border-[#cbd5e1]'
+                        ? 'border-brand-purple bg-white ring-2 ring-brand-purple/30 shadow-md'
+                        : 'border-border-default bg-white hover:border-slate-300'
                     } ${
                       lastAddedChapterId === ch.id
-                        ? 'animate-slide-in-step animate-highlight-glow ring-2 ring-[#5B5CE2]'
+                        ? 'animate-slide-in-step animate-highlight-glow ring-2 ring-brand-purple'
                         : ''
                     }`}
                   >
                     <div className="flex items-center justify-between gap-2">
                       <div className="flex items-center gap-2 min-w-0">
-                        <span className="w-6 h-6 rounded-lg bg-[#5B5CE2]/10 text-[#5B5CE2] flex items-center justify-center shrink-0">
+                        <span className="w-6 h-6 rounded-lg bg-brand-purple/10 text-brand-purple flex items-center justify-center shrink-0">
                           <BookOpen className="w-3.5 h-3.5" />
                         </span>
                         <div className="min-w-0">
-                          <span className="block text-[10px] font-semibold uppercase tracking-[0.16em] text-[#5B5CE2]">
+                          <span className="block text-[10px] font-semibold uppercase tracking-[0.16em] text-brand-purple">
                             Chapter {chIdx + 1}
                           </span>
-                          <h4 className="text-[12.5px] font-semibold text-[#0f0f1a] truncate">
+                          <h4 className="text-[12.5px] font-semibold text-heading truncate">
                             {ch.title || `Chapter ${chIdx + 1}`}
                           </h4>
                         </div>
@@ -1945,14 +1947,14 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
                             e.stopPropagation();
                             setOpenChapterMenuId(openChapterMenuId === ch.id ? null : ch.id);
                           }}
-                          className="w-6 h-6 rounded-md hover:bg-[#f0f0f4] text-[#6b7280] hover:text-[#0f0f1a] flex items-center justify-center transition-colors cursor-pointer"
+                          className="w-6 h-6 rounded-md hover:bg-border-light text-body hover:text-heading flex items-center justify-center transition-colors cursor-pointer"
                           title="Chapter options"
                         >
                           <MoreVertical className="w-3.5 h-3.5" />
                         </button>
 
                         {openChapterMenuId === ch.id && (
-                          <div className="absolute right-0 top-7 w-36 bg-white rounded-xl shadow-xl border border-[#e5e7eb] py-1 z-30 animate-fade-in text-left">
+                          <div className="absolute right-0 top-7 w-36 bg-white rounded-xl shadow-xl border border-border-default py-1 z-30 animate-fade-in text-left">
                             <button
                               type="button"
                               onClick={(e) => {
@@ -1960,9 +1962,9 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
                                 handleDuplicateChapter(ch.id);
                                 setOpenChapterMenuId(null);
                               }}
-                              className="w-full px-3 py-1.5 text-xs text-[#0f0f1a] hover:bg-[#f8f8fc] flex items-center gap-2 cursor-pointer"
+                              className="w-full px-3 py-1.5 text-xs text-heading hover:bg-light flex items-center gap-2 cursor-pointer"
                             >
-                              <Copy className="w-3.5 h-3.5 text-[#6b7280]" />
+                              <Copy className="w-3.5 h-3.5 text-body" />
                               Duplicate
                             </button>
                             <button
@@ -1984,7 +1986,7 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
                   </div>
 
                   {/* Steps nested under this Chapter */}
-                  <div className="pl-3 border-l-2 border-[#e5e7eb] space-y-1.5">
+                  <div className="pl-3 border-l-2 border-border-default space-y-1.5">
                     {chapterStepItems.map(({ step: st, originalIndex: idx }) => {
                       const isStepActive = selectedNodeType === 'step' && activeStepIndex === idx;
                       const isJustAdded = lastAddedStepId === st.id;
@@ -1994,15 +1996,15 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
                           onClick={() => handleSelectStep(idx)}
                           className={`relative rounded-xl overflow-hidden border-2 transition-all cursor-pointer group shadow-xs ${
                             isStepActive
-                              ? 'border-[#3b82f6] ring-2 ring-[#3b82f6]/40 shadow-md'
-                              : 'border-[#e5e7eb] hover:border-[#cbd5e1]'
+                              ? 'border-blue-500 ring-2 ring-blue-500/40 shadow-md'
+                              : 'border-border-default hover:border-slate-300'
                           } ${
                             isJustAdded
-                              ? 'animate-slide-in-step animate-highlight-glow ring-2 ring-[#5B5CE2]'
+                              ? 'animate-slide-in-step animate-highlight-glow ring-2 ring-brand-purple'
                               : ''
                           }`}
                         >
-                          <div className="relative aspect-[16/9] w-full bg-[#1e1e2d] overflow-hidden">
+                          <div className="relative aspect-[16/9] w-full bg-zinc-900 overflow-hidden">
                             {(() => {
                               const stepScene =
                                 scenes.find((s) => s.id === st.sceneId || (s as any)._id === st.sceneId) ||
@@ -2026,7 +2028,7 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
                                       className="w-full h-full object-cover pointer-events-none"
                                     />
                                     <div className="absolute top-1 left-1 bg-black/70 backdrop-blur-xs rounded px-1 py-0.5 text-[8px] font-bold text-white flex items-center gap-0.5">
-                                      <Video className="w-2.5 h-2.5 text-[#5B5CE2]" />
+                                      <Video className="w-2.5 h-2.5 text-brand-purple" />
                                       <span>VIDEO</span>
                                     </div>
                                   </div>
@@ -2041,7 +2043,7 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
                               );
                             })()}
                             <div className="absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-black/60 to-transparent pointer-events-none" />
-                            <div className="absolute bottom-1.5 left-1.5 w-5 h-5 rounded-full bg-[#5B5CE2] text-white flex items-center justify-center text-[10px] font-bold shadow-md">
+                            <div className="absolute bottom-1.5 left-1.5 w-5 h-5 rounded-full bg-brand-purple text-white flex items-center justify-center text-[10px] font-bold shadow-md">
                               {idx + 1}
                             </div>
                             <div className="absolute bottom-1 right-1">
@@ -2056,7 +2058,7 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
                                 <MoreVertical className="w-3 h-3" />
                               </button>
                               {openStepMenuIdx === idx && (
-                                <div className="absolute right-0 bottom-7 w-32 bg-white rounded-xl shadow-xl border border-[#e5e7eb] py-1 z-30 animate-fade-in text-left">
+                                <div className="absolute right-0 bottom-7 w-32 bg-white rounded-xl shadow-xl border border-border-default py-1 z-30 animate-fade-in text-left">
                                   <button
                                     type="button"
                                     onClick={(e) => {
@@ -2064,9 +2066,9 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
                                       handleDuplicateStep(idx);
                                       setOpenStepMenuIdx(null);
                                     }}
-                                    className="w-full px-3 py-1.5 text-xs text-[#0f0f1a] hover:bg-[#f8f8fc] flex items-center gap-2 cursor-pointer"
+                                    className="w-full px-3 py-1.5 text-xs text-heading hover:bg-light flex items-center gap-2 cursor-pointer"
                                   >
-                                    <Copy className="w-3 h-3 text-[#6b7280]" />
+                                    <Copy className="w-3 h-3 text-body" />
                                     Duplicate
                                   </button>
                                   {steps.length > 1 && (
@@ -2095,7 +2097,7 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
                     <button
                       type="button"
                       onClick={() => handleAddStep(undefined, ch.id)}
-                      className="w-full py-1.5 px-2 rounded-lg bg-white hover:bg-[#f8f8fc] border border-dashed border-[#d1d5db] hover:border-[#5B5CE2] text-[11px] font-semibold text-[#6b7280] hover:text-[#5B5CE2] flex items-center justify-center gap-1 transition-all cursor-pointer"
+                      className="w-full py-1.5 px-2 rounded-lg bg-white hover:bg-light border border-dashed border-border-input hover:border-brand-purple text-[11px] font-semibold text-body hover:text-brand-purple flex items-center justify-center gap-1 transition-all cursor-pointer"
                     >
                       + Add Step to Chapter
                     </button>
@@ -2108,7 +2110,7 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
             {stepsByChapter.unassigned.length > 0 && (
               <div className="space-y-2">
                 {chapters.length > 0 && (
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-[#6b7280] px-1">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-body px-1">
                     Other Steps
                   </span>
                 )}
@@ -2122,15 +2124,15 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
                         onClick={() => handleSelectStep(idx)}
                         className={`relative rounded-xl overflow-hidden border-2 transition-all cursor-pointer group shadow-xs ${
                           isStepActive
-                            ? 'border-[#3b82f6] ring-2 ring-[#3b82f6]/40 shadow-md'
-                            : 'border-[#e5e7eb] hover:border-[#cbd5e1]'
+                            ? 'border-blue-500 ring-2 ring-blue-500/40 shadow-md'
+                            : 'border-border-default hover:border-slate-300'
                         } ${
                           isJustAdded
-                            ? 'animate-slide-in-step animate-highlight-glow ring-2 ring-[#5B5CE2]'
+                            ? 'animate-slide-in-step animate-highlight-glow ring-2 ring-brand-purple'
                             : ''
                         }`}
                       >
-                        <div className="relative aspect-[16/9] w-full bg-[#1e1e2d] overflow-hidden">
+                        <div className="relative aspect-[16/9] w-full bg-zinc-900 overflow-hidden">
                           {(() => {
                             const stepScene =
                               scenes.find((s) => s.id === st.sceneId || (s as any)._id === st.sceneId) ||
@@ -2154,7 +2156,7 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
                                     className="w-full h-full object-cover pointer-events-none"
                                   />
                                   <div className="absolute top-1 left-1 bg-black/70 backdrop-blur-xs rounded px-1 py-0.5 text-[8px] font-bold text-white flex items-center gap-0.5">
-                                    <Video className="w-2.5 h-2.5 text-[#5B5CE2]" />
+                                    <Video className="w-2.5 h-2.5 text-brand-purple" />
                                     <span>VIDEO</span>
                                   </div>
                                 </div>
@@ -2169,7 +2171,7 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
                             );
                           })()}
                           <div className="absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-black/60 to-transparent pointer-events-none" />
-                          <div className="absolute bottom-1.5 left-1.5 w-5 h-5 rounded-full bg-[#5B5CE2] text-white flex items-center justify-center text-[10px] font-bold shadow-md">
+                          <div className="absolute bottom-1.5 left-1.5 w-5 h-5 rounded-full bg-brand-purple text-white flex items-center justify-center text-[10px] font-bold shadow-md">
                             {idx + 1}
                           </div>
                           <div className="absolute bottom-1 right-1">
@@ -2184,7 +2186,7 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
                               <MoreVertical className="w-3 h-3" />
                             </button>
                             {openStepMenuIdx === idx && (
-                              <div className="absolute right-0 bottom-7 w-32 bg-white rounded-xl shadow-xl border border-[#e5e7eb] py-1 z-30 animate-fade-in text-left">
+                              <div className="absolute right-0 bottom-7 w-32 bg-white rounded-xl shadow-xl border border-border-default py-1 z-30 animate-fade-in text-left">
                                 <button
                                   type="button"
                                   onClick={(e) => {
@@ -2192,9 +2194,9 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
                                     handleDuplicateStep(idx);
                                     setOpenStepMenuIdx(null);
                                   }}
-                                  className="w-full px-3 py-1.5 text-xs text-[#0f0f1a] hover:bg-[#f8f8fc] flex items-center gap-2 cursor-pointer"
+                                  className="w-full px-3 py-1.5 text-xs text-heading hover:bg-light flex items-center gap-2 cursor-pointer"
                                 >
-                                  <Copy className="w-3.5 h-3.5 text-[#6b7280]" />
+                                  <Copy className="w-3.5 h-3.5 text-body" />
                                   Duplicate
                                 </button>
                                 {steps.length > 1 && (
@@ -2225,9 +2227,9 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
 
             {/* Empty Sidebar Notice */}
             {steps.length === 0 && chapters.length === 0 && (
-              <div className="p-4 rounded-2xl bg-white border border-[#e5e7eb] text-center my-3 shadow-2xs">
-                <p className="text-xs font-semibold text-[#0f0f1a] mb-1">No steps yet</p>
-                <p className="text-[11px] text-[#6b7280]">
+              <div className="p-4 rounded-2xl bg-white border border-border-default text-center my-3 shadow-2xs">
+                <p className="text-xs font-semibold text-heading mb-1">No steps yet</p>
+                <p className="text-[11px] text-body">
                   Click + Add Step below or upload media on the canvas.
                 </p>
               </div>
@@ -2237,9 +2239,9 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
             <button
               type="button"
               onClick={() => handleOpenAddStepModal()}
-              className="w-full py-2.5 px-3 rounded-xl bg-white hover:bg-[#f8f8fc] border border-dashed border-[#d1d5db] hover:border-[#5B5CE2] text-xs font-bold text-[#6b7280] hover:text-[#5B5CE2] flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-xs mt-3"
+              className="w-full py-2.5 px-3 rounded-xl bg-white hover:bg-light border border-dashed border-border-input hover:border-brand-purple text-xs font-bold text-body hover:text-brand-purple flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-xs mt-3"
             >
-              <Plus className="w-3.5 h-3.5 text-[#5B5CE2]" />
+              <Plus className="w-3.5 h-3.5 text-brand-purple" />
               <span>+ Add Step</span>
             </button>
           </div>
@@ -2250,8 +2252,8 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
         <main
           className="flex-1 p-6 flex flex-col items-center justify-center overflow-auto relative select-none"
           style={{
-            backgroundColor: '#f8f8fd',
-            backgroundImage: 'radial-gradient(#d1d5db 1.2px, transparent 1.2px)',
+            backgroundColor: THEME_COLORS.bgLight,
+            backgroundImage: `radial-gradient(${THEME_COLORS.borderInput} 1.2px, transparent 1.2px)`,
             backgroundSize: '16px 16px',
           }}
         >
@@ -2271,11 +2273,11 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
               />
 
               {/* Floating Top-Left Action Widget matching Reference UI */}
-              <div className="absolute top-6 left-6 z-20 flex items-center gap-2 p-2 bg-white/95 backdrop-blur-md rounded-2xl border border-[#e5e7eb] shadow-md">
+              <div className="absolute top-6 left-6 z-20 flex items-center gap-2 p-2 bg-white/95 backdrop-blur-md rounded-2xl border border-border-default shadow-md">
                 <button
                   type="button"
                   onClick={() => handleOpenAddStepModal()}
-                  className="w-10 h-10 rounded-xl bg-[#f1f3f9] hover:bg-[#e4e7f2] hover:text-[#5B5CE2] text-[#64748b] flex items-center justify-center transition-all cursor-pointer"
+                  className="w-10 h-10 rounded-xl bg-gray-100 hover:bg-gray-200 hover:text-brand-purple text-slate-500 flex items-center justify-center transition-all cursor-pointer"
                   title="Open Media Library"
                 >
                   <LayoutGrid className="w-4 h-4" />
@@ -2283,7 +2285,7 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
                 <button
                   type="button"
                   onClick={() => directFileInputRef.current?.click()}
-                  className="w-10 h-10 rounded-xl bg-[#f1f3f9] hover:bg-[#e4e7f2] hover:text-[#5B5CE2] text-[#64748b] flex items-center justify-center transition-all cursor-pointer"
+                  className="w-10 h-10 rounded-xl bg-gray-100 hover:bg-gray-200 hover:text-brand-purple text-slate-500 flex items-center justify-center transition-all cursor-pointer"
                   title="Upload Image/Video"
                 >
                   <ImageIcon className="w-4 h-4" />
@@ -2305,36 +2307,36 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
                   }
                 }}
                 className={`w-full max-w-2xl bg-white rounded-2xl shadow-xl border overflow-hidden flex flex-col my-auto transition-all ${
-                  isDraggingOverStage ? 'border-[#5B5CE2] ring-4 ring-[#5B5CE2]/10 scale-[0.99]' : 'border-[#e5e7eb]'
+                  isDraggingOverStage ? 'border-brand-purple ring-4 ring-brand-purple/10 scale-[0.99]' : 'border-border-default'
                 }`}
               >
                 {/* Browser Mockup Top Bar */}
-                <div className="h-11 bg-[#f8f9fc] border-b border-[#e5e7eb]/80 px-4 flex items-center justify-between select-none">
+                <div className="h-11 bg-light border-b border-border-default/80 px-4 flex items-center justify-between select-none">
                   {/* Traffic Light Dots */}
                   <div className="flex items-center gap-1.5">
-                    <span className="w-2.5 h-2.5 rounded-full bg-[#ff5f56]" />
-                    <span className="w-2.5 h-2.5 rounded-full bg-[#ffbd2e]" />
-                    <span className="w-2.5 h-2.5 rounded-full bg-[#27c93f]" />
+                    <span className="w-2.5 h-2.5 rounded-full bg-red-500" />
+                    <span className="w-2.5 h-2.5 rounded-full bg-amber-500" />
+                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
                   </div>
 
                   {/* Centered Pill with Demo Name */}
-                  <div className="bg-[#eef0f6] text-[#4b5563] text-xs font-semibold px-6 py-1 rounded-full shadow-inner max-w-xs truncate">
+                  <div className="bg-slate-100 text-gray-600 text-xs font-semibold px-6 py-1 rounded-full shadow-inner max-w-xs truncate">
                     {demo.name || 'New Demo'}
                   </div>
 
                   {/* Top Right Preview & Theme Icons */}
-                  <div className="flex items-center gap-2.5 text-[#64748b]">
+                  <div className="flex items-center gap-2.5 text-slate-500">
                     <button
                       type="button"
                       onClick={handleOpenPreview}
-                      className="hover:text-[#0f0f1a] transition-colors p-1 cursor-pointer"
+                      className="hover:text-heading transition-colors p-1 cursor-pointer"
                       title="Preview demo"
                     >
                       <Eye className="w-3.5 h-3.5" />
                     </button>
                     <button
                       type="button"
-                      className="hover:text-[#0f0f1a] transition-colors p-1 cursor-pointer"
+                      className="hover:text-heading transition-colors p-1 cursor-pointer"
                       title="Theme"
                     >
                       <Moon className="w-3.5 h-3.5" />
@@ -2344,16 +2346,16 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
 
                 {/* Mockup Inside Content */}
                 <div className="py-16 px-8 flex flex-col items-center justify-center text-center">
-                  <h1 className="text-2xl sm:text-[26px] font-bold text-[#0f0f1a] tracking-[-0.025em] mb-2 leading-tight">
+                  <h1 className="text-2xl sm:text-[26px] font-bold text-heading tracking-[-0.025em] mb-2 leading-tight">
                     Create a Supademo in minutes
                   </h1>
-                  <p className="text-[13px] sm:text-[14px] text-[#64748b] mb-8 font-normal leading-relaxed">
+                  <p className="text-[13px] sm:text-[14px] text-slate-500 mb-8 font-normal leading-relaxed">
                     Upload content or record your screen to get started.
                   </p>
 
                   {isUploadingMedia ? (
-                    <div className="flex items-center gap-2.5 text-sm text-[#5B5CE2] font-semibold py-4">
-                      <div className="w-5 h-5 rounded-full border-2 border-[#5B5CE2] border-t-transparent animate-spin" />
+                    <div className="flex items-center gap-2.5 text-sm text-brand-purple font-semibold py-4">
+                      <div className="w-5 h-5 rounded-full border-2 border-brand-purple border-t-transparent animate-spin" />
                       <span>Uploading media to storage...</span>
                     </div>
                   ) : (
@@ -2362,9 +2364,9 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
                       <button
                         type="button"
                         onClick={() => handleOpenAddStepModal()}
-                        className="w-full py-2.5 px-4 rounded-xl border border-[#d1d5db] bg-white text-[#0f0f1a] hover:border-[#5B5CE2] hover:text-[#5B5CE2] text-xs sm:text-[13px] font-medium flex items-center justify-center gap-2.5 shadow-xs hover:shadow-sm transition-all cursor-pointer"
+                        className="w-full py-2.5 px-4 rounded-xl border border-border-input bg-white text-heading hover:border-brand-purple hover:text-brand-purple text-xs sm:text-[13px] font-medium flex items-center justify-center gap-2.5 shadow-xs hover:shadow-sm transition-all cursor-pointer"
                       >
-                        <LayoutGrid className="w-4 h-4 text-[#64748b]" />
+                        <LayoutGrid className="w-4 h-4 text-slate-500" />
                         <span>Open Media Library</span>
                       </button>
 
@@ -2372,7 +2374,7 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
                       <button
                         type="button"
                         onClick={() => directFileInputRef.current?.click()}
-                        className="w-full py-2.5 px-4 rounded-xl bg-[#5B5CE2] hover:bg-[#4a4bd4] text-white text-xs sm:text-[13px] font-semibold flex items-center justify-center gap-2.5 shadow-sm hover:shadow-md transition-all cursor-pointer"
+                        className="w-full py-2.5 px-4 rounded-xl bg-brand-purple hover:bg-brand-purple-hover text-white text-xs sm:text-[13px] font-semibold flex items-center justify-center gap-2.5 shadow-sm hover:shadow-md transition-all cursor-pointer"
                       >
                         <Upload className="w-4 h-4 text-white" />
                         <span>Upload Media</span>
@@ -2382,7 +2384,7 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
                       <button
                         type="button"
                         onClick={handleStartScreenRecording}
-                        className="w-full py-2.5 px-4 rounded-xl bg-[#5B5CE2] hover:bg-[#4a4bd4] text-white text-xs sm:text-[13px] font-semibold flex items-center justify-center gap-2.5 shadow-sm hover:shadow-md transition-all cursor-pointer"
+                        className="w-full py-2.5 px-4 rounded-xl bg-brand-purple hover:bg-brand-purple-hover text-white text-xs sm:text-[13px] font-semibold flex items-center justify-center gap-2.5 shadow-sm hover:shadow-md transition-all cursor-pointer"
                       >
                         <Video className="w-4 h-4 text-white" />
                         <span>Record Cam & Screen</span>
@@ -2397,7 +2399,7 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
                 <button
                   type="button"
                   onClick={() => setIsShortcutModalOpen(true)}
-                  className="w-11 h-11 rounded-full bg-white border border-[#e2e8f0] shadow-md flex items-center justify-center text-[#4b5563] hover:text-[#5B5CE2] hover:border-[#5B5CE2] hover:shadow-lg transition-all cursor-pointer ring-4 ring-black/[0.02]"
+                  className="w-11 h-11 rounded-full bg-white border border-slate-200 shadow-md flex items-center justify-center text-gray-600 hover:text-brand-purple hover:border-brand-purple hover:shadow-lg transition-all cursor-pointer ring-4 ring-black/[0.02]"
                   title="Shortcuts (⌘)"
                 >
                   <Command className="w-4 h-4" />
@@ -2408,35 +2410,35 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
             <>
               {/* Chapter Indicator Header above Mockup */}
               <div className="mb-3 text-center">
-                <span className="text-xs font-bold text-[#5B5CE2] tracking-wider uppercase">
+                <span className="text-xs font-bold text-brand-purple tracking-wider uppercase">
                   Chapter: {selectedChapter.title}
                 </span>
               </div>
 
               {/* Browser Window Mockup Frame */}
-              <div className="w-full max-w-5xl bg-white rounded-2xl border border-[#e5e7eb] shadow-2xl overflow-hidden relative flex flex-col">
+              <div className="w-full max-w-5xl bg-white rounded-2xl border border-border-default shadow-2xl overflow-hidden relative flex flex-col">
                 {/* Browser Header Bar matching Supademo */}
-                <div className="h-10 bg-[#f4f4f8] border-b border-[#e5e7eb] px-4 flex items-center justify-between select-none shrink-0">
+                <div className="h-10 bg-light border-b border-border-default px-4 flex items-center justify-between select-none shrink-0">
                   {/* Traffic light dots */}
                   <div className="flex items-center gap-1.5">
-                    <span className="w-2.5 h-2.5 rounded-full bg-[#ff5f56]" />
-                    <span className="w-2.5 h-2.5 rounded-full bg-[#ffbd2e]" />
-                    <span className="w-2.5 h-2.5 rounded-full bg-[#27c93f]" />
+                    <span className="w-2.5 h-2.5 rounded-full bg-red-500" />
+                    <span className="w-2.5 h-2.5 rounded-full bg-amber-500" />
+                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
                   </div>
 
                   {/* Centered Demo Title Pill */}
                   <div className="flex-1 max-w-xs mx-auto flex items-center justify-center">
-                    <div className="w-full bg-[#e8eaf0] rounded-full px-5 py-1 text-center text-xs font-semibold text-[#4b5563] truncate shadow-inner">
+                    <div className="w-full bg-slate-100 rounded-full px-5 py-1 text-center text-xs font-semibold text-gray-600 truncate shadow-inner">
                       {demo.name || 'New Demo'}
                     </div>
                   </div>
 
                   {/* Right: Eye & Theme icons */}
-                  <div className="flex items-center gap-2.5 text-[#6b7280]">
+                  <div className="flex items-center gap-2.5 text-body">
                     <button
                       type="button"
                       onClick={handleOpenPreview}
-                      className="hover:text-[#0f0f1a] transition-colors p-1 cursor-pointer"
+                      className="hover:text-heading transition-colors p-1 cursor-pointer"
                       title="Preview demo"
                     >
                       <Eye className="w-4 h-4" />
@@ -2447,7 +2449,7 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
                         const nextTheme = selectedChapter.theme === 'dark' ? 'light' : 'dark';
                         handleUpdateChapter(selectedChapter.id, { theme: nextTheme });
                       }}
-                      className="hover:text-[#0f0f1a] transition-colors p-1 cursor-pointer"
+                      className="hover:text-heading transition-colors p-1 cursor-pointer"
                       title="Toggle dark/light theme"
                     >
                       <Moon className="w-4 h-4" />
@@ -2456,7 +2458,7 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
                 </div>
 
                 {/* Stage Viewport */}
-                <div className="relative aspect-[16/10] w-full overflow-hidden select-none bg-[#191b22]">
+                <div className="relative aspect-[16/10] w-full overflow-hidden select-none bg-dark">
                   <ChapterRenderer
                     chapter={selectedChapter}
                     mode="editor"
@@ -2472,34 +2474,34 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
             <>
               {/* Step Indicator Header above Mockup */}
               <div className="mb-3 text-center">
-                <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#6b7280]">
+                <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-body">
                   Step {activeStepIndex + 1}
                 </span>
               </div>
 
               {/* Browser Window Mockup Frame */}
-              <div className="w-full max-w-4xl bg-white rounded-2xl border border-[#e5e7eb] shadow-xl overflow-hidden relative flex flex-col">
+              <div className="w-full max-w-4xl bg-white rounded-2xl border border-border-default shadow-xl overflow-hidden relative flex flex-col">
                 {/* Browser Header Bar */}
-                <div className="h-10 bg-[#f4f4f8] border-b border-[#e5e7eb] px-4 flex items-center justify-between select-none shrink-0">
+                <div className="h-10 bg-light border-b border-border-default px-4 flex items-center justify-between select-none shrink-0">
                   {/* Traffic light dots */}
                   <div className="flex items-center gap-1.5">
-                    <span className="w-2.5 h-2.5 rounded-full bg-[#ff5f56]" />
-                    <span className="w-2.5 h-2.5 rounded-full bg-[#ffbd2e]" />
-                    <span className="w-2.5 h-2.5 rounded-full bg-[#27c93f]" />
+                    <span className="w-2.5 h-2.5 rounded-full bg-red-500" />
+                    <span className="w-2.5 h-2.5 rounded-full bg-amber-500" />
+                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
                   </div>
 
                   {/* Browser controls & URL bar */}
                   <div className="flex items-center gap-2 flex-1 max-w-md mx-4">
-                    <div className="flex items-center gap-1 text-[#9ca3af]">
+                    <div className="flex items-center gap-1 text-muted">
                       <ArrowLeft className="w-3 h-3" />
                       <ArrowRight className="w-3 h-3" />
                       <RotateCw className="w-3 h-3" />
                     </div>
-                    <div className="flex-1 bg-white rounded-lg border border-[#e5e7eb] px-3 py-1 flex items-center gap-1.5 text-xs text-[#6b7280]">
+                    <div className="flex-1 bg-white rounded-lg border border-border-default px-3 py-1 flex items-center gap-1.5 text-xs text-body">
                       <span className="w-2 h-2 rounded-full bg-emerald-400" />
                       <span className="truncate">{currentScene?.slug || 'yaanna.lifestyle'}</span>
                       <span
-                        className="ml-auto px-2 py-0.5 rounded bg-[#f0f0f4] text-[10px] font-bold text-[#5B5CE2] tracking-wider uppercase shrink-0"
+                        className="ml-auto px-2 py-0.5 rounded bg-border-light text-[10px] font-bold text-brand-purple tracking-wider uppercase shrink-0"
                         title={`Canonical aspect ratio: ${canonicalRatioInfo.label} (${canonicalRatioInfo.width} × ${canonicalRatioInfo.height})`}
                       >
                         {canonicalRatioInfo.label}
@@ -2508,7 +2510,7 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
                     <button
                       type="button"
                       onClick={() => replaceFileInputRef.current?.click()}
-                      className="px-2 py-0.5 rounded-md bg-white border border-[#d1d5db] hover:border-[#5B5CE2] hover:text-[#5B5CE2] text-[10px] font-semibold text-[#4b5563] transition-all flex items-center gap-1 cursor-pointer shrink-0"
+                      className="px-2 py-0.5 rounded-md bg-white border border-border-input hover:border-brand-purple hover:text-brand-purple text-[10px] font-semibold text-gray-600 transition-all flex items-center gap-1 cursor-pointer shrink-0"
                       title="Replace media for this scene"
                     >
                       <Upload className="w-2.5 h-2.5" />
@@ -2517,13 +2519,13 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
                   </div>
 
                   {/* Placement Hint or Hotspot coords */}
-                  <div className="text-[11px] text-[#6b7280]">
+                  <div className="text-[11px] text-body">
                     {isPlacingHotspot ? (
-                      <span className="text-[#5B5CE2] font-bold animate-pulse">
+                      <span className="text-brand-purple font-bold animate-pulse">
                         Click canvas to place hotspot
                       </span>
                     ) : (
-                      <span className="font-mono text-[#9ca3af]">
+                      <span className="font-mono text-muted">
                         {selectedHotspotElement
                           ? `X: ${selectedHotspotElement.position.x}% Y: ${selectedHotspotElement.position.y}%`
                           : 'Hotspot Ready'}
@@ -2539,7 +2541,7 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
                   style={{
                     aspectRatio: canonicalRatioInfo.cssRatio,
                   }}
-                  className={`relative w-full max-h-[75vh] bg-[#0a0a10] overflow-hidden select-none transition-all duration-300 mx-auto ${
+                  className={`relative w-full max-h-[75vh] bg-dark overflow-hidden select-none transition-all duration-300 mx-auto ${
                     isPlacingHotspot || (activeTab === 'animation' && activeAnimationSection === 'zoomPan')
                       ? 'cursor-crosshair'
                       : 'cursor-default'
@@ -2678,16 +2680,16 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
             isSaving={saveStatus === 'saving'}
           />
         ) : (
-          <aside className="w-80 border-l border-[#e5e7eb] bg-white flex flex-col shrink-0">
+          <aside className="w-80 border-l border-border-default bg-white flex flex-col shrink-0">
             {/* Tabs Header */}
-            <div className="flex border-b border-[#f0f0f4] px-1 pt-2">
+            <div className="flex border-b border-border-light px-1 pt-2">
               <button
                 type="button"
                 onClick={() => setActiveTab('step')}
                 className={`flex-1 pb-2 text-[11.5px] transition-colors cursor-pointer border-b-2 text-center ${
                   activeTab === 'step'
-                    ? 'font-semibold border-[#5B5CE2] text-[#5B5CE2]'
-                    : 'font-medium border-transparent text-[#6b7280] hover:text-[#0f0f1a]'
+                    ? 'font-semibold border-brand-purple text-brand-purple'
+                    : 'font-medium border-transparent text-body hover:text-heading'
                 }`}
               >
                 Step
@@ -2697,8 +2699,8 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
                 onClick={() => setActiveTab('interactions')}
                 className={`flex-1 pb-2 text-[11.5px] transition-colors cursor-pointer border-b-2 text-center ${
                   activeTab === 'interactions'
-                    ? 'font-semibold border-[#5B5CE2] text-[#5B5CE2]'
-                    : 'font-medium border-transparent text-[#6b7280] hover:text-[#0f0f1a]'
+                    ? 'font-semibold border-brand-purple text-brand-purple'
+                    : 'font-medium border-transparent text-body hover:text-heading'
                 }`}
               >
                 Interactions
@@ -2708,8 +2710,8 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
                 onClick={() => setActiveTab('animation')}
                 className={`flex-1 pb-2 text-[11.5px] transition-colors cursor-pointer border-b-2 text-center ${
                   activeTab === 'animation'
-                    ? 'font-semibold border-[#5B5CE2] text-[#5B5CE2]'
-                    : 'font-medium border-transparent text-[#6b7280] hover:text-[#0f0f1a]'
+                    ? 'font-semibold border-brand-purple text-brand-purple'
+                    : 'font-medium border-transparent text-body hover:text-heading'
                 }`}
               >
                 Animation
@@ -2719,8 +2721,8 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
                 onClick={() => setActiveTab('settings')}
                 className={`flex-1 pb-2 text-[11.5px] transition-colors cursor-pointer border-b-2 text-center ${
                   activeTab === 'settings'
-                    ? 'font-semibold border-[#5B5CE2] text-[#5B5CE2]'
-                    : 'font-medium border-transparent text-[#6b7280] hover:text-[#0f0f1a]'
+                    ? 'font-semibold border-brand-purple text-brand-purple'
+                    : 'font-medium border-transparent text-body hover:text-heading'
                 }`}
               >
                 Settings
@@ -2755,16 +2757,16 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
                   />
 
                   {/* Scene Media Section */}
-                  <div className="p-3 bg-[#f8f8fc] rounded-xl border border-[#e5e7eb] space-y-2.5">
+                  <div className="p-3 bg-light rounded-xl border border-border-default space-y-2.5">
                     <div className="flex items-center justify-between">
-                      <span className="text-[12.5px] font-medium text-[#0f0f1a]">Scene Media</span>
-                      <span className="text-[10px] font-semibold text-[#6b7280] uppercase tracking-[0.16em]">
+                      <span className="text-[12.5px] font-medium text-heading">Scene Media</span>
+                      <span className="text-[10px] font-semibold text-body uppercase tracking-[0.16em]">
                         {currentScene?.sourceType === 'recording' ? 'Video' : 'Screenshot'}
                       </span>
                     </div>
 
                     {currentScene?.sourceAssetUrl ? (
-                      <div className="relative aspect-[16/10] rounded-lg overflow-hidden border border-[#e5e7eb] bg-[#0a0a10]">
+                      <div className="relative aspect-[16/10] rounded-lg overflow-hidden border border-border-default bg-dark">
                         {Boolean(currentScene.sourceAssetUrl.match(/\.(mp4|webm|mov)$/i)) ||
                         currentScene.sourceType === 'recording' ? (
                           <video
@@ -2802,7 +2804,7 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
                     />
                   </div>
 
-                  <div className="p-3 bg-[#f8f8fc] rounded-xl border border-[#e5e7eb] text-xs text-[#6b7280] leading-relaxed">
+                  <div className="p-3 bg-light rounded-xl border border-border-default text-xs text-body leading-relaxed">
                     Select a hotspot on the canvas or click <strong>Hotspot</strong> on the top bar to create and configure custom pointer callouts, area zones, animations, and navigation actions.
                   </div>
                 </>
@@ -2821,12 +2823,12 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
                     ]}
                   />
 
-                  <div className="p-3 bg-[#fafafc] rounded-xl border border-[#e5e7eb] space-y-2">
-                    <div className="flex items-center gap-2 text-xs font-semibold text-[#0f0f1a]">
-                      <SlidersHorizontal className="w-3.5 h-3.5 text-[#5B5CE2]" />
+                  <div className="p-3 bg-canvas rounded-xl border border-border-default space-y-2">
+                    <div className="flex items-center gap-2 text-xs font-semibold text-heading">
+                      <SlidersHorizontal className="w-3.5 h-3.5 text-brand-purple" />
                       <span>Action Pipeline</span>
                     </div>
-                    <p className="text-[12px] text-[#6b7280] font-normal leading-relaxed">
+                    <p className="text-[12px] text-body font-normal leading-relaxed">
                       Hotspots trigger interactive animations, step transitions, external URLs, and track analytics events.
                     </p>
                   </div>
@@ -2858,17 +2860,17 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
               {activeTab === 'settings' && (
                 <div className="space-y-4">
                   {/* Full Settings Modal Banner Button */}
-                  <div className="p-3.5 rounded-2xl bg-gradient-to-br from-[#5B5CE2]/10 to-[#5B5CE2]/5 border border-[#5B5CE2]/20 space-y-2.5">
+                  <div className="p-3.5 rounded-2xl bg-gradient-to-br from-brand-purple/10 to-brand-purple/5 border border-brand-purple/20 space-y-2.5">
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-1.5 text-xs font-bold text-[#0f0f1a]">
-                        <Settings className="w-4 h-4 text-[#5B5CE2]" />
+                      <div className="flex items-center gap-1.5 text-xs font-bold text-heading">
+                        <Settings className="w-4 h-4 text-brand-purple" />
                         <span>Walkthrough Settings</span>
                       </div>
-                      <span className="text-[10px] font-semibold text-[#5B5CE2] bg-white px-2 py-0.5 rounded-md border border-[#5B5CE2]/20 shadow-2xs">
+                      <span className="text-[10px] font-semibold text-brand-purple bg-white px-2 py-0.5 rounded-md border border-brand-purple/20 shadow-2xs">
                         Full Modal
                       </span>
                     </div>
-                    <p className="text-[11px] text-[#6b7280] leading-snug">
+                    <p className="text-[11px] text-body leading-snug">
                       Configure Autoplay timing, audio arbitration, custom branding, and embed permissions.
                     </p>
                     <Button
@@ -2903,11 +2905,11 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
                   />
 
                   {/* Quick Autoplay Settings in Settings Tab */}
-                  <div className="p-3.5 bg-[#fafafc] rounded-2xl border border-[#e5e7eb] space-y-3">
+                  <div className="p-3.5 bg-canvas rounded-2xl border border-border-default space-y-3">
                     <div className="flex items-center justify-between">
                       <div>
-                        <span className="text-xs font-bold text-[#0f0f1a] block">Autoplay</span>
-                        <span className="text-[11px] text-[#6b7280]">Play content without interaction</span>
+                        <span className="text-xs font-bold text-heading block">Autoplay</span>
+                        <span className="text-[11px] text-body">Play content without interaction</span>
                       </div>
                       <input
                         type="checkbox"
@@ -2920,16 +2922,16 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
                           setDemo(updated);
                           triggerAutosave(updated, scenes, steps, elements, interactions, chapters);
                         }}
-                        className="w-4 h-4 accent-[#5B5CE2]"
+                        className="w-4 h-4 accent-brand-purple"
                       />
                     </div>
 
                     {demo.settings?.autoplay && (
-                      <div className="pt-2 border-t border-[#f0f0f4] space-y-3">
+                      <div className="pt-2 border-t border-border-light space-y-3">
                         <div className="space-y-1">
                           <div className="flex items-center justify-between text-xs">
-                            <span className="text-[#374151] font-semibold">Step Duration</span>
-                            <span className="font-mono text-[#5B5CE2] font-bold">
+                            <span className="text-gray-700 font-semibold">Step Duration</span>
+                            <span className="font-mono text-brand-purple font-bold">
                               {demo.settings?.autoplayDelay ?? 2000} ms
                             </span>
                           </div>
@@ -2948,12 +2950,12 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
                               setDemo(updated);
                               triggerAutosave(updated, scenes, steps, elements, interactions, chapters);
                             }}
-                            className="w-full h-1.5 bg-[#e5e7eb] rounded-lg appearance-none cursor-pointer accent-[#5B5CE2]"
+                            className="w-full h-1.5 bg-border-default rounded-lg appearance-none cursor-pointer accent-brand-purple"
                           />
                         </div>
 
                         <div className="flex items-center justify-between">
-                          <span className="text-xs text-[#374151] font-semibold">Loop Content</span>
+                          <span className="text-xs text-gray-700 font-semibold">Loop Content</span>
                           <input
                             type="checkbox"
                             checked={Boolean(demo.settings?.loop || demo.settings?.autoplayLoop)}
@@ -2969,7 +2971,7 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
                               setDemo(updated);
                               triggerAutosave(updated, scenes, steps, elements, interactions, chapters);
                             }}
-                            className="w-4 h-4 accent-[#5B5CE2]"
+                            className="w-4 h-4 accent-brand-purple"
                           />
                         </div>
                       </div>
@@ -2977,7 +2979,7 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
                   </div>
 
                   <div className="flex items-center justify-between pt-1">
-                    <label className="text-[12.5px] font-medium text-[#374151]">
+                    <label className="text-[12.5px] font-medium text-gray-700">
                       Show Progress Bar
                     </label>
                     <input
@@ -2991,7 +2993,7 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
                         setDemo(updated);
                         triggerAutosave(updated, scenes, steps, elements, interactions, chapters);
                       }}
-                      className="w-4 h-4 accent-[#5B5CE2]"
+                      className="w-4 h-4 accent-brand-purple"
                     />
                   </div>
                 </div>
@@ -3038,29 +3040,29 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
       {/* Publish Success Modal */}
       {showPublishModal && (
         <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl border border-[#e5e7eb] text-center">
-            <div className="w-14 h-14 rounded-2xl bg-[#5B5CE2]/10 text-[#5B5CE2] flex items-center justify-center mx-auto mb-4">
+          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl border border-border-default text-center">
+            <div className="w-14 h-14 rounded-2xl bg-brand-purple/10 text-brand-purple flex items-center justify-center mx-auto mb-4">
               <Send className="w-7 h-7" />
             </div>
 
-            <h3 className="text-xl font-semibold text-[#0f0f1a] mb-1 tracking-tight">
+            <h3 className="text-xl font-semibold text-heading mb-1 tracking-tight">
               Tour Published Successfully!
             </h3>
-            <p className="text-xs text-[#6b7280] font-normal mb-5 leading-relaxed">
+            <p className="text-xs text-body font-normal mb-5 leading-relaxed">
               Your interactive demo is live and ready to be shared with prospects or embedded into your website.
             </p>
 
-            <div className="flex items-center gap-2 p-2 bg-[#f8f8fc] rounded-xl border border-[#e5e7eb] mb-5">
+            <div className="flex items-center gap-2 p-2 bg-light rounded-xl border border-border-default mb-5">
               <input
                 type="text"
                 readOnly
                 value={publicShareLink}
-                className="flex-1 bg-transparent text-xs font-mono text-[#0f0f1a] outline-none px-2 select-all truncate"
+                className="flex-1 bg-transparent text-xs font-mono text-heading outline-none px-2 select-all truncate"
               />
               <button
                 type="button"
                 onClick={handleCopyLink}
-                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[#5B5CE2] text-white text-xs font-semibold hover:bg-[#4a4bd4] transition-colors cursor-pointer shrink-0"
+                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-brand-purple text-white text-xs font-semibold hover:bg-brand-purple-hover transition-colors cursor-pointer shrink-0"
               >
                 {copiedLink ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
                 <span>{copiedLink ? 'Copied' : 'Copy'}</span>
@@ -3071,7 +3073,7 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
               <button
                 type="button"
                 onClick={() => setShowPublishModal(false)}
-                className="flex-1 px-4 py-2.5 rounded-xl border border-[#d1d5db] text-xs font-semibold text-[#0f0f1a] hover:bg-[#f8f8fc] cursor-pointer"
+                className="flex-1 px-4 py-2.5 rounded-xl border border-border-input text-xs font-semibold text-heading hover:bg-light cursor-pointer"
               >
                 Close
               </button>
@@ -3079,7 +3081,7 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
                 href={publicShareLink}
                 target="_blank"
                 rel="noreferrer"
-                className="flex-1 inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#5B5CE2] text-white text-xs font-semibold hover:bg-[#4a4bd4] shadow-md"
+                className="flex-1 inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-brand-purple text-white text-xs font-semibold hover:bg-brand-purple-hover shadow-md"
               >
                 <span>Open Live Demo</span>
                 <ExternalLink className="w-3.5 h-3.5" />
@@ -3127,45 +3129,45 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
       {/* Keyboard Shortcuts Modal */}
       {isShortcutModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-2xl border border-[#e5e7eb] w-full max-w-md p-6 animate-scale-in">
+          <div className="bg-white rounded-2xl shadow-2xl border border-border-default w-full max-w-md p-6 animate-scale-in">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-[#5B5CE2]/10 text-[#5B5CE2] flex items-center justify-center">
+                <div className="w-8 h-8 rounded-lg bg-brand-purple/10 text-brand-purple flex items-center justify-center">
                   <Command className="w-4 h-4" />
                 </div>
-                <h3 className="text-[16px] font-semibold text-[#0f0f1a] tracking-tight">Studio Shortcuts</h3>
+                <h3 className="text-[16px] font-semibold text-heading tracking-tight">Studio Shortcuts</h3>
               </div>
               <button
                 type="button"
                 onClick={() => setIsShortcutModalOpen(false)}
-                className="text-[#9ca3af] hover:text-[#0f0f1a] p-1 cursor-pointer"
+                className="text-muted hover:text-heading p-1 cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
             <div className="space-y-2.5 text-xs">
-              <div className="flex items-center justify-between p-2.5 rounded-xl bg-[#f8f8fc]">
-                <span className="text-[#4b5563] font-medium">Open Media Library</span>
-                <kbd className="px-2 py-1 rounded-md bg-white border border-[#e5e7eb] font-mono font-semibold text-[#0f0f1a] shadow-2xs">
+              <div className="flex items-center justify-between p-2.5 rounded-xl bg-light">
+                <span className="text-gray-600 font-medium">Open Media Library</span>
+                <kbd className="px-2 py-1 rounded-md bg-white border border-border-default font-mono font-semibold text-heading shadow-2xs">
                   ⌘ + M
                 </kbd>
               </div>
-              <div className="flex items-center justify-between p-2.5 rounded-xl bg-[#f8f8fc]">
-                <span className="text-[#4b5563] font-medium">Upload Media</span>
-                <kbd className="px-2 py-1 rounded-md bg-white border border-[#e5e7eb] font-mono font-semibold text-[#0f0f1a] shadow-2xs">
+              <div className="flex items-center justify-between p-2.5 rounded-xl bg-light">
+                <span className="text-gray-600 font-medium">Upload Media</span>
+                <kbd className="px-2 py-1 rounded-md bg-white border border-border-default font-mono font-semibold text-heading shadow-2xs">
                   ⌘ + U
                 </kbd>
               </div>
-              <div className="flex items-center justify-between p-2.5 rounded-xl bg-[#f8f8fc]">
-                <span className="text-[#4b5563] font-medium">Record Screen</span>
-                <kbd className="px-2 py-1 rounded-md bg-white border border-[#e5e7eb] font-mono font-semibold text-[#0f0f1a] shadow-2xs">
+              <div className="flex items-center justify-between p-2.5 rounded-xl bg-light">
+                <span className="text-gray-600 font-medium">Record Screen</span>
+                <kbd className="px-2 py-1 rounded-md bg-white border border-border-default font-mono font-semibold text-heading shadow-2xs">
                   ⌘ + R
                 </kbd>
               </div>
-              <div className="flex items-center justify-between p-2.5 rounded-xl bg-[#f8f8fc]">
-                <span className="text-[#4b5563] font-medium">Preview Demo</span>
-                <kbd className="px-2 py-1 rounded-md bg-white border border-[#e5e7eb] font-mono font-semibold text-[#0f0f1a] shadow-2xs">
+              <div className="flex items-center justify-between p-2.5 rounded-xl bg-light">
+                <span className="text-gray-600 font-medium">Preview Demo</span>
+                <kbd className="px-2 py-1 rounded-md bg-white border border-border-default font-mono font-semibold text-heading shadow-2xs">
                   Space
                 </kbd>
               </div>
@@ -3175,7 +3177,7 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
               <button
                 type="button"
                 onClick={() => setIsShortcutModalOpen(false)}
-                className="w-full py-2.5 rounded-xl bg-[#5B5CE2] hover:bg-[#4a4bd4] text-white text-xs font-semibold transition-colors cursor-pointer"
+                className="w-full py-2.5 rounded-xl bg-brand-purple hover:bg-brand-purple-hover text-white text-xs font-semibold transition-colors cursor-pointer"
               >
                 Close
               </button>

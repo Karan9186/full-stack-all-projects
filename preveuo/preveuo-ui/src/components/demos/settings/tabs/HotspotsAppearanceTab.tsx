@@ -25,14 +25,14 @@ export const HotspotsAppearanceTab: React.FC<HotspotsAppearanceTabProps> = ({
   const opacityValue = parseInt(transparency, 10) / 100;
 
   return (
-    <div className="space-y-6 text-[#0f0f1a] animate-fade-in max-w-2xl">
+    <div className="space-y-6 text-heading animate-fade-in max-w-2xl">
       {/* 1. Hotspot Interaction Toggles */}
-      <div className="space-y-4 pb-5 border-b border-[#f0f0f4]">
+      <div className="space-y-4 pb-5 border-b border-border-light">
         {/* Show text annotations by default */}
         <div className="flex items-start justify-between">
           <div>
-            <h4 className="text-sm font-bold text-[#0f0f1a]">Show text annotations by default</h4>
-            <p className="text-xs text-[#6b7280] mt-0.5">
+            <h4 className="text-sm font-bold text-heading">Show text annotations by default</h4>
+            <p className="text-xs text-body mt-0.5">
               If disabled, text annotations are shown only when the user hovers over the hotspot.
             </p>
           </div>
@@ -43,15 +43,15 @@ export const HotspotsAppearanceTab: React.FC<HotspotsAppearanceTabProps> = ({
               onChange={(e) => onChange({ showAnnotationsByDefault: e.target.checked })}
               className="sr-only peer"
             />
-            <div className="w-10 h-5.5 bg-[#e5e7eb] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4.5 after:w-4.5 after:transition-all peer-checked:bg-[#5B5CE2]" />
+            <div className="w-10 h-5.5 bg-border-default peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4.5 after:w-4.5 after:transition-all peer-checked:bg-brand-purple" />
           </label>
         </div>
 
         {/* Next button */}
         <div className="flex items-start justify-between">
           <div>
-            <h4 className="text-sm font-bold text-[#0f0f1a]">Next button</h4>
-            <p className="text-xs text-[#6b7280] mt-0.5">
+            <h4 className="text-sm font-bold text-heading">Next button</h4>
+            <p className="text-xs text-body mt-0.5">
               If enabled, the Next → button will be shown under the hotspot text.
             </p>
           </div>
@@ -62,15 +62,15 @@ export const HotspotsAppearanceTab: React.FC<HotspotsAppearanceTabProps> = ({
               onChange={(e) => onChange({ showNextButton: e.target.checked })}
               className="sr-only peer"
             />
-            <div className="w-10 h-5.5 bg-[#e5e7eb] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4.5 after:w-4.5 after:transition-all peer-checked:bg-[#5B5CE2]" />
+            <div className="w-10 h-5.5 bg-border-default peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4.5 after:w-4.5 after:transition-all peer-checked:bg-brand-purple" />
           </label>
         </div>
 
         {/* Show step count */}
         <div className="flex items-start justify-between">
           <div>
-            <h4 className="text-sm font-bold text-[#0f0f1a]">Show step count</h4>
-            <p className="text-xs text-[#6b7280] mt-0.5">
+            <h4 className="text-sm font-bold text-heading">Show step count</h4>
+            <p className="text-xs text-body mt-0.5">
               If enabled, the current and total step counts will be shown under the hotspot text.
             </p>
           </div>
@@ -81,22 +81,22 @@ export const HotspotsAppearanceTab: React.FC<HotspotsAppearanceTabProps> = ({
               onChange={(e) => onChange({ showStepCount: e.target.checked })}
               className="sr-only peer"
             />
-            <div className="w-10 h-5.5 bg-[#e5e7eb] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4.5 after:w-4.5 after:transition-all peer-checked:bg-[#5B5CE2]" />
+            <div className="w-10 h-5.5 bg-border-default peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4.5 after:w-4.5 after:transition-all peer-checked:bg-brand-purple" />
           </label>
         </div>
       </div>
 
       {/* 2. Hotspot Transparency */}
-      <div className="space-y-3 pb-5 border-b border-[#f0f0f4]">
+      <div className="space-y-3 pb-5 border-b border-border-light">
         <div>
-          <h4 className="text-sm font-bold text-[#0f0f1a]">Hotspot transparency</h4>
-          <p className="text-xs text-[#6b7280] mt-0.5">
+          <h4 className="text-sm font-bold text-heading">Hotspot transparency</h4>
+          <p className="text-xs text-body mt-0.5">
             Adjust the background opacity of hotspot callout cards.
           </p>
         </div>
 
         {/* Transparency Pills */}
-        <div className="grid grid-cols-6 gap-1 p-1 bg-[#f0f0f4] rounded-2xl border border-[#e5e7eb]">
+        <div className="grid grid-cols-6 gap-1 p-1 bg-border-light rounded-2xl border border-border-default">
           {TRANSPARENCY_OPTIONS.map((val) => (
             <button
               key={val}
@@ -104,8 +104,8 @@ export const HotspotsAppearanceTab: React.FC<HotspotsAppearanceTabProps> = ({
               onClick={() => onChange({ hotspotTransparency: val })}
               className={`py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer text-center ${
                 transparency === val
-                  ? 'bg-white text-[#5B5CE2] shadow-xs'
-                  : 'text-[#6b7280] hover:text-[#0f0f1a]'
+                  ? 'bg-white text-brand-purple shadow-xs'
+                  : 'text-body hover:text-heading'
               }`}
             >
               {val}
@@ -115,12 +115,12 @@ export const HotspotsAppearanceTab: React.FC<HotspotsAppearanceTabProps> = ({
       </div>
 
       {/* 3. Mobile View & Animation */}
-      <div className="space-y-4 pb-5 border-b border-[#f0f0f4]">
+      <div className="space-y-4 pb-5 border-b border-border-light">
         {/* Mobile hotspot view */}
         <div className="flex items-start justify-between">
           <div>
-            <h4 className="text-sm font-bold text-[#0f0f1a]">Mobile hotspot view</h4>
-            <p className="text-xs text-[#6b7280] mt-0.5">
+            <h4 className="text-sm font-bold text-heading">Mobile hotspot view</h4>
+            <p className="text-xs text-body mt-0.5">
               If enabled, hotspots will be shown in a mobile-friendly view.
             </p>
           </div>
@@ -131,15 +131,15 @@ export const HotspotsAppearanceTab: React.FC<HotspotsAppearanceTabProps> = ({
               onChange={(e) => onChange({ mobileHotspotView: e.target.checked })}
               className="sr-only peer"
             />
-            <div className="w-10 h-5.5 bg-[#e5e7eb] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4.5 after:w-4.5 after:transition-all peer-checked:bg-[#5B5CE2]" />
+            <div className="w-10 h-5.5 bg-border-default peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4.5 after:w-4.5 after:transition-all peer-checked:bg-brand-purple" />
           </label>
         </div>
 
         {/* Show hotspot animation */}
         <div className="flex items-start justify-between">
           <div>
-            <h4 className="text-sm font-bold text-[#0f0f1a]">Show hotspot animation</h4>
-            <p className="text-xs text-[#6b7280] mt-0.5">
+            <h4 className="text-sm font-bold text-heading">Show hotspot animation</h4>
+            <p className="text-xs text-body mt-0.5">
               If disabled, hotspot animations (ping, pulse) will not be shown.
             </p>
           </div>
@@ -150,28 +150,28 @@ export const HotspotsAppearanceTab: React.FC<HotspotsAppearanceTabProps> = ({
               onChange={(e) => onChange({ showHotspotAnimation: e.target.checked })}
               className="sr-only peer"
             />
-            <div className="w-10 h-5.5 bg-[#e5e7eb] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4.5 after:w-4.5 after:transition-all peer-checked:bg-[#5B5CE2]" />
+            <div className="w-10 h-5.5 bg-border-default peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4.5 after:w-4.5 after:transition-all peer-checked:bg-brand-purple" />
           </label>
         </div>
       </div>
 
       {/* 4. Live Hotspot Preview Mockup Card */}
       <div className="space-y-2">
-        <div className="text-[11px] font-bold uppercase tracking-wider text-[#9ca3af]">
+        <div className="text-[11px] font-bold uppercase tracking-wider text-muted">
           Hotspot Appearance Live Preview
         </div>
 
-        <div className="p-6 rounded-3xl bg-gradient-to-br from-[#181824] to-[#252538] flex items-center justify-center relative overflow-hidden shadow-inner min-h-[180px]">
+        <div className="p-6 rounded-3xl bg-gradient-to-br from-dark to-zinc-900 flex items-center justify-center relative overflow-hidden shadow-inner min-h-[180px]">
           {/* Beacon Target Dot */}
           <div className="absolute top-6 flex items-center justify-center">
-            <div className={`w-6 h-6 rounded-full bg-[#5B5CE2]/30 flex items-center justify-center ${showHotspotAnimation ? 'animate-ping' : ''}`}>
-              <div className="w-3 h-3 rounded-full bg-[#5B5CE2]" />
+            <div className={`w-6 h-6 rounded-full bg-brand-purple/30 flex items-center justify-center ${showHotspotAnimation ? 'animate-ping' : ''}`}>
+              <div className="w-3 h-3 rounded-full bg-brand-purple" />
             </div>
           </div>
 
           {/* Sample Hotspot Callout Card */}
           <div
-            className="w-full max-w-sm rounded-2xl bg-[#5B5CE2] text-white p-4 shadow-2xl transition-all duration-200 mt-4"
+            className="w-full max-w-sm rounded-2xl bg-brand-purple text-white p-4 shadow-2xl transition-all duration-200 mt-4"
             style={{ opacity: opacityValue }}
           >
             {showStepCount && (

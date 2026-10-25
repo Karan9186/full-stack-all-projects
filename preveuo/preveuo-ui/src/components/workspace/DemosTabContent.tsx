@@ -113,10 +113,10 @@ export const DemosTabContent: React.FC<DemosTabContentProps> = ({ onCreateDemo }
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
-          <h2 className="text-[24px] sm:text-[28px] font-bold tracking-tight text-[#0f0f1a]">
+          <h2 className="text-[24px] sm:text-[28px] font-bold tracking-tight text-heading">
             Your demos
           </h2>
-          <p className="text-[13.5px] text-[#6b7280] font-normal mt-0.5">
+          <p className="text-[13.5px] text-body font-normal mt-0.5">
             Create, organize, and share interactive product stories.
           </p>
         </div>
@@ -135,7 +135,7 @@ export const DemosTabContent: React.FC<DemosTabContentProps> = ({ onCreateDemo }
       </div>
 
       {/* Filter Tabs */}
-      <div className="flex items-center gap-6 border-b border-[#e5e7eb] mb-6 overflow-x-auto no-scrollbar">
+      <div className="flex items-center gap-6 border-b border-border-default mb-6 overflow-x-auto no-scrollbar">
         {filterTabs.map((tab) => {
           const isActive = filterTab === tab.id;
           return (
@@ -144,17 +144,17 @@ export const DemosTabContent: React.FC<DemosTabContentProps> = ({ onCreateDemo }
               type="button"
               onClick={() => setFilterTab(tab.id as typeof filterTab)}
               className={`pb-3 text-[13.5px] transition-all relative whitespace-nowrap cursor-pointer ${
-                isActive ? 'text-[#0f0f1a] font-semibold' : 'text-[#6b7280] font-medium hover:text-[#0f0f1a]'
+                isActive ? 'text-heading font-semibold' : 'text-body font-medium hover:text-heading'
               }`}
             >
               <span>{tab.label}</span>
               {tab.count !== undefined && (
-                <span className="ml-2 text-xs font-mono text-[#9ca3af]">
+                <span className="ml-2 text-xs font-mono text-muted">
                   {tab.count}
                 </span>
               )}
               {isActive && (
-                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#5B5CE2] rounded-full" />
+                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-brand-purple rounded-full" />
               )}
             </button>
           );
@@ -166,39 +166,39 @@ export const DemosTabContent: React.FC<DemosTabContentProps> = ({ onCreateDemo }
         <div className="flex items-center gap-3 w-full sm:w-auto">
           {/* Search demos input */}
           <div className="relative w-full sm:w-72">
-            <Search className="w-4 h-4 text-[#9ca3af] absolute left-3 top-1/2 -translate-y-1/2" />
+            <Search className="w-4 h-4 text-muted absolute left-3 top-1/2 -translate-y-1/2" />
             <input
               type="search"
               placeholder="Search demos..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 rounded-xl text-xs bg-white border border-[#e5e7eb] text-[#0f0f1a] placeholder-[#9ca3af] focus:outline-none focus:border-[#5B5CE2] focus:ring-2 focus:ring-[#5B5CE2]/15 shadow-2xs"
+              className="w-full pl-9 pr-4 py-2 rounded-xl text-xs bg-white border border-border-default text-heading placeholder-muted focus:outline-none focus:border-brand-purple focus:ring-2 focus:ring-brand-purple/15 shadow-2xs"
             />
           </div>
 
           {/* Filter button */}
           <button
             type="button"
-            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-white border border-[#e5e7eb] text-[#0f0f1a] shadow-2xs hover:border-[#d1d5db] transition-colors cursor-pointer shrink-0"
+            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-white border border-border-default text-heading shadow-2xs hover:border-border-input transition-colors cursor-pointer shrink-0"
           >
-            <Filter className="w-3.5 h-3.5 text-[#6b7280]" />
+            <Filter className="w-3.5 h-3.5 text-body" />
             <span>Filter</span>
           </button>
         </div>
 
         {/* View toggles */}
-        <div className="flex items-center rounded-xl bg-white border border-[#e5e7eb] p-1 shadow-2xs self-end sm:self-auto">
+        <div className="flex items-center rounded-xl bg-white border border-border-default p-1 shadow-2xs self-end sm:self-auto">
           <button
             type="button"
             aria-label="Grid view"
-            className="p-1.5 rounded-lg bg-[#f0f0f4] text-[#0f0f1a] shadow-xs cursor-pointer"
+            className="p-1.5 rounded-lg bg-border-light text-heading shadow-xs cursor-pointer"
           >
             <LayoutGrid className="w-3.5 h-3.5" />
           </button>
           <button
             type="button"
             aria-label="List view"
-            className="p-1.5 rounded-lg text-[#9ca3af] hover:text-[#0f0f1a] transition-colors cursor-pointer"
+            className="p-1.5 rounded-lg text-muted hover:text-heading transition-colors cursor-pointer"
           >
             <List className="w-3.5 h-3.5" />
           </button>
@@ -209,13 +209,13 @@ export const DemosTabContent: React.FC<DemosTabContentProps> = ({ onCreateDemo }
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {[1, 2, 3].map((n) => (
-            <div key={n} className="h-64 bg-white rounded-2xl border border-[#e5e7eb] animate-pulse" />
+            <div key={n} className="h-64 bg-white rounded-2xl border border-border-default animate-pulse" />
           ))}
         </div>
       ) : filteredDemos.length === 0 ? (
-        <div className="bg-white rounded-3xl border border-[#e5e7eb] p-12 text-center max-w-md mx-auto my-6 shadow-sm">
-          <h3 className="text-base font-bold text-[#0f0f1a] mb-1">No demos found</h3>
-          <p className="text-xs text-[#6b7280] mb-5">
+        <div className="bg-white rounded-3xl border border-border-default p-12 text-center max-w-md mx-auto my-6 shadow-sm">
+          <h3 className="text-base font-bold text-heading mb-1">No demos found</h3>
+          <p className="text-xs text-body mb-5">
             Create an interactive walkthrough to engage prospects and train customers.
           </p>
           <Link href="/demos/new">
@@ -236,7 +236,7 @@ export const DemosTabContent: React.FC<DemosTabContentProps> = ({ onCreateDemo }
               >
                 <Link href={`/demos/${demoId}`} className="block flex-1 cursor-pointer">
                   {/* Preview Banner */}
-                  <div className="h-40 relative flex overflow-hidden border-b border-[#f0f0f4] bg-[#12121e]">
+                  <div className="h-40 relative flex overflow-hidden border-b border-border-light bg-dark">
                     {demo.thumbnail ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
@@ -245,7 +245,7 @@ export const DemosTabContent: React.FC<DemosTabContentProps> = ({ onCreateDemo }
                         className="w-full h-full object-cover opacity-90 group-hover:scale-105 transition-transform duration-300"
                       />
                     ) : (
-                      <div className="w-full h-full bg-[#181824] flex items-center justify-center text-white/30 text-xs font-medium">
+                      <div className="w-full h-full bg-dark flex items-center justify-center text-white/30 text-xs font-medium">
                         No Preview
                       </div>
                     )}
@@ -275,24 +275,24 @@ export const DemosTabContent: React.FC<DemosTabContentProps> = ({ onCreateDemo }
                   {/* Card Details */}
                   <div className="p-5">
                     <div className="flex items-start justify-between gap-2 mb-1.5">
-                      <h4 className="font-semibold text-[15px] tracking-tight text-[#0f0f1a] group-hover:text-[#5B5CE2] transition-colors truncate">
+                      <h4 className="font-semibold text-[15px] tracking-tight text-heading group-hover:text-brand-purple transition-colors truncate">
                         {demo.name}
                       </h4>
                     </div>
 
-                    <p className="text-[12.5px] font-normal text-[#6b7280] line-clamp-1 mb-4 leading-relaxed">
+                    <p className="text-[12.5px] font-normal text-body line-clamp-1 mb-4 leading-relaxed">
                       {demo.description || 'Guided product tour created with Preveuo Studio.'}
                     </p>
 
                     {/* Metrics */}
-                    <div className="flex items-center gap-3 text-xs font-normal text-[#6b7280] pt-1">
+                    <div className="flex items-center gap-3 text-xs font-normal text-body pt-1">
                       <span className="flex items-center gap-1">
-                        <Eye className="w-3.5 h-3.5 text-[#9ca3af]" />
+                        <Eye className="w-3.5 h-3.5 text-muted" />
                         {(demo.viewsCount || 0).toLocaleString()}
                       </span>
 
                       <span className="flex items-center gap-1">
-                        <TrendingUp className="w-3.5 h-3.5 text-[#9ca3af]" />
+                        <TrendingUp className="w-3.5 h-3.5 text-muted" />
                         {demo.viewsCount && demo.viewsCount > 0
                           ? `${Math.round(((demo.completionsCount || 0) / demo.viewsCount) * 100)}%`
                           : '0%'}
@@ -302,10 +302,10 @@ export const DemosTabContent: React.FC<DemosTabContentProps> = ({ onCreateDemo }
                 </Link>
 
                 {/* Card Footer */}
-                <div className="px-5 py-3 border-t border-[#f0f0f4] bg-[#fafafc] flex items-center justify-between text-[11px] text-[#9ca3af] font-normal">
+                <div className="px-5 py-3 border-t border-border-light bg-canvas flex items-center justify-between text-[11px] text-muted font-normal">
                   <Link
                     href={`/demos/${demoId}`}
-                    className="inline-flex items-center gap-1 font-medium text-xs text-[#5B5CE2] hover:underline"
+                    className="inline-flex items-center gap-1 font-medium text-xs text-brand-purple hover:underline"
                   >
                     <Edit3 className="w-3.5 h-3.5" />
                     <span>Open Studio</span>
@@ -316,7 +316,7 @@ export const DemosTabContent: React.FC<DemosTabContentProps> = ({ onCreateDemo }
                       <button
                         type="button"
                         onClick={() => handleCopyShare(demo.publicId)}
-                        className="p-1 rounded-md text-[#9ca3af] hover:text-[#5B5CE2] hover:bg-white transition-colors cursor-pointer"
+                        className="p-1 rounded-md text-muted hover:text-brand-purple hover:bg-white transition-colors cursor-pointer"
                         title="Copy public link"
                       >
                         {copiedId === demo.publicId ? (
@@ -330,7 +330,7 @@ export const DemosTabContent: React.FC<DemosTabContentProps> = ({ onCreateDemo }
                     <button
                       type="button"
                       onClick={() => handleDuplicate(demoId!)}
-                      className="p-1 rounded-md text-[#9ca3af] hover:text-[#0f0f1a] hover:bg-white transition-colors cursor-pointer"
+                      className="p-1 rounded-md text-muted hover:text-heading hover:bg-white transition-colors cursor-pointer"
                       title="Duplicate demo"
                     >
                       <Copy className="w-3.5 h-3.5" />
@@ -339,7 +339,7 @@ export const DemosTabContent: React.FC<DemosTabContentProps> = ({ onCreateDemo }
                     <button
                       type="button"
                       onClick={() => handleDelete(demoId!)}
-                      className="p-1 rounded-md text-[#9ca3af] hover:text-red-500 hover:bg-red-50 transition-colors cursor-pointer"
+                      className="p-1 rounded-md text-muted hover:text-red-500 hover:bg-red-50 transition-colors cursor-pointer"
                       title="Delete demo"
                     >
                       <Trash2 className="w-3.5 h-3.5" />

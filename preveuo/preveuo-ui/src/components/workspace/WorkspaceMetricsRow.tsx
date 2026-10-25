@@ -1,3 +1,4 @@
+import { PRIMARY_COLOR } from '@/lib/constants/theme';
 'use client';
 
 import React from 'react';
@@ -13,19 +14,19 @@ export const WorkspaceMetricsRow: React.FC = () => {
           <div>
             {/* Top row */}
             <div className="flex items-center justify-between mb-3">
-              <span className="text-[13px] font-medium text-[#6b7280]">
+              <span className="text-[13px] font-medium text-body">
                 {metric.label}
               </span>
               <button
                 type="button"
-                className="text-[#9ca3af] hover:text-[#0f0f1a] p-1 rounded-md"
+                className="text-muted hover:text-heading p-1 rounded-md"
               >
                 <MoreHorizontal className="w-4 h-4" />
               </button>
             </div>
 
             {/* Value */}
-            <div className="text-[28px] sm:text-[32px] font-bold text-[#0f0f1a] tracking-tight leading-none mb-3">
+            <div className="text-[28px] sm:text-[32px] font-bold text-heading tracking-tight leading-none mb-3">
               {metric.value}
             </div>
           </div>
@@ -51,7 +52,7 @@ export const WorkspaceMetricsRow: React.FC = () => {
                       : "M0 24 Q 15 24, 25 21 T 45 21 T 65 16 T 80 13"
                   }
                   fill="none"
-                  stroke="#5B5CE2"
+                  stroke={PRIMARY_COLOR}
                   strokeWidth="2.2"
                   strokeLinecap="round"
                   strokeLinejoin="round"

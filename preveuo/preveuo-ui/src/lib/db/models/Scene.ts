@@ -1,3 +1,4 @@
+import { THEME_COLORS } from '@/lib/constants/theme';
 import mongoose, { Schema, Document, Model } from 'mongoose';
 import { SceneSourceType, SceneViewport } from '@/types/demo';
 
@@ -62,7 +63,7 @@ const SceneSchema = new Schema<ISceneDoc>(
     },
     background: {
       type: String,
-      default: '#f8f8fc',
+      default: THEME_COLORS.bgLight,
     },
     metadata: {
       type: Schema.Types.Mixed,

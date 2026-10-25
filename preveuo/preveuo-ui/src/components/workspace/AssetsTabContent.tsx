@@ -31,10 +31,10 @@ export const AssetsTabContent: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
-          <h2 className="text-[24px] sm:text-[28px] font-bold tracking-tight text-[#0f0f1a]">
+          <h2 className="text-[24px] sm:text-[28px] font-bold tracking-tight text-heading">
             Asset library
           </h2>
-          <p className="text-[13.5px] text-[#6b7280] font-normal mt-0.5">
+          <p className="text-[13.5px] text-body font-normal mt-0.5">
             Manage screenshots, product recordings, brand marks, and video media.
           </p>
         </div>
@@ -49,20 +49,20 @@ export const AssetsTabContent: React.FC = () => {
       </div>
 
       {/* Storage Quota Card */}
-      <div className="p-4 rounded-2xl bg-white border border-[#e5e7eb] mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="p-4 rounded-2xl bg-white border border-border-default mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-[#5B5CE2]/10 text-[#5B5CE2] flex items-center justify-center shrink-0">
+          <div className="w-10 h-10 rounded-xl bg-brand-purple/10 text-brand-purple flex items-center justify-center shrink-0">
             <HardDrive className="w-5 h-5" />
           </div>
           <div>
-            <span className="text-[13px] font-semibold text-[#0f0f1a]">Cloud Storage Quota</span>
-            <p className="text-[12px] text-[#6b7280] font-normal">18.2 MB of 10 GB used (0.2%)</p>
+            <span className="text-[13px] font-semibold text-heading">Cloud Storage Quota</span>
+            <p className="text-[12px] text-body font-normal">18.2 MB of 10 GB used (0.2%)</p>
           </div>
         </div>
 
         <div className="w-full sm:w-64">
-          <div className="w-full h-2 bg-[#f0f0f4] rounded-full overflow-hidden">
-            <div className="w-2.5 h-full bg-[#5B5CE2] rounded-full" />
+          <div className="w-full h-2 bg-border-light rounded-full overflow-hidden">
+            <div className="w-2.5 h-full bg-brand-purple rounded-full" />
           </div>
         </div>
       </div>
@@ -77,8 +77,8 @@ export const AssetsTabContent: React.FC = () => {
               onClick={() => setTypeFilter(t)}
               className={`px-3.5 py-1.5 rounded-xl text-xs font-medium capitalize transition-all cursor-pointer ${
                 typeFilter === t
-                  ? 'bg-[#5B5CE2] text-white shadow-xs'
-                  : 'bg-white text-[#6b7280] hover:text-[#0f0f1a] border border-[#e5e7eb]'
+                  ? 'bg-brand-purple text-white shadow-xs'
+                  : 'bg-white text-body hover:text-heading border border-border-default'
               }`}
             >
               {t === 'all' ? 'All assets' : `${t}s`}
@@ -87,13 +87,13 @@ export const AssetsTabContent: React.FC = () => {
         </div>
 
         <div className="relative w-full sm:w-72">
-          <Search className="w-4 h-4 text-[#9ca3af] absolute left-3 top-1/2 -translate-y-1/2" />
+          <Search className="w-4 h-4 text-muted absolute left-3 top-1/2 -translate-y-1/2" />
           <input
             type="search"
             placeholder="Search assets..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 rounded-xl text-xs bg-white border border-[#e5e7eb] text-[#0f0f1a] placeholder-[#9ca3af] focus:outline-none focus:border-[#5B5CE2] focus:ring-2 focus:ring-[#5B5CE2]/15 shadow-2xs"
+            className="w-full pl-9 pr-4 py-2 rounded-xl text-xs bg-white border border-border-default text-heading placeholder-muted focus:outline-none focus:border-brand-purple focus:ring-2 focus:ring-brand-purple/15 shadow-2xs"
           />
         </div>
       </div>
@@ -104,7 +104,7 @@ export const AssetsTabContent: React.FC = () => {
           <Card key={asset.id} hoverEffect className="group overflow-hidden flex flex-col justify-between">
             <div>
               {/* Thumbnail Container */}
-              <div className="relative aspect-[16/10] bg-[#0f0f1a] overflow-hidden">
+              <div className="relative aspect-[16/10] bg-dark overflow-hidden">
                 <Image
                   src={asset.url}
                   alt={asset.name}
@@ -122,15 +122,15 @@ export const AssetsTabContent: React.FC = () => {
               {/* Details */}
               <div className="p-4">
                 <div className="flex items-start justify-between gap-2 mb-1">
-                  <h4 className="text-[13.5px] font-semibold text-[#0f0f1a] truncate group-hover:text-[#5B5CE2] transition-colors">
+                  <h4 className="text-[13.5px] font-semibold text-heading truncate group-hover:text-brand-purple transition-colors">
                     {asset.name}
                   </h4>
-                  <button type="button" className="text-[#9ca3af] hover:text-[#0f0f1a] p-0.5">
+                  <button type="button" className="text-muted hover:text-heading p-0.5">
                     <MoreHorizontal className="w-4 h-4" />
                   </button>
                 </div>
 
-                <div className="flex items-center gap-3 text-[11.5px] text-[#9ca3af] font-normal">
+                <div className="flex items-center gap-3 text-[11.5px] text-muted font-normal">
                   <span>{asset.size}</span>
                   {asset.dimensions && (
                     <>
@@ -143,10 +143,10 @@ export const AssetsTabContent: React.FC = () => {
             </div>
 
             {/* Footer */}
-            <div className="px-4 py-2.5 border-t border-[#f0f0f4] bg-[#fafafc] flex items-center justify-between text-[11px] text-[#9ca3af]">
+            <div className="px-4 py-2.5 border-t border-border-light bg-canvas flex items-center justify-between text-[11px] text-muted">
               <span>Uploaded {asset.uploadedAt}</span>
               <div className="flex items-center gap-2">
-                <button type="button" className="hover:text-[#5B5CE2] p-1">
+                <button type="button" className="hover:text-brand-purple p-1">
                   <Download className="w-3.5 h-3.5" />
                 </button>
                 <button type="button" className="hover:text-red-500 p-1">

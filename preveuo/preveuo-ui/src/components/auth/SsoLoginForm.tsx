@@ -53,15 +53,15 @@ export const SsoLoginForm: React.FC<SsoLoginFormProps> = ({ onSuccess }) => {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       {/* Demo SSO Pill */}
-      <div className="p-3 bg-[#5B5CE2]/5 border border-[#5B5CE2]/20 rounded-xl flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2 text-xs text-[#0f0f1a]">
-          <Sparkles className="w-4 h-4 text-[#5B5CE2] shrink-0" />
-          <span>Configured SSO: <strong className="font-semibold text-[#5B5CE2]">acme-corp</strong></span>
+      <div className="p-3 bg-brand-purple/5 border border-brand-purple/20 rounded-xl flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2 text-xs text-heading">
+          <Sparkles className="w-4 h-4 text-brand-purple shrink-0" />
+          <span>Configured SSO: <strong className="font-semibold text-brand-purple">acme-corp</strong></span>
         </div>
         <button
           type="button"
           onClick={fillDemoDomain}
-          className="text-[11px] font-bold text-[#5B5CE2] hover:underline bg-white px-2 py-1 rounded-md border border-[#5B5CE2]/30 cursor-pointer shadow-2xs"
+          className="text-[11px] font-bold text-brand-purple hover:underline bg-white px-2 py-1 rounded-md border border-brand-purple/30 cursor-pointer shadow-2xs"
         >
           Auto-fill
         </button>
@@ -83,7 +83,7 @@ export const SsoLoginForm: React.FC<SsoLoginFormProps> = ({ onSuccess }) => {
           if (error) setError('');
           if (serverError) setServerError(null);
         }}
-        rightIcon={<span className="text-[12px] font-mono text-[#9ca3af]">.preveuo.com</span>}
+        rightIcon={<span className="text-[12px] font-mono text-muted">.preveuo.com</span>}
         helperText="Enter your team's workspace slug to authenticate via SAML/Okta SSO."
         error={error}
         required

@@ -71,9 +71,9 @@ export const SearchInput = React.forwardRef<HTMLInputElement, SearchInputProps>(
     return (
       <div className={`relative w-full ${className}`}>
         {/* Search Icon or Spinner */}
-        <div className={`absolute top-1/2 -translate-y-1/2 pointer-events-none text-[#9ca3af] ${iconSizes[size]}`}>
+        <div className={`absolute top-1/2 -translate-y-1/2 pointer-events-none text-muted ${iconSizes[size]}`}>
           {isLoading ? (
-            <svg className="animate-spin w-full h-full text-[#5B5CE2]" fill="none" viewBox="0 0 24 24">
+            <svg className="animate-spin w-full h-full text-brand-purple" fill="none" viewBox="0 0 24 24">
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
             </svg>
@@ -94,10 +94,10 @@ export const SearchInput = React.forwardRef<HTMLInputElement, SearchInputProps>(
           value={currentVal}
           onChange={handleChange}
           className={`
-            w-full border border-[#d1d5db] bg-white text-[#0f0f1a] placeholder-[#9ca3af]
+            w-full border border-border-input bg-white text-heading placeholder-muted
             shadow-2xs transition-all duration-150
-            focus:outline-none focus:border-[#5B5CE2] focus:ring-2 focus:ring-[#5B5CE2]/15
-            hover:border-[#9ca3af] disabled:bg-[#f8f8fc] disabled:cursor-not-allowed
+            focus:outline-none focus:border-brand-purple focus:ring-2 focus:ring-brand-purple/15
+            hover:border-muted disabled:bg-light disabled:cursor-not-allowed
             ${sizeStyles[size]}
           `}
           {...props}
@@ -110,7 +110,7 @@ export const SearchInput = React.forwardRef<HTMLInputElement, SearchInputProps>(
               type="button"
               onClick={handleClear}
               aria-label="Clear search"
-              className="p-1 rounded-md text-[#9ca3af] hover:text-[#0f0f1a] hover:bg-[#f3f4f6] transition-colors"
+              className="p-1 rounded-md text-muted hover:text-heading hover:bg-gray-100 transition-colors"
             >
               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
@@ -118,7 +118,7 @@ export const SearchInput = React.forwardRef<HTMLInputElement, SearchInputProps>(
             </button>
           )}
           {shortcut && !currentVal && (
-            <kbd className="hidden sm:inline-flex items-center px-1.5 py-0.5 text-[10.5px] font-medium text-[#9ca3af] bg-[#f3f4f6] border border-[#e5e7eb] rounded-md pointer-events-none">
+            <kbd className="hidden sm:inline-flex items-center px-1.5 py-0.5 text-[10.5px] font-medium text-muted bg-gray-100 border border-border-default rounded-md pointer-events-none">
               {shortcut}
             </kbd>
           )}

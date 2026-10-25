@@ -8,11 +8,14 @@ import {
   HOTSPOT_WIDTH_TOKENS,
 } from '@/lib/runtime/hotspotPositioningEngine';
 import { PointerRenderer } from './PointerRenderer';
+import { Ripple } from '@/components/loading-ui/ripple';
+import { PRIMARY_COLOR, THEME_COLORS } from '@/lib/constants/theme';
 
 interface HotspotMarkerProps {
   element: IDemoElement;
   isSelected?: boolean;
   isEditor?: boolean;
+  isVisible?: boolean;
   stepNumber?: number;
   totalSteps?: number;
   onSelect?: () => void;
@@ -26,6 +29,7 @@ export const HotspotMarker: React.FC<HotspotMarkerProps> = ({
   element,
   isSelected = false,
   isEditor = false,
+  isVisible = true,
   stepNumber,
   totalSteps,
   onSelect,
@@ -39,23 +43,16 @@ export const HotspotMarker: React.FC<HotspotMarkerProps> = ({
   const [isResizing, setIsResizing] = useState<string | null>(null);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [isOpen, setIsOpen] = useState(true);
-  const [isCardRevealed, setIsCardRevealed] = useState(isEditor ? true : false);
+  const [isCardRevealed, setIsCardRevealed] = useState(isEditor ? true : isVisible);
 
-  // Synchronize card entrance with pointer animation phase in preview
+  // Synchronize card entrance in preview/runtime
   useEffect(() => {
-    if (isEditor) {
+    if (isEditor || isVisible) {
       setIsCardRevealed(true);
       return;
     }
-    // In preview mode: reset card to entrance state then reveal on pointer click or fallback timeout
     setIsCardRevealed(false);
-    const pointerStyle = element.hotspotConfig?.appearance?.pointerStyle || 'beacon';
-    const fallbackDelay = pointerStyle === 'beacon' || pointerStyle === 'target' ? 280 : 640;
-    const timer = setTimeout(() => {
-      setIsCardRevealed(true);
-    }, fallbackDelay);
-    return () => clearTimeout(timer);
-  }, [element.id, (element as any)._id, stepNumber, element.hotspotConfig?.appearance?.pointerStyle, isEditor]);
+  }, [element.id, (element as any)._id, stepNumber, isEditor, isVisible]);
 
   const handlePointerClick = useCallback(() => {
     setIsCardRevealed(true);
@@ -79,13 +76,13 @@ export const HotspotMarker: React.FC<HotspotMarkerProps> = ({
       textAlign: 'left',
     },
     appearance: {
-      background: element.style?.backgroundColor || '#5B5CE2',
-      textColor: element.style?.color || '#ffffff',
+      background: element.style?.backgroundColor || PRIMARY_COLOR,
+      textColor: element.style?.color || THEME_COLORS.white,
       backdrop: false,
       borderRadius: 'rounded',
       width: 'medium',
       animation: 'ping',
-      pointerStyle: 'beacon',
+      pointerStyle: 'ripple',
     },
     visibility: 'always',
     navigation: {
@@ -93,15 +90,15 @@ export const HotspotMarker: React.FC<HotspotMarkerProps> = ({
       nextButton: {
         enabled: true,
         text: 'Continue',
-        background: '#ffffff',
-        textColor: '#5B5CE2',
+        background: THEME_COLORS.white,
+        textColor: PRIMARY_COLOR,
         action: 'nextStep',
       },
       backButton: {
         enabled: false,
         text: 'Back',
-        background: '#ffffff',
-        textColor: '#6b7280',
+        background: THEME_COLORS.white,
+        textColor: THEME_COLORS.textBody,
         action: 'previousStep',
       },
     },
@@ -333,7 +330,7 @@ export const HotspotMarker: React.FC<HotspotMarkerProps> = ({
               height: `${containerSize.height}px`,
               transform: 'translateX(-50%)',
             }}
-            className="w-0 border-l border-dashed border-[#5B5CE2] pointer-events-none"
+            className="w-0 border-l border-dashed border-brand-purple pointer-events-none"
           >
             {/* Top distance badge (only show if clearance >= 35px to prevent badge edge clipping) */}
             {topPx > 35 && (
@@ -343,8 +340,9 @@ export const HotspotMarker: React.FC<HotspotMarkerProps> = ({
                   top: `${Math.max(16, topPx * 0.45)}px`,
                   left: '50%',
                   transform: 'translate(-50%, -50%)',
+                  backgroundColor: PRIMARY_COLOR,
                 }}
-                className="px-2 py-0.5 rounded-md bg-[#5B5CE2] text-white text-[11px] font-bold font-mono shadow-md whitespace-nowrap"
+                className="px-2 py-0.5 rounded-md text-white text-[11px] font-bold font-mono shadow-md whitespace-nowrap"
               >
                 {topPx}px
               </div>
@@ -358,8 +356,9 @@ export const HotspotMarker: React.FC<HotspotMarkerProps> = ({
                   top: `${topPx + Math.max(20, bottomPx * 0.45)}px`,
                   left: '50%',
                   transform: 'translate(-50%, -50%)',
+                  backgroundColor: PRIMARY_COLOR,
                 }}
-                className="px-2 py-0.5 rounded-md bg-[#5B5CE2] text-white text-[11px] font-bold font-mono shadow-md whitespace-nowrap"
+                className="px-2 py-0.5 rounded-md text-white text-[11px] font-bold font-mono shadow-md whitespace-nowrap"
               >
                 {bottomPx}px
               </div>
@@ -375,7 +374,7 @@ export const HotspotMarker: React.FC<HotspotMarkerProps> = ({
               width: `${containerSize.width}px`,
               transform: 'translateY(-50%)',
             }}
-            className="h-0 border-t border-dashed border-[#5B5CE2] pointer-events-none"
+            className="h-0 border-t border-dashed border-brand-purple pointer-events-none"
           >
             {/* Left distance badge (only show if clearance >= 35px) */}
             {leftPx > 35 && (
@@ -385,8 +384,9 @@ export const HotspotMarker: React.FC<HotspotMarkerProps> = ({
                   left: `${Math.max(16, leftPx * 0.4)}px`,
                   top: '50%',
                   transform: 'translate(-50%, -50%)',
+                  backgroundColor: PRIMARY_COLOR,
                 }}
-                className="px-2 py-0.5 rounded-md bg-[#5B5CE2] text-white text-[11px] font-bold font-mono shadow-md whitespace-nowrap"
+                className="px-2 py-0.5 rounded-md text-white text-[11px] font-bold font-mono shadow-md whitespace-nowrap"
               >
                 {leftPx}px
               </div>
@@ -400,8 +400,9 @@ export const HotspotMarker: React.FC<HotspotMarkerProps> = ({
                   left: `${leftPx + Math.max(20, rightPx * 0.45)}px`,
                   top: '50%',
                   transform: 'translate(-50%, -50%)',
+                  backgroundColor: PRIMARY_COLOR,
                 }}
-                className="px-2 py-0.5 rounded-md bg-[#5B5CE2] text-white text-[11px] font-bold font-mono shadow-md whitespace-nowrap"
+                className="px-2 py-0.5 rounded-md text-white text-[11px] font-bold font-mono shadow-md whitespace-nowrap"
               >
                 {rightPx}px
               </div>
@@ -434,9 +435,9 @@ export const HotspotMarker: React.FC<HotspotMarkerProps> = ({
           className={`w-full h-full relative rounded-2xl transition-all ${
             isEditor
               ? isSelected
-                ? 'border-2 border-[#5B5CE2] ring-3 ring-[#5B5CE2]/35 shadow-xl cursor-grab active:cursor-grabbing backdrop-blur-[1px]'
-                : 'border-2 border-dashed border-[#5B5CE2]/65 hover:border-solid hover:bg-[#5B5CE2]/20 cursor-grab active:cursor-grabbing'
-              : 'border-2 border-[#5B5CE2] bg-[#5B5CE2]/15 hover:bg-[#5B5CE2]/25 animate-area-glow shadow-[0_0_24px_rgba(91,92,226,0.3)] hover:shadow-[0_0_36px_rgba(91,92,226,0.55)] cursor-pointer group backdrop-blur-[1px]'
+                ? 'border-2 border-brand-purple ring-3 ring-brand-purple/35 shadow-xl cursor-grab active:cursor-grabbing backdrop-blur-[1px]'
+                : 'border-2 border-dashed border-brand-purple/65 hover:border-solid hover:bg-brand-purple/20 cursor-grab active:cursor-grabbing'
+              : 'border-2 border-brand-purple bg-brand-purple/15 hover:bg-brand-purple/25 animate-area-glow shadow-[0_0_24px_rgba(91,92,226,0.3)] hover:shadow-[0_0_36px_rgba(91,92,226,0.55)] cursor-pointer group backdrop-blur-[1px]'
           }`}
         >
           {/* Viewfinder precision corner brackets matching Supademo/Storylane */}
@@ -462,26 +463,24 @@ export const HotspotMarker: React.FC<HotspotMarkerProps> = ({
           {/* Centered Beacon in Preview / Viewer mode (Supademo aesthetic) */}
           {!isEditor && (
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <span
-                style={{ backgroundColor: config.appearance.background }}
-                className="w-10 h-10 rounded-full animate-hotspot-radar-1 opacity-40 absolute"
-              />
-              <span
-                style={{ backgroundColor: config.appearance.background }}
-                className="w-8 h-8 rounded-full animate-hotspot-radar-2 opacity-30 absolute"
-              />
-              <div
-                style={{
-                  backgroundColor: config.appearance.background,
-                  boxShadow: `0 0 0 2px #ffffff, 0 3px 12px ${config.appearance.background}60`,
-                }}
-                className="w-5 h-5 rounded-full flex items-center justify-center relative z-10 group-hover:scale-115 transition-transform"
-              >
-                <span className="w-1.5 h-1.5 rounded-full bg-white pointer-events-none" />
+              <div className="relative flex items-center justify-center">
+                <Ripple
+                  className="size-14"
+                  color={config.appearance.background || PRIMARY_COLOR}
+                />
+                <div
+                  style={{
+                    backgroundColor: config.appearance.background,
+                    boxShadow: `0 0 0 2px white, 0 3px 12px ${config.appearance.background}60`,
+                  }}
+                  className="absolute w-5 h-5 rounded-full flex items-center justify-center z-10 group-hover:scale-115 transition-transform"
+                >
+                  <span className="w-1.5 h-1.5 rounded-full bg-white pointer-events-none" />
+                </div>
               </div>
 
               {/* Hover guidance tooltip badge */}
-              <div className="absolute -bottom-7 px-2.5 py-0.5 rounded-full bg-[#0f0f1a]/90 backdrop-blur-md text-white text-[10px] font-semibold opacity-0 group-hover:opacity-100 transition-opacity shadow-lg flex items-center gap-1">
+              <div className="absolute -bottom-7 px-2.5 py-0.5 rounded-full bg-dark/90 backdrop-blur-md text-white text-[10px] font-semibold opacity-0 group-hover:opacity-100 transition-opacity shadow-lg flex items-center gap-1">
                 <span>Click here</span>
               </div>
             </div>
@@ -495,21 +494,21 @@ export const HotspotMarker: React.FC<HotspotMarkerProps> = ({
                   e.stopPropagation();
                   setIsResizing('br');
                 }}
-                className="absolute -bottom-1.5 -right-1.5 w-3.5 h-3.5 bg-white border-2 border-[#5B5CE2] rounded-full cursor-se-resize shadow-xs"
+                className="absolute -bottom-1.5 -right-1.5 w-3.5 h-3.5 bg-white border-2 border-brand-purple rounded-full cursor-se-resize shadow-xs"
               />
               <div
                 onMouseDown={(e) => {
                   e.stopPropagation();
                   setIsResizing('r');
                 }}
-                className="absolute top-1/2 -right-1.5 -translate-y-1/2 w-3 h-3 bg-white border-2 border-[#5B5CE2] rounded-full cursor-e-resize shadow-xs"
+                className="absolute top-1/2 -right-1.5 -translate-y-1/2 w-3 h-3 bg-white border-2 border-brand-purple rounded-full cursor-e-resize shadow-xs"
               />
               <div
                 onMouseDown={(e) => {
                   e.stopPropagation();
                   setIsResizing('b');
                 }}
-                className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-white border-2 border-[#5B5CE2] rounded-full cursor-s-resize shadow-xs"
+                className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-white border-2 border-brand-purple rounded-full cursor-s-resize shadow-xs"
               />
             </>
           )}
@@ -531,7 +530,7 @@ export const HotspotMarker: React.FC<HotspotMarkerProps> = ({
                 width: `${adjustedContentSize.width}px`,
                 maxWidth: 'calc(100vw - 32px)',
                 backgroundColor: config.appearance.background,
-                color: config.appearance.textColor || '#ffffff',
+                color: config.appearance.textColor || 'white',
                 border: 'none',
                 transform: isDragging
                   ? 'scale(0.92)'
@@ -606,7 +605,7 @@ export const HotspotMarker: React.FC<HotspotMarkerProps> = ({
 
               {/* STEP 2 OF 12 Label (Reference UI) */}
               <div className="flex items-center justify-between gap-2 mb-2 select-none">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-[#9394f8] select-none">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-brand-purple select-none">
                   {config.content.badge ||
                     `STEP ${stepNumber || 1}${totalSteps ? ` OF ${totalSteps}` : ''}`}
                 </span>
@@ -684,10 +683,11 @@ export const HotspotMarker: React.FC<HotspotMarkerProps> = ({
                     style={{
                       backgroundColor:
                         config.navigation.nextButton?.background &&
-                        config.navigation.nextButton.background !== '#ffffff'
+                        config.navigation.nextButton.background !== 'white' &&
+                        config.navigation.nextButton.background !== THEME_COLORS.white
                           ? config.navigation.nextButton.background
-                          : '#5B5CE2',
-                      color: config.navigation.nextButton?.textColor || '#ffffff',
+                          : PRIMARY_COLOR,
+                      color: config.navigation.nextButton?.textColor || 'white',
                     }}
                     className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold shadow-md hover:brightness-110 active:scale-95 transition-all cursor-pointer"
                   >
@@ -730,8 +730,8 @@ export const HotspotMarker: React.FC<HotspotMarkerProps> = ({
               className="cursor-pointer group flex items-center justify-center z-30"
             >
               <PointerRenderer
-                style={config.appearance.pointerStyle || 'beacon'}
-                color={config.appearance.background || '#5B5CE2'}
+                style={config.appearance.pointerStyle || 'ripple'}
+                color={config.appearance.background || PRIMARY_COLOR}
                 size={config.appearance.pointerAnimation?.size || 'md'}
                 isEditor={isEditor}
                 isDragging={isDragging}

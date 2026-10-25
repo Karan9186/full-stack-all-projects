@@ -13,6 +13,7 @@ import { HotspotMarker, PointerRenderer } from '@/components/demos/hotspots';
 import { ChapterRenderer } from '@/components/demos/chapters';
 import { computeCameraTransform, getEasingCss } from '@/lib/utils/cameraTransform';
 import { ChevronRight, ChevronLeft, X, AlertCircle } from 'lucide-react';
+import { PRIMARY_COLOR } from '@/lib/constants/theme';
 
 export interface PlayerViewportProps {
   currentScene?: IDemoScene;
@@ -39,6 +40,7 @@ export interface PlayerViewportProps {
   cameraTransition?: string;
   onNextStep: () => void;
   onPrevStep: () => void;
+  showHotspots?: boolean;
 }
 
 export const PlayerViewport: React.FC<PlayerViewportProps> = ({
@@ -66,6 +68,7 @@ export const PlayerViewport: React.FC<PlayerViewportProps> = ({
   cameraTransition = 'none',
   onNextStep,
   onPrevStep,
+  showHotspots = true,
 }) => {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
@@ -160,8 +163,8 @@ export const PlayerViewport: React.FC<PlayerViewportProps> = ({
               <>
                 {/* Image Loading Skeleton */}
                 {!imageLoaded && !imageError && (
-                  <div className="absolute inset-0 bg-[#12121a] animate-pulse flex items-center justify-center">
-                    <span className="w-8 h-8 rounded-full border-2 border-[#5B5CE2] border-t-transparent animate-spin" />
+                  <div className="absolute inset-0 bg-dark animate-pulse flex items-center justify-center">
+                    <span className="w-8 h-8 rounded-full border-2 border-brand-purple border-t-transparent animate-spin" />
                   </div>
                 )}
 
@@ -179,8 +182,8 @@ export const PlayerViewport: React.FC<PlayerViewportProps> = ({
 
                 {/* Image Load Error Fallback */}
                 {imageError && (
-                  <div className="absolute inset-0 bg-[#12121a] flex flex-col items-center justify-center text-white/60 p-4 text-center">
-                    <AlertCircle className="w-8 h-8 text-[#5B5CE2] mb-2" />
+                  <div className="absolute inset-0 bg-dark flex flex-col items-center justify-center text-white/60 p-4 text-center">
+                    <AlertCircle className="w-8 h-8 text-brand-purple mb-2" />
                     <p className="text-xs font-semibold text-white/80 mb-2">Media could not be displayed</p>
                     <button
                       type="button"
@@ -197,13 +200,13 @@ export const PlayerViewport: React.FC<PlayerViewportProps> = ({
               </>
             )
           ) : (
-            <div className="w-full h-full bg-[#111119] flex items-center justify-center text-[#6b7280]">
+            <div className="w-full h-full bg-dark flex items-center justify-center text-body">
               <span className="text-xs font-medium">No scene image available</span>
             </div>
           )}
 
           {/* 3. SPOTLIGHT CUTOUT MASK OVERLAY */}
-          {currentStep?.spotlight?.enabled && targetElement && (
+          {showHotspots && currentStep?.spotlight?.enabled && targetElement && (
             <div className="absolute inset-0 pointer-events-none transition-all duration-300 z-10">
               <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
                 <defs>
@@ -234,61 +237,78 @@ export const PlayerViewport: React.FC<PlayerViewportProps> = ({
           )}
 
           {/* 4. DIM BACKDROP OVERLAY */}
-          {hasActiveBackdrop && (
+          {showHotspots && hasActiveBackdrop && (
             <div className="absolute inset-0 bg-black/55 z-20 pointer-events-none transition-opacity duration-300" />
           )}
 
           {/* 5. HOTSPOTS & INTERACTIVE ELEMENTS LAYER */}
-          {sceneElements.map((element) => {
-            if (element.type === 'hotspot' || element.hotspotConfig) {
+          {/* 5. HOTSPOTS & INTERACTIVE ELEMENTS LAYER */}
+          <div
+            className={`absolute inset-0 w-full h-full pointer-events-none transition-opacity duration-300 z-30 ${
+              showHotspots ? 'opacity-100' : 'opacity-0'
+            }`}
+          >
+            {sceneElements.map((element) => {
+              if (element.type === 'hotspot' || element.hotspotConfig) {
+                return (
+                  <div
+                    key={`${element.id || (element as any)._id}-step-${currentStepIndex}`}
+                    className={`absolute inset-0 w-full h-full ${
+                      showHotspots ? 'pointer-events-auto' : 'pointer-events-none'
+                    }`}
+                  >
+                    <HotspotMarker
+                      element={element}
+                      isEditor={false}
+                      isVisible={showHotspots}
+                      stepNumber={currentStepIndex + 1}
+                      totalSteps={totalSteps}
+                      containerRef={containerRef}
+                      onAction={(action, target) => onHotspotAction(action, target)}
+                      onSelect={() => {
+                        onTrackEvent?.('HOTSPOT_CLICK', {
+                          stepId: currentStep?.id,
+                          elementId: element.id,
+                        });
+                      }}
+                    />
+                  </div>
+                );
+              }
+
+              // Other scene elements (buttons, links, etc.)
+              const isTarget =
+                targetElement?.id === element.id || (targetElement as any)?._id === element.id;
+
               return (
-                <HotspotMarker
-                  key={`${element.id || (element as any)._id}-step-${currentStepIndex}`}
-                  element={element}
-                  isEditor={false}
-                  stepNumber={currentStepIndex + 1}
-                  totalSteps={totalSteps}
-                  containerRef={containerRef}
-                  onAction={(action, target) => onHotspotAction(action, target)}
-                  onSelect={() => {
-                    onTrackEvent?.('HOTSPOT_CLICK', {
-                      stepId: currentStep?.id,
-                      elementId: element.id,
-                    });
+                <div
+                  key={element.id || (element as any)._id}
+                  style={{
+                    left: `${element.position.x}%`,
+                    top: `${element.position.y}%`,
+                    transform: 'translate(-50%, -50%)',
                   }}
-                />
+                  onClick={() => onElementClick(element)}
+                  className={`absolute z-20 cursor-pointer group flex items-center justify-center ${
+                    showHotspots ? 'pointer-events-auto' : 'pointer-events-none'
+                  }`}
+                >
+                  {/* Pointer indicator on targeted interactive element */}
+                  <PointerRenderer
+                    style={((element as any).hotspotConfig?.appearance?.pointerStyle as any) || 'ripple'}
+                    color={element.style?.backgroundColor || PRIMARY_COLOR}
+                    autoPlayMotion={true}
+                    isSelected={isTarget}
+                  />
+                </div>
               );
-            }
-
-            // Other scene elements (buttons, links, etc.)
-            const isTarget =
-              targetElement?.id === element.id || (targetElement as any)?._id === element.id;
-
-            return (
-              <div
-                key={element.id || (element as any)._id}
-                style={{
-                  left: `${element.position.x}%`,
-                  top: `${element.position.y}%`,
-                  transform: 'translate(-50%, -50%)',
-                }}
-                onClick={() => onElementClick(element)}
-                className="absolute z-20 cursor-pointer group flex items-center justify-center"
-              >
-                {/* Pointer indicator on targeted interactive element */}
-                <PointerRenderer
-                  style={((element as any).hotspotConfig?.appearance?.pointerStyle as any) || 'cursor'}
-                  color={element.style?.backgroundColor || '#5B5CE2'}
-                  autoPlayMotion={true}
-                  isSelected={isTarget}
-                />
-              </div>
-            );
-          })}
+            })}
+          </div>
           </div>
 
           {/* 6. GUIDED WALKTHROUGH STEP CALLOUT CARD (when no explicit hotspot callout element exists) */}
-          {currentStep &&
+          {showHotspots &&
+            currentStep &&
             !sceneElements.some(
               (el) =>
                 (el.type === 'hotspot' || el.hotspotConfig) &&
@@ -306,12 +326,12 @@ export const PlayerViewport: React.FC<PlayerViewportProps> = ({
                     : '80%',
                   transform: 'translate(-50%, 0)',
                 }}
-                className="absolute z-40 w-[90%] max-w-[360px] bg-white text-[#0f0f1a] rounded-2xl shadow-2xl border-0 p-5 animate-in fade-in zoom-in-95 duration-300"
+                className="absolute z-40 w-[90%] max-w-[360px] bg-white text-heading rounded-2xl shadow-2xl border-0 p-5 animate-in fade-in zoom-in-95 duration-300"
               >
                 {/* Header Badge */}
                 <div className="flex items-center justify-between mb-2.5">
-                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#5B5CE2]/10 text-[#5B5CE2] text-[11px] font-bold uppercase tracking-wider">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#5B5CE2]" />
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-brand-purple/10 text-brand-purple text-[11px] font-bold uppercase tracking-wider">
+                    <span className="w-1.5 h-1.5 rounded-full bg-brand-purple" />
                     {currentStep.tooltip?.badge ||
                       `Step ${currentStepIndex + 1} of ${totalSteps}`}
                   </span>
@@ -320,7 +340,7 @@ export const PlayerViewport: React.FC<PlayerViewportProps> = ({
                     <button
                       type="button"
                       onClick={onNextStep}
-                      className="text-[#9ca3af] hover:text-[#0f0f1a] p-1 rounded-md transition-colors cursor-pointer"
+                      className="text-muted hover:text-heading p-1 rounded-md transition-colors cursor-pointer"
                       title="Skip this step"
                     >
                       <X className="w-3.5 h-3.5" />
@@ -329,22 +349,22 @@ export const PlayerViewport: React.FC<PlayerViewportProps> = ({
                 </div>
 
                 {/* Title & Description */}
-                <h4 className="font-extrabold text-[15px] leading-snug text-[#0f0f1a] mb-1.5">
+                <h4 className="font-extrabold text-[15px] leading-snug text-heading mb-1.5">
                   {stepTitle || currentStep.title || 'Interactive Step'}
                 </h4>
                 {stepDescription && (
-                  <p className="text-[13px] text-[#6b7280] leading-relaxed mb-4">
+                  <p className="text-[13px] text-body leading-relaxed mb-4">
                     {stepDescription}
                   </p>
                 )}
 
                 {/* Step Actions */}
-                <div className="flex items-center justify-between pt-2 border-t border-[#f0f0f4]">
+                <div className="flex items-center justify-between pt-2 border-t border-border-light">
                   {currentStepIndex > 0 ? (
                     <button
                       type="button"
                       onClick={onPrevStep}
-                      className="inline-flex items-center gap-1 text-[12.5px] font-semibold text-[#6b7280] hover:text-[#0f0f1a] transition-colors cursor-pointer"
+                      className="inline-flex items-center gap-1 text-[12.5px] font-semibold text-body hover:text-heading transition-colors cursor-pointer"
                     >
                       <ChevronLeft className="w-3.5 h-3.5" />
                       Back
@@ -356,7 +376,7 @@ export const PlayerViewport: React.FC<PlayerViewportProps> = ({
                   <button
                     type="button"
                     onClick={onNextStep}
-                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#5B5CE2] hover:bg-[#4a4bd4] text-white text-[13px] font-bold shadow-md transition-all hover:-translate-y-0.5 cursor-pointer active:scale-95"
+                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-brand-purple hover:bg-brand-purple-hover text-white text-[13px] font-bold shadow-md transition-all hover:-translate-y-0.5 cursor-pointer active:scale-95"
                   >
                     <span>
                       {currentStepIndex === totalSteps - 1

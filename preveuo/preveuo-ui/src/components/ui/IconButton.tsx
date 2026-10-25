@@ -30,15 +30,15 @@ export const IconButton = React.forwardRef<HTMLButtonElement, IconButtonProps>(
     ref
   ) => {
     const baseStyles =
-      'inline-flex items-center justify-center rounded-xl transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-[#5B5CE2]/20 disabled:opacity-40 disabled:cursor-not-allowed select-none cursor-pointer';
+      'inline-flex items-center justify-center rounded-xl transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-brand-purple/20 disabled:opacity-40 disabled:cursor-not-allowed select-none cursor-pointer';
 
     const variantStyles = {
-      primary: 'bg-[#5B5CE2] hover:bg-[#4a4bd4] text-white shadow-sm hover:shadow-md',
+      primary: 'bg-brand-purple hover:bg-brand-purple-hover text-white shadow-sm hover:shadow-md',
       secondary:
-        'border border-[#d1d5db] bg-white text-[#0f0f1a] hover:border-[#5B5CE2] hover:text-[#5B5CE2] shadow-2xs hover:bg-[#fafafc]',
-      ghost: 'text-[#6b7280] hover:text-[#0f0f1a] hover:bg-[#f3f4f6]',
+        'border border-border-input bg-white text-heading hover:border-brand-purple hover:text-brand-purple shadow-2xs hover:bg-canvas',
+      ghost: 'text-body hover:text-heading hover:bg-gray-100',
       outline:
-        'border border-[#e5e7eb] bg-white text-[#4b5563] hover:border-[#5B5CE2] hover:text-[#5B5CE2] hover:bg-[#f8f8fc]',
+        'border border-border-default bg-white text-gray-600 hover:border-brand-purple hover:text-brand-purple hover:bg-light',
       danger: 'text-red-500 hover:text-red-700 hover:bg-red-50',
     };
 
