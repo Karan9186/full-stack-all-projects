@@ -1,7 +1,7 @@
-import { PRIMARY_COLOR } from '@/lib/constants/theme';
 'use client';
 
 import React from 'react';
+import { PRIMARY_COLOR } from '@/lib/constants/theme';
 import { Card } from '@/components/ui';
 import { ChevronDown } from 'lucide-react';
 

@@ -81,10 +81,10 @@ export const WorkspaceSidebar: React.FC<WorkspaceSidebarProps> = ({
     .toUpperCase() || 'KS';
 
   return (
-    <aside className="w-64 bg-white border-r border-border-default flex flex-col justify-between shrink-0 h-screen sticky top-0 select-none">
-      <div>
+    <aside className="w-64 bg-white border-r border-border-default flex flex-col justify-between shrink-0 h-screen sticky top-0 select-none z-30">
+      <div className="flex flex-col min-h-0 flex-1 overflow-y-auto no-scrollbar">
         {/* Logo */}
-        <div className="h-16 flex items-center px-6 gap-2.5">
+        <div className="h-16 flex items-center px-6 gap-2.5 shrink-0">
           <div className="w-7 h-7 rounded-lg bg-brand-purple flex items-center justify-center text-white font-black text-sm shadow-xs">
             P
           </div>
@@ -94,7 +94,7 @@ export const WorkspaceSidebar: React.FC<WorkspaceSidebarProps> = ({
         </div>
 
         {/* Workspace Switcher Card */}
-        <div className="px-4 mb-4">
+        <div className="px-4 mb-4 shrink-0">
           <button
             type="button"
             className="w-full flex items-center justify-between p-2.5 rounded-xl border border-border-default hover:border-border-input bg-canvas transition-colors cursor-pointer text-left"
@@ -117,7 +117,7 @@ export const WorkspaceSidebar: React.FC<WorkspaceSidebarProps> = ({
         </div>
 
         {/* Main Navigation */}
-        <nav className="px-3 space-y-0.5">
+        <nav className="px-3 space-y-0.5 flex-1 pb-4">
           {primaryNav.map((item) => {
             const Icon = item.icon;
             const isActive = activeTab === item.id;
@@ -157,7 +157,7 @@ export const WorkspaceSidebar: React.FC<WorkspaceSidebarProps> = ({
       </div>
 
       {/* Bottom Section */}
-      <div className="p-3 border-t border-border-light space-y-1 relative">
+      <div className="p-3 border-t border-border-light space-y-1 relative shrink-0 bg-white">
         {secondaryNav.map((item) => {
           const Icon = item.icon;
           const isActive = activeTab === item.id;

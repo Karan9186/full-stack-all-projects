@@ -2,45 +2,63 @@
 
 import React, { useState } from 'react';
 import { HotspotPointerStyle } from '@/types/demo';
-import { Radio, MousePointer2, Pointer, Target, Waves } from 'lucide-react';
+import { Orbit, Sparkles, Radar, Crosshair, MousePointer2, Waves } from 'lucide-react';
 
 interface PointerStyleOption {
   value: HotspotPointerStyle;
   label: string;
+  tagline: string;
   icon: React.ReactNode;
   description: string;
+  badge?: 'Signature' | 'AI' | 'HUD' | 'Radar';
 }
 
 const POINTER_OPTIONS: PointerStyleOption[] = [
   {
-    value: 'ripple',
-    label: 'Ripple',
-    icon: <Waves className="w-4 h-4" />,
-    description: 'Concentric expanding ripples for radar-like, soft indeterminate progress',
+    value: 'aura',
+    label: 'Aura',
+    tagline: 'Spatial Glow Orb',
+    icon: <Orbit className="w-4 h-4" />,
+    description: 'Luminous ambient spatial orb with breathing chromatic glow & orbital ring (Preveuo Signature)',
+    badge: 'Signature',
+  },
+  {
+    value: 'sparkle',
+    label: 'Sparkle',
+    tagline: 'AI Starlight',
+    icon: <Sparkles className="w-4 h-4" />,
+    description: 'Celestial AI starlight with orbiting particles & twinkle stardust for smart recommendations',
+    badge: 'AI',
   },
   {
     value: 'beacon',
     label: 'Beacon',
-    icon: <Radio className="w-4 h-4" />,
-    description: 'Pulsing sonar beacon with concentric expanding ripples',
-  },
-  {
-    value: 'cursor',
-    label: 'Cursor',
-    icon: <MousePointer2 className="w-4 h-4" />,
-    description: 'Simulated mouse cursor with natural movement and click ripple',
-  },
-  {
-    value: 'hand',
-    label: 'Hand',
-    icon: <Pointer className="w-4 h-4" />,
-    description: 'Pointing hand indicator ideal for buttons and touch targets',
+    tagline: 'Sonar Sweep',
+    icon: <Radar className="w-4 h-4" />,
+    description: 'Continuous 360° sweeping sonar radar beam with concentric distance range rings',
+    badge: 'Radar',
   },
   {
     value: 'target',
     label: 'Target',
-    icon: <Target className="w-4 h-4" />,
-    description: 'Precision focus reticle highlighting an interactive area',
+    tagline: 'Cyber Reticle',
+    icon: <Crosshair className="w-4 h-4" />,
+    description: 'Cyber precision reticle HUD with calibrated viewfinder brackets & laser diode lock',
+    badge: 'HUD',
+  },
+  {
+    value: 'cursor',
+    label: 'Cursor',
+    tagline: 'Vector Arrow',
+    icon: <MousePointer2 className="w-4 h-4" />,
+    description: 'Realistic aerodynamic studio vector cursor with tactile click ripple feedback',
+  },
+  {
+    value: 'ripple',
+    label: 'Ripple',
+    tagline: 'Ultrasonic Pulse',
+    icon: <Waves className="w-4 h-4" />,
+    description: 'Minimal concentric ultrasonic wave rings with customizable pulse speed',
   },
 ];
 
@@ -76,11 +94,11 @@ export const PointerStyleSelector: React.FC<PointerStyleSelectorProps> = ({
   };
 
   return (
-    <div className="space-y-1.5 select-none">
+    <div className="space-y-2 select-none">
       <div
         role="radiogroup"
         aria-label="Pointer Visual Style"
-        className={`relative grid grid-cols-5 p-1 rounded-xl bg-border-light border border-border-default h-[42px] transition-all ${
+        className={`grid grid-cols-3 gap-1.5 p-1 rounded-xl bg-slate-50 border border-slate-200 transition-all ${
           disabled ? 'opacity-50 pointer-events-none' : ''
         }`}
       >
@@ -98,31 +116,52 @@ export const PointerStyleSelector: React.FC<PointerStyleSelectorProps> = ({
               onKeyDown={(e) => handleKeyDown(e, idx)}
               onMouseEnter={() => setHoveredOption(opt)}
               onMouseLeave={() => setHoveredOption(null)}
-              className={`relative flex items-center justify-center gap-1.5 h-full rounded-lg text-xs font-semibold transition-all duration-150 cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-brand-purple focus-visible:ring-offset-1 ${
+              className={`relative flex flex-col items-center justify-center py-2 px-1 rounded-lg transition-all duration-150 cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-brand-purple ${
                 isSelected
-                  ? 'bg-white text-heading shadow-xs font-bold border border-slate-200/60'
-                  : 'text-body hover:text-heading hover:bg-white/50'
+                  ? 'bg-white text-heading shadow-xs font-bold border border-slate-200/90 ring-1 ring-brand-purple/20 scale-[1.02]'
+                  : 'text-body hover:text-heading hover:bg-white/80 border border-transparent'
               }`}
             >
+              {opt.badge && (
+                <span
+                  className={`absolute top-1 right-1 px-1 py-0.2 rounded text-[7.5px] font-bold uppercase tracking-wider leading-none ${
+                    opt.badge === 'Signature'
+                      ? 'bg-brand-purple/10 text-brand-purple'
+                      : opt.badge === 'AI'
+                      ? 'bg-indigo-100 text-indigo-700'
+                      : 'bg-slate-200 text-slate-700'
+                  }`}
+                >
+                  {opt.badge}
+                </span>
+              )}
               <span
-                className={`transition-colors shrink-0 ${
-                  isSelected ? 'text-brand-purple' : 'text-body'
+                className={`mb-1 transition-colors shrink-0 ${
+                  isSelected ? 'text-brand-purple' : 'text-slate-500'
                 }`}
               >
                 {opt.icon}
               </span>
-              <span className="truncate text-[11.5px] tracking-tight">{opt.label}</span>
+              <span className="text-[11px] font-semibold leading-none tracking-tight">
+                {opt.label}
+              </span>
+              <span className="text-[9px] text-muted leading-none mt-1">
+                {opt.tagline}
+              </span>
             </button>
           );
         })}
       </div>
 
       {/* Dynamic Accessible Micro-Help / Tooltip Explanation */}
-      <div className="min-h-[16px] px-1 text-[11px] text-body leading-snug transition-opacity">
-        {hoveredOption
-          ? hoveredOption.description
-          : POINTER_OPTIONS.find((o) => o.value === normalizedValue)?.description ||
-            'Choose how the pointer guides viewers to the target.'}
+      <div className="min-h-[28px] px-1 text-[11px] text-body leading-snug transition-opacity flex items-center gap-1.5">
+        <span className="w-1.5 h-1.5 rounded-full bg-brand-purple shrink-0" />
+        <span>
+          {hoveredOption
+            ? hoveredOption.description
+            : POINTER_OPTIONS.find((o) => o.value === normalizedValue)?.description ||
+              'Choose how the pointer guides viewers to the target.'}
+        </span>
       </div>
     </div>
   );

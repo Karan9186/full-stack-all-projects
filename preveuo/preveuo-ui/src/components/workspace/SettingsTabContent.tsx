@@ -1,7 +1,7 @@
-import { PRIMARY_COLOR } from '@/lib/constants/theme';
 'use client';
 
 import React, { useState } from 'react';
+import { PRIMARY_COLOR } from '@/lib/constants/theme';
 import { Button, Card, Badge, Input } from '@/components/ui';
 import {
   Settings,

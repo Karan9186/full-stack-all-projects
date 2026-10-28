@@ -1286,6 +1286,12 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
         zoomPan: {
           ...currentStep.zoomPan,
           focusPoint: { x, y },
+          focusRegion: {
+            x: Math.round(Math.max(0, Math.min(100 - (currentStep.zoomPan.focusRegion?.width || 60), x - (currentStep.zoomPan.focusRegion?.width || 60) / 2)) * 10) / 10,
+            y: Math.round(Math.max(0, Math.min(100 - (currentStep.zoomPan.focusRegion?.height || 50), y - (currentStep.zoomPan.focusRegion?.height || 50) / 2)) * 10) / 10,
+            width: currentStep.zoomPan.focusRegion?.width || 60,
+            height: currentStep.zoomPan.focusRegion?.height || 50,
+          },
         },
       });
     }
@@ -2588,6 +2594,43 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
                       <div className="absolute inset-0 bg-black/50 z-20 pointer-events-none transition-opacity duration-300" />
                     )}
 
+                    {/* Interactive Canvas Zoom & Pan Bounding Box Overlay */}
+                    {Boolean(currentStep?.zoomPan?.enabled) && (
+                      <ZoomPanBoundingBox
+                        config={currentStep.zoomPan!}
+                        containerRef={canvasRef}
+                        isPreviewing={isStudioAnimationPreviewing}
+                        onUpdateConfig={(updates) => {
+                          const existing = currentStep?.zoomPan || DEFAULT_ZOOM_PAN_CONFIG;
+                          handleUpdateStep({
+                            zoomPan: {
+                              ...existing,
+                              ...updates,
+                              enabled: true,
+                            },
+                          });
+                        }}
+                        onRemove={() => {
+                          if (studioAnimationTimeoutRef.current) {
+                            clearTimeout(studioAnimationTimeoutRef.current);
+                            studioAnimationTimeoutRef.current = null;
+                          }
+                          setIsStudioAnimationPreviewing(false);
+                          setStudioCameraScale(1.0);
+                          setStudioCameraTransition('transform 300ms ease-out');
+                          handleUpdateStep({
+                            zoomPan: {
+                              ...(currentStep?.zoomPan || DEFAULT_ZOOM_PAN_CONFIG),
+                              enabled: false,
+                            },
+                          });
+                        }}
+                        onPreview={() => {
+                          handlePreviewStudioAnimation();
+                        }}
+                      />
+                    )}
+
                     {/* Render Hotspots for the active step */}
                     {stepElements.map((element) => {
                       if (element.type === 'hotspot' || element.hotspotConfig) {
@@ -2611,8 +2654,8 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
                     })}
                   </div>
 
-                  {/* Interactive Canvas Zoom & Pan Bounding Box Overlay (Matching Image 1) */}
-                  {Boolean(currentStep?.zoomPan?.enabled) && (
+
+                  {/* duplicate removed */ false && (
                     <ZoomPanBoundingBox
                       config={currentStep.zoomPan!}
                       containerRef={canvasRef}
@@ -2680,7 +2723,7 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
             isSaving={saveStatus === 'saving'}
           />
         ) : (
-          <aside className="w-80 border-l border-border-default bg-white flex flex-col shrink-0">
+          <aside className="w-[360px] border-l border-border-default bg-white flex flex-col shrink-0">
             {/* Tabs Header */}
             <div className="flex border-b border-border-light px-1 pt-2">
               <button

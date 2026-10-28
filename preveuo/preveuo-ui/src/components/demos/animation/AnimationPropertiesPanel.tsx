@@ -117,6 +117,12 @@ export const AnimationPropertiesPanel: React.FC<AnimationPropertiesPanelProps> =
     if (found) {
       handleUpdateZoomPan({
         linkedHotspotId: hotspotId,
+        focusRegion: {
+          x: Math.round(Math.max(0, Math.min(100 - (zoomConfig.focusRegion?.width || 60), found.position.x - (zoomConfig.focusRegion?.width || 60) / 2)) * 10) / 10,
+          y: Math.round(Math.max(0, Math.min(100 - (zoomConfig.focusRegion?.height || 50), found.position.y - (zoomConfig.focusRegion?.height || 50) / 2)) * 10) / 10,
+          width: zoomConfig.focusRegion?.width || 60,
+          height: zoomConfig.focusRegion?.height || 50,
+        },
         focusPoint: {
           x: Math.round(found.position.x * 10) / 10,
           y: Math.round(found.position.y * 10) / 10,

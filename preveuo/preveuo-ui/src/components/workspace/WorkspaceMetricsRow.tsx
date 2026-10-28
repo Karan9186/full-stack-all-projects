@@ -1,7 +1,7 @@
-import { PRIMARY_COLOR } from '@/lib/constants/theme';
 'use client';
 
 import React from 'react';
+import { PRIMARY_COLOR } from '@/lib/constants/theme';
 import { Card } from '@/components/ui';
 import { MoreHorizontal, ArrowUp } from 'lucide-react';
 import { WORKSPACE_DASHBOARD_METRICS } from '@/lib/workspaceDashboardData';

@@ -95,7 +95,7 @@ function WorkspaceContent() {
   };
 
   return (
-    <div className="min-h-screen bg-light text-heading flex font-sans selection:bg-brand-purple selection:text-white">
+    <div className="h-screen w-full overflow-hidden bg-light text-heading flex font-sans selection:bg-brand-purple selection:text-white">
       {/* Left Sidebar */}
       <WorkspaceSidebar
         activeTab={activeTab}
@@ -106,11 +106,10 @@ function WorkspaceContent() {
       />
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
         {/* Top Navbar */}
         <WorkspaceNavbar
           pageTitle={getPageTitle()}
-          onCreateDemo={() => setShowCreateModal(true)}
         />
 
         {/* Dashboard Dynamic Tab Content */}

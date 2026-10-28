@@ -1,20 +1,18 @@
 'use client';
 
 import React from 'react';
-import { Button } from '@/components/ui';
-import { Search, Bell, Plus } from 'lucide-react';
+import { Search, Bell } from 'lucide-react';
 
 interface WorkspaceNavbarProps {
   pageTitle?: string;
-  onCreateDemo: () => void;
+  onCreateDemo?: () => void;
 }
 
 export const WorkspaceNavbar: React.FC<WorkspaceNavbarProps> = ({
   pageTitle = 'Home',
-  onCreateDemo,
 }) => {
   return (
-    <header className="h-16 bg-white border-b border-border-default px-6 flex items-center justify-between sticky top-0 z-20">
+    <header className="h-16 bg-white border-b border-border-default px-6 flex items-center justify-between sticky top-0 z-20 shrink-0">
       {/* Left: Breadcrumbs & Page title */}
       <div>
         <div className="flex items-center gap-1.5">
@@ -28,7 +26,7 @@ export const WorkspaceNavbar: React.FC<WorkspaceNavbarProps> = ({
         </h1>
       </div>
 
-      {/* Right: Search, Notification Bell, Create Demo */}
+      {/* Right: Search & Notification Bell */}
       <div className="flex items-center gap-3">
         {/* Search Input */}
         <div className="relative w-64 hidden sm:block">
@@ -52,16 +50,6 @@ export const WorkspaceNavbar: React.FC<WorkspaceNavbarProps> = ({
           <Bell className="w-4 h-4" />
           <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-brand-purple" />
         </button>
-
-        {/* Create Demo CTA */}
-        <Button
-          variant="primary"
-          size="md"
-          onClick={onCreateDemo}
-          leftIcon={<Plus className="w-4 h-4" />}
-        >
-          Create demo
-        </Button>
       </div>
     </header>
   );

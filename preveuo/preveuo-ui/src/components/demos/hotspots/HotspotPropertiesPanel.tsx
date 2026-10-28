@@ -140,8 +140,17 @@ export const HotspotPropertiesPanel: React.FC<HotspotPropertiesPanelProps> = ({
 
   const isArea = config.type === 'area';
 
+  const effectivePointerColor =
+    config.appearance.pointerColor ||
+    (config.appearance.background &&
+    !['#0f0f1a', '#121214', '#000000', '#1f2937', '#111827'].includes(
+      config.appearance.background.toLowerCase()
+    )
+      ? config.appearance.background
+      : PRIMARY_COLOR);
+
   return (
-    <aside className="w-80 border-l border-border-default bg-white flex flex-col shrink-0 h-full overflow-hidden select-none">
+    <aside className="w-[360px] border-l border-border-default bg-white flex flex-col shrink-0 h-full overflow-hidden select-none">
       {/* Header */}
       <div className="h-14 px-5 border-b border-border-light flex items-center justify-between shrink-0 bg-canvas">
         <div className="flex items-center gap-2">
@@ -161,7 +170,7 @@ export const HotspotPropertiesPanel: React.FC<HotspotPropertiesPanelProps> = ({
       </div>
 
       {/* Grouped Properties List */}
-      <div className="flex-1 overflow-y-auto p-5 space-y-6">
+      <div className="flex-1 overflow-y-auto overflow-x-hidden p-5 space-y-6">
         {/* 1. CONTENT SECTION */}
         <section className="space-y-3.5">
           <span className="text-[10.5px] font-semibold uppercase tracking-[0.16em] text-brand-purple">
@@ -262,7 +271,7 @@ export const HotspotPropertiesPanel: React.FC<HotspotPropertiesPanelProps> = ({
 
               <PointerMiniPreview
                 style={config.appearance.pointerStyle || 'ripple'}
-                color={config.appearance.background || PRIMARY_COLOR}
+                color={effectivePointerColor}
                 size={config.appearance.pointerAnimation?.size || 'md'}
                 animationSettings={config.appearance.pointerAnimation}
                 onAnimationChange={(animUpdates: Partial<PointerAnimationSettings>) => {
@@ -273,6 +282,13 @@ export const HotspotPropertiesPanel: React.FC<HotspotPropertiesPanelProps> = ({
                     },
                   });
                 }}
+              />
+
+              <ColorField
+                label="Pointer Accent Color"
+                value={effectivePointerColor}
+                onChange={(color) => updateAppearance({ pointerColor: color })}
+                presetColors={['#5B5CE2', '#6366F1', '#EC4899', '#F59E0B', '#10B981', '#06B6D4', '#8B5CF6', '#FFFFFF']}
               />
             </div>
           )}

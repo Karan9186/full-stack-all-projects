@@ -87,7 +87,7 @@ export const ChapterPropertiesPanel: React.FC<ChapterPropertiesPanelProps> = ({
   };
 
   return (
-    <aside className="w-80 border-l border-border-default bg-white flex flex-col shrink-0 h-full overflow-hidden select-none">
+    <aside className="w-[360px] border-l border-border-default bg-white flex flex-col shrink-0 h-full overflow-hidden select-none">
       {/* Header */}
       <div className="h-14 px-5 border-b border-border-light flex items-center justify-between shrink-0 bg-canvas">
         <div className="flex items-center gap-2">

@@ -54,7 +54,7 @@ export const ColorField: React.FC<ColorFieldProps> = ({
       </div>
 
       {presetColors && presetColors.length > 0 && (
-        <div className="flex items-center gap-1.5 pt-1">
+        <div className="flex items-center gap-1.5 pt-1 flex-wrap">
           {presetColors.map((color) => (
             <button
               key={color}
@@ -62,7 +62,7 @@ export const ColorField: React.FC<ColorFieldProps> = ({
               onClick={() => onChange(color)}
               style={{ backgroundColor: color }}
               aria-label={`Select color ${color}`}
-              className={`w-5 h-5 rounded-full border transition-transform cursor-pointer ${
+              className={`w-5 h-5 rounded-full border transition-transform cursor-pointer shrink-0 ${
                 value.toLowerCase() === color.toLowerCase()
                   ? 'border-heading scale-115 ring-2 ring-brand-purple/30'
                   : 'border-border-default hover:scale-110'

@@ -314,7 +314,7 @@ export const HotspotMarker: React.FC<HotspotMarkerProps> = ({
         e.stopPropagation();
         onSelect?.();
       }}
-      className={`absolute z-30 select-none ${
+      className={`absolute ${isSelected || isDragging ? 'z-50' : 'z-40'} select-none ${
         isEditor ? 'cursor-grab active:cursor-grabbing' : ''
       }`}
     >
@@ -466,7 +466,7 @@ export const HotspotMarker: React.FC<HotspotMarkerProps> = ({
               <div className="relative flex items-center justify-center">
                 <Ripple
                   className="size-14"
-                  color={config.appearance.background || PRIMARY_COLOR}
+                  color={config.appearance.pointerColor || (config.appearance.background && !['#0f0f1a', '#121214', '#000000', '#1f2937', '#111827'].includes(config.appearance.background.toLowerCase()) ? config.appearance.background : PRIMARY_COLOR)}
                 />
                 <div
                   style={{
@@ -543,7 +543,7 @@ export const HotspotMarker: React.FC<HotspotMarkerProps> = ({
                   ? 'opacity 0.15s ease-out, transform 0.15s ease-out'
                   : 'left 0.35s cubic-bezier(0.16, 1, 0.3, 1), top 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.38s cubic-bezier(0.16, 1, 0.3, 1), transform 0.38s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s ease',
               }}
-              className={`p-5 sm:p-6 shadow-[0_20px_50px_rgba(0,0,0,0.55)] ${radiusClasses} border-0 border-none outline-none select-none text-left ${
+              className={`p-5 sm:p-6 shadow-[0_20px_50px_rgba(0,0,0,0.55)] ${radiusClasses} border-0 border-none outline-none select-none text-left ${isEditor ? 'cursor-grab active:cursor-grabbing' : ''} ${
                 isSelected && isEditor ? 'ring-2 ring-white/60 shadow-2xl' : ''
               }`}
             >
@@ -727,11 +727,11 @@ export const HotspotMarker: React.FC<HotspotMarkerProps> = ({
                 top: '0px',
                 transform: 'translate(-50%, -50%)',
               }}
-              className="cursor-pointer group flex items-center justify-center z-30"
+              className="cursor-pointer group flex items-center justify-center z-40"
             >
               <PointerRenderer
                 style={config.appearance.pointerStyle || 'ripple'}
-                color={config.appearance.background || PRIMARY_COLOR}
+                color={config.appearance.pointerColor || (config.appearance.background && !['#0f0f1a', '#121214', '#000000', '#1f2937', '#111827'].includes(config.appearance.background.toLowerCase()) ? config.appearance.background : PRIMARY_COLOR)}
                 size={config.appearance.pointerAnimation?.size || 'md'}
                 isEditor={isEditor}
                 isDragging={isDragging}

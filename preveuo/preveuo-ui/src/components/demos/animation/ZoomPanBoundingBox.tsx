@@ -47,6 +47,34 @@ export const ZoomPanBoundingBox: React.FC<ZoomPanBoundingBoxProps> = ({
 
   const currentZoomMultiplier = Math.round((100 / Math.max(20, region.width)) * 10) / 10;
 
+  // Adaptive Action Bar Positioning (ensures zoom preview & delete buttons never get clipped at canvas edges)
+  const isNearBottom = region.y + region.height > 82;
+  const isNearTop = region.y < 12;
+  const placeAbove = isNearBottom && !isNearTop;
+  const placeInside = isNearBottom && isNearTop;
+
+  const boxCenterX = region.x + region.width / 2;
+  const horizontalClass =
+    boxCenterX < 22
+      ? 'left-2 translate-x-0'
+      : boxCenterX > 78
+      ? 'right-2 translate-x-0'
+      : 'left-1/2 -translate-x-1/2';
+
+  const verticalClass = placeInside
+    ? 'bottom-3'
+    : placeAbove
+    ? 'bottom-full mb-3'
+    : 'top-full mt-3';
+
+  const tooltipVerticalClass = placeAbove ? 'top-full mt-2' : 'bottom-full mb-2';
+  const tooltipHorizontalClass =
+    boxCenterX < 30
+      ? 'left-0 translate-x-0'
+      : boxCenterX > 70
+      ? 'right-0 translate-x-0'
+      : 'left-1/2 -translate-x-1/2';
+
   const handlePointerDown = (
     e: React.PointerEvent,
     mode: DragMode
@@ -165,7 +193,7 @@ export const ZoomPanBoundingBox: React.FC<ZoomPanBoundingBoxProps> = ({
   }
 
   return (
-    <div className="absolute inset-0 z-35 pointer-events-none select-none">
+    <div className="absolute inset-0 z-25 pointer-events-none select-none">
       {/* 1. Backdrop Masks (Spotlight effect outside bounding box) */}
       <div
         className="absolute left-0 right-0 top-0 bg-black/25 transition-colors duration-150"
@@ -214,7 +242,7 @@ export const ZoomPanBoundingBox: React.FC<ZoomPanBoundingBoxProps> = ({
         <div className="absolute inset-0 bg-brand-purple/5 rounded-lg pointer-events-none" />
 
         {/* Zoom Magnifier Pill Tag (Top-left inside box) */}
-        <div className="absolute top-2 left-2 pointer-events-none flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-white/95 text-heading shadow-xs text-[10px] font-bold font-mono">
+        <div onPointerDown={(e) => handlePointerDown(e, 'move')} className="absolute top-2 left-2 pointer-events-auto cursor-move flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-white/95 text-heading shadow-xs text-[10px] font-bold font-mono hover:bg-white hover:shadow-sm transition-all select-none" title="Drag to reposition Zoom & Pan focus">
           <span className="w-1.5 h-1.5 rounded-full bg-brand-purple" />
           <span>Zoom {currentZoomMultiplier.toFixed(1)}×</span>
         </div>
@@ -265,7 +293,7 @@ export const ZoomPanBoundingBox: React.FC<ZoomPanBoundingBoxProps> = ({
         <div
           onPointerDown={(e) => e.stopPropagation()}
           onClick={(e) => e.stopPropagation()}
-          className="absolute top-full mt-3 left-1/2 -translate-x-1/2 pointer-events-auto z-50 flex items-center gap-1.5 p-1 bg-white rounded-2xl shadow-xl border border-border-default animate-fade-in"
+          className={`absolute ${verticalClass} ${horizontalClass} pointer-events-auto z-50 flex items-center gap-1.5 p-1 bg-white rounded-2xl shadow-xl border border-border-default animate-fade-in whitespace-nowrap`}
         >
           {/* Zoom Preview Button */}
           <button
@@ -317,7 +345,7 @@ export const ZoomPanBoundingBox: React.FC<ZoomPanBoundingBoxProps> = ({
             {showHelpTooltip && (
               <div
                 onClick={(e) => e.stopPropagation()}
-                className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 w-64 p-3 rounded-2xl bg-dark text-white text-xs shadow-2xl border border-white/10 space-y-1.5 z-60 animate-in fade-in zoom-in-95 duration-150"
+                className={`absolute ${tooltipVerticalClass} ${tooltipHorizontalClass} w-64 p-3 rounded-2xl bg-dark text-white text-xs shadow-2xl border border-white/10 space-y-1.5 z-60 animate-in fade-in zoom-in-95 duration-150`}
               >
                 <div className="flex items-center justify-between font-bold text-white">
                   <span>How Zoom & Pan Works</span>

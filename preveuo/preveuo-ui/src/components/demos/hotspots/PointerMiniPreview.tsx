@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { HotspotPointerStyle, PointerAnimationSettings } from '@/types/demo';
 import { PointerRenderer } from './PointerRenderer';
-import { RotateCcw, Sparkles, Volume2, Gauge, Maximize2 } from 'lucide-react';
+import { RotateCcw, Sparkles } from 'lucide-react';
 import { PRIMARY_COLOR, THEME_COLORS } from '@/lib/constants/theme';
 
 export interface PointerMiniPreviewProps {
@@ -51,7 +51,7 @@ export const PointerMiniPreview: React.FC<PointerMiniPreviewProps> = ({
   return (
     <div className="rounded-xl border border-border-default bg-white overflow-hidden shadow-2xs select-none">
       {/* Top Header with Status Indicator & Replay Button */}
-      <div className="h-8 px-2.5 bg-light border-b border-border-default flex items-center justify-between text-xs">
+      <div className="h-8 px-3 bg-light border-b border-border-default flex items-center justify-between text-xs">
         <div className="flex items-center gap-1.5">
           <span
             className={`w-1.5 h-1.5 rounded-full transition-colors ${
@@ -104,54 +104,53 @@ export const PointerMiniPreview: React.FC<PointerMiniPreviewProps> = ({
 
       {/* Compact Animation Settings Controls (only rendered if onAnimationChange provided) */}
       {onAnimationChange && (
-        <div className="p-2.5 bg-light border-t border-border-light space-y-2 text-xs">
-          {/* Size & Speed Row */}
-          <div className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-1">
-              <span className="text-[11px] font-medium text-body">Size:</span>
-              <div className="flex items-center bg-gray-100 p-0.5 rounded-lg">
-                {(['sm', 'md', 'lg'] as const).map((s) => (
-                  <button
-                    key={s}
-                    type="button"
-                    onClick={() => onAnimationChange({ size: s })}
-                    className={`px-2 py-0.5 text-[10.5px] font-semibold rounded-md transition-all cursor-pointer ${
-                      currentSize === s
-                        ? 'bg-white text-heading shadow-2xs'
-                        : 'text-body hover:text-heading'
-                    }`}
-                  >
-                    {s.toUpperCase()}
-                  </button>
-                ))}
-              </div>
+        <div className="p-3 bg-light border-t border-border-light space-y-2.5 text-xs">
+          {/* Size Row */}
+          <div className="flex items-center justify-between">
+            <span className="text-[11.5px] font-medium text-body">Size</span>
+            <div className="flex items-center bg-gray-100 p-0.5 rounded-lg">
+              {(['sm', 'md', 'lg'] as const).map((s) => (
+                <button
+                  key={s}
+                  type="button"
+                  onClick={() => onAnimationChange({ size: s })}
+                  className={`px-3 py-1 text-[11px] font-semibold rounded-md transition-all cursor-pointer ${
+                    currentSize === s
+                      ? 'bg-white text-heading shadow-2xs font-bold'
+                      : 'text-body hover:text-heading'
+                  }`}
+                >
+                  {s.toUpperCase()}
+                </button>
+              ))}
             </div>
+          </div>
 
-            <div className="flex items-center gap-1">
-              <span className="text-[11px] font-medium text-body">Speed:</span>
-              <div className="flex items-center bg-gray-100 p-0.5 rounded-lg">
-                {(['slow', 'medium', 'fast'] as const).map((spd) => (
-                  <button
-                    key={spd}
-                    type="button"
-                    onClick={() => onAnimationChange({ speed: spd })}
-                    className={`px-1.5 py-0.5 text-[10.5px] font-semibold rounded-md transition-all cursor-pointer capitalize ${
-                      currentSpeed === spd
-                        ? 'bg-white text-heading shadow-2xs'
-                        : 'text-body hover:text-heading'
-                    }`}
-                  >
-                    {spd === 'medium' ? 'Norm' : spd}
-                  </button>
-                ))}
-              </div>
+          {/* Speed Row */}
+          <div className="flex items-center justify-between pt-1 border-t border-border-light">
+            <span className="text-[11.5px] font-medium text-body">Speed</span>
+            <div className="flex items-center bg-gray-100 p-0.5 rounded-lg">
+              {(['slow', 'medium', 'fast'] as const).map((spd) => (
+                <button
+                  key={spd}
+                  type="button"
+                  onClick={() => onAnimationChange({ speed: spd })}
+                  className={`px-2.5 py-1 text-[11px] font-semibold rounded-md transition-all cursor-pointer capitalize ${
+                    currentSpeed === spd
+                      ? 'bg-white text-heading shadow-2xs font-bold'
+                      : 'text-body hover:text-heading'
+                  }`}
+                >
+                  {spd === 'medium' ? 'Normal' : spd}
+                </button>
+              ))}
             </div>
           </div>
 
           {/* Contextual Options based on Style */}
           {(canonicalStyle === 'cursor' || canonicalStyle === 'hand') && (
             <div className="flex items-center justify-between pt-1 border-t border-border-light">
-              <span className="text-[11px] font-medium text-body">Click Ripple Feedback</span>
+              <span className="text-[11.5px] font-medium text-body">Click Ripple Feedback</span>
               <button
                 type="button"
                 onClick={() => onAnimationChange({ clickFeedback: !clickFeedback })}
@@ -168,18 +167,18 @@ export const PointerMiniPreview: React.FC<PointerMiniPreviewProps> = ({
             </div>
           )}
 
-          {(canonicalStyle === 'beacon' || canonicalStyle === 'target') && (
+          {(canonicalStyle === 'beacon' || canonicalStyle === 'target' || canonicalStyle === 'aura' || canonicalStyle === 'sparkle' || canonicalStyle === 'ripple') && (
             <div className="flex items-center justify-between pt-1 border-t border-border-light">
-              <span className="text-[11px] font-medium text-body">Ring Pulse Intensity</span>
+              <span className="text-[11.5px] font-medium text-body">Pulse Intensity</span>
               <div className="flex items-center bg-gray-100 p-0.5 rounded-lg">
                 {(['subtle', 'standard', 'high'] as const).map((intensity) => (
                   <button
                     key={intensity}
                     type="button"
                     onClick={() => onAnimationChange({ intensity })}
-                    className={`px-1.5 py-0.5 text-[10.5px] font-semibold rounded-md transition-all cursor-pointer capitalize ${
+                    className={`px-2 py-1 text-[11px] font-semibold rounded-md transition-all cursor-pointer capitalize ${
                       (animationSettings?.intensity || 'standard') === intensity
-                        ? 'bg-white text-heading shadow-2xs'
+                        ? 'bg-white text-heading shadow-2xs font-bold'
                         : 'text-body hover:text-heading'
                     }`}
                   >

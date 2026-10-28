@@ -366,6 +366,38 @@ body {
   animation: hotspot-card-spring 0.38s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
+@keyframes spin-radar {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.animate-spin-radar {
+  animation: spin-radar 2.8s linear infinite;
+}
+
+.animate-spin-slow {
+  animation: spin-radar 7s linear infinite;
+}
+
+.animate-spin-reverse-slow {
+  animation: spin-radar 9s linear infinite reverse;
+}
+
+@keyframes aura-pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.65;
+  }
+  50% {
+    transform: scale(1.18);
+    opacity: 0.95;
+  }
+}
+
+.animate-aura-pulse {
+  animation: aura-pulse 2.2s ease-in-out infinite;
+}
+
 /* ==========================================================================
    Workspace Semantic Typography Utility Classes (Preveuo 2.0 Design System)
    ========================================================================== */

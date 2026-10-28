@@ -15,7 +15,7 @@ export const EditorPropertiesPanel: React.FC<EditorPropertiesPanelProps> = ({
   onUpdateCallout,
 }) => {
   return (
-    <aside className="w-80 border-l border-border-default bg-white p-5 overflow-y-auto shrink-0 flex flex-col gap-5">
+    <aside className="w-[360px] border-l border-border-default bg-white p-5 overflow-y-auto shrink-0 flex flex-col gap-5">
       <div className="flex items-center gap-2 pb-3 border-b border-border-light">
         <SlidersHorizontal className="w-4 h-4 text-brand-purple" />
         <h3 className="text-[11px] font-semibold uppercase tracking-[0.16em] text-brand-purple">

@@ -16,7 +16,7 @@ export default function AnalyticsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-light text-heading flex font-sans selection:bg-brand-purple selection:text-white">
+    <div className="h-screen w-full overflow-hidden bg-light text-heading flex font-sans selection:bg-brand-purple selection:text-white">
       {/* Left Sidebar with active Analytics tab */}
       <WorkspaceSidebar
         activeTab="analytics"
@@ -26,10 +26,9 @@ export default function AnalyticsPage() {
       />
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
         <WorkspaceNavbar
           pageTitle="Analytics"
-          onCreateDemo={() => setShowCreateModal(true)}
         />
 
         <main className="flex-1 p-6 lg:p-8 overflow-y-auto">
