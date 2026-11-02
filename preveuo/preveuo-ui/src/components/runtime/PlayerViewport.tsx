@@ -252,7 +252,7 @@ export const PlayerViewport: React.FC<PlayerViewportProps> = ({
               if (element.type === 'hotspot' || element.hotspotConfig) {
                 return (
                   <div
-                    key={`${element.id || (element as any)._id}-step-${currentStepIndex}`}
+                    key={`${element.id || (element as any)._id}-step-${currentStepIndex}-${element.hotspotConfig?.appearance?.customWidth}-${element.hotspotConfig?.appearance?.customHeight}`}
                     className={`absolute inset-0 w-full h-full ${
                       showHotspots ? 'pointer-events-auto' : 'pointer-events-none'
                     }`}
@@ -312,7 +312,7 @@ export const PlayerViewport: React.FC<PlayerViewportProps> = ({
             !sceneElements.some(
               (el) =>
                 (el.type === 'hotspot' || el.hotspotConfig) &&
-                el.hotspotConfig?.type !== 'area'
+                true
             ) && (
               <div
                 style={{

@@ -23,6 +23,7 @@ export interface IChapterDoc extends Document {
   theme?: string;
   opacity?: number;
   blur?: boolean;
+  blurAmount?: number;
   buttons?: Array<{
     id: string;
     label: string;
@@ -108,6 +109,12 @@ const ChapterSchema = new Schema<IChapterDoc>(
     blur: {
       type: Boolean,
       default: false,
+    },
+    blurAmount: {
+      type: Number,
+      default: 8,
+      min: 0,
+      max: 50,
     },
     buttons: [
       {

@@ -25,7 +25,7 @@ import { PlayerControls } from './PlayerControls';
 import { PlayerChapterMenu } from './PlayerChapterMenu';
 import { PlayerCompletion } from './PlayerCompletion';
 import { PlayerViewport } from './PlayerViewport';
-import { ExternalLink } from 'lucide-react';
+import { ExternalLink, Maximize2 } from 'lucide-react';
 
 export type PlaybackStatus =
   | 'loading'
@@ -47,6 +47,9 @@ export interface DemoRuntimePlayerProps {
   interactions?: IDemoInteraction[];
   initialVariables?: Record<string, unknown>;
   initialStepIndex?: number;
+  initialChapterId?: string | null;
+  startAtChapter?: boolean;
+  showBrowserFrame?: boolean;
   onTrackEvent?: (
     eventType: DemoAnalyticsEventType,
     payload: {
@@ -69,6 +72,9 @@ export const DemoRuntimePlayer: React.FC<DemoRuntimePlayerProps> = ({
   interactions = [],
   initialVariables = { viewer: { name: 'Sarah', role: 'Product Leader', company: 'Acme' } },
   initialStepIndex,
+  initialChapterId,
+  startAtChapter,
+  showBrowserFrame = true,
   onTrackEvent,
   isEmbedded = false,
 }) => {
@@ -94,7 +100,39 @@ export const DemoRuntimePlayer: React.FC<DemoRuntimePlayerProps> = ({
     return 0;
   });
 
-  const [isPlaying, setIsPlaying] = useState(() => Boolean(demoSettings.autoplay));
+  const initialIsAtChapter = useMemo(() => {
+    if (typeof startAtChapter === 'boolean') {
+      return startAtChapter && Boolean(chapters && chapters.length > 0);
+    }
+    if (initialChapterId) {
+      return Boolean(chapters && chapters.length > 0);
+    }
+    if (typeof initialStepIndex === 'number') {
+      if (initialStepIndex === 0 && chapters && chapters.length > 0) {
+        return true;
+      }
+      return false;
+    }
+    return Boolean(chapters && chapters.length > 0);
+  }, [startAtChapter, chapters, initialChapterId, initialStepIndex]);
+
+  const [isAtChapter, setIsAtChapter] = useState<boolean>(initialIsAtChapter);
+  const [isPlaying, setIsPlaying] = useState(() => (initialIsAtChapter ? false : Boolean(demoSettings.autoplay)));
+  const [isControlsHovered, setIsControlsHovered] = useState(false);
+  const [clickRipples, setClickRipples] = useState<Array<{ id: number; x: number; y: number }>>([]);
+  const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const handleMouseEnterBottom = useCallback(() => {
+    if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
+    setIsControlsHovered(true);
+  }, []);
+
+  const handleMouseLeaveBottom = useCallback(() => {
+    if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
+    hoverTimeoutRef.current = setTimeout(() => {
+      setIsControlsHovered(false);
+    }, 400);
+  }, []);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
   const [isChapterMenuOpen, setIsChapterMenuOpen] = useState(false);
@@ -103,31 +141,61 @@ export const DemoRuntimePlayer: React.FC<DemoRuntimePlayerProps> = ({
   // Sync isPlaying if demoSettings.autoplay prop updates
   useEffect(() => {
     if (demoSettings.autoplay !== undefined) {
-      setIsPlaying(Boolean(demoSettings.autoplay));
+      setIsPlaying(isAtChapter ? false : Boolean(demoSettings.autoplay));
     }
   }, [demoSettings.autoplay]);
 
   // Chapter state in runtime
   const [activeChapterId, setActiveChapterId] = useState<string | null>(() => {
+    if (initialChapterId) return initialChapterId;
     if (typeof initialStepIndex === 'number' && steps[initialStepIndex]?.chapterId) {
       return steps[initialStepIndex].chapterId!;
     }
     return chapters && chapters.length > 0 ? chapters[0].id : null;
   });
 
-  const [isAtChapter, setIsAtChapter] = useState<boolean>(
-    typeof initialStepIndex === 'number' ? false : Boolean(chapters && chapters.length > 0)
+  /* duplicate isAtChapter removed
+    () => {
+      if (typeof startAtChapter === 'boolean') {
+        return startAtChapter && Boolean(chapters && chapters.length > 0);
+      }
+      if (initialChapterId) {
+        return Boolean(chapters && chapters.length > 0);
+      }
+      if (typeof initialStepIndex === 'number') {
+        if (initialStepIndex === 0 && chapters && chapters.length > 0) {
+          return true;
+        }
+        return false;
+      }
+      return Boolean(chapters && chapters.length > 0);
+    }
   );
 
+  */
   // Sync initialStepIndex prop changes from editor
   useEffect(() => {
+    if (startAtChapter) {
+      setIsAtChapter(true);
+      if (initialChapterId) setActiveChapterId(initialChapterId);
+      setIsCompleted(false);
+      setPlaybackStatus('ready');
+      return;
+    }
     if (typeof initialStepIndex === 'number' && initialStepIndex >= 0 && initialStepIndex < steps.length) {
       setCurrentStepIndex(initialStepIndex);
+
+
+
+
       setIsAtChapter(false);
+      if (demoSettings.autoplay) {
+        setIsPlaying(true);
+      }
       setIsCompleted(false);
       setPlaybackStatus('ready');
     }
-  }, [initialStepIndex, steps.length]);
+  }, [initialStepIndex, steps.length, startAtChapter, initialChapterId, chapters]);
 
   const activeChapter = useMemo(() => {
     if (!activeChapterId) return chapters[0] || null;
@@ -269,7 +337,7 @@ export const DemoRuntimePlayer: React.FC<DemoRuntimePlayerProps> = ({
     setCurrentSceneIndex(0);
     setCurrentStepIndex(0);
     setIsCompleted(false);
-    setIsPlaying(Boolean(demoSettings.autoplay));
+    setIsPlaying(chapters && chapters.length > 0 ? false : Boolean(demoSettings.autoplay));
     setIsChapterMenuOpen(false);
     setPlaybackStatus('ready');
 
@@ -277,7 +345,14 @@ export const DemoRuntimePlayer: React.FC<DemoRuntimePlayerProps> = ({
       setActiveChapterId(chapters[0].id);
       setIsAtChapter(true);
     } else {
+
+
+
+
       setIsAtChapter(false);
+      if (demoSettings.autoplay) {
+        setIsPlaying(true);
+      }
     }
 
     onTrackEvent?.('REPLAY', {
@@ -288,6 +363,34 @@ export const DemoRuntimePlayer: React.FC<DemoRuntimePlayerProps> = ({
 
   // Step Navigation Functions with explicit destination & loop support
   const goToNextStep = useCallback(() => {
+    if (isAtChapter) {
+      if (activeChapter) {
+        let firstStepIdx = steps.findIndex(
+          (s) =>
+            s.chapterId === activeChapter.id ||
+            s.chapterId === (activeChapter as any)._id ||
+            String(s.chapterId) === String(activeChapter.id)
+        );
+        if (firstStepIdx === -1 && chapters[0]?.id === activeChapter.id) {
+          firstStepIdx = 0;
+        }
+        if (firstStepIdx !== -1) {
+          setCurrentStepIndex(firstStepIdx);
+          const targetStep = steps[firstStepIdx];
+          if (targetStep?.sceneId) {
+            const scIdx = scenes.findIndex(
+              (sc) => sc.id === targetStep.sceneId || (sc as any)._id === targetStep.sceneId
+            );
+            if (scIdx !== -1) setCurrentSceneIndex(scIdx);
+          }
+        }
+      }
+      setIsAtChapter(false);
+      if (demoSettings.autoplay) {
+        setIsPlaying(true);
+      }
+      return;
+    }
     if (isZoomingOutRef.current) return;
     cancelPlaybackLifecycle();
 
@@ -362,7 +465,7 @@ export const DemoRuntimePlayer: React.FC<DemoRuntimePlayerProps> = ({
 
         setTimeout(() => setPlaybackStatus('ready'), 200);
       } else {
-        const shouldLoop = Boolean(demoSettings.loop || demoSettings.autoplayLoop);
+        const shouldLoop = false; // Run once only; do not auto-loop to slide 1
         if (shouldLoop && isPlayingRef.current) {
           // Continuous looping restart
           setPlaybackStatus('transitioning');
@@ -418,11 +521,21 @@ export const DemoRuntimePlayer: React.FC<DemoRuntimePlayerProps> = ({
     demoSettings.loop,
     demoSettings.autoplayLoop,
     updateCameraScale,
+    isAtChapter,
+    chapters,
     handleComplete,
     onTrackEvent,
   ]);
 
   const goToPrevStep = useCallback(() => {
+    if (isAtChapter) return;
+    if (currentStepIndex === 0 && chapters && chapters.length > 0) {
+      setIsAtChapter(true);
+      if (currentStep?.chapterId) {
+        setActiveChapterId(currentStep.chapterId);
+      }
+      return;
+    }
     if (isZoomingOutRef.current) return;
     cancelPlaybackLifecycle();
 
@@ -494,7 +607,58 @@ export const DemoRuntimePlayer: React.FC<DemoRuntimePlayerProps> = ({
     currentSceneIndex,
     activeChapterId,
     updateCameraScale,
+    isAtChapter,
+    chapters,
   ]);
+
+  const goToStep = useCallback(
+    (targetIdx: number) => {
+      if (targetIdx < 0 || targetIdx >= steps.length) return;
+      if (isZoomingOutRef.current) return;
+      cancelPlaybackLifecycle();
+      updateCameraScale(1.0);
+      setCameraTransition('none');
+      stepPhaseRef.current = 'init';
+      setIsAtChapter(false);
+      setPlaybackStatus('transitioning');
+      setCurrentStepIndex(targetIdx);
+
+      const targetStep = steps[targetIdx];
+      if (targetStep?.sceneId) {
+        const scIdx = scenes.findIndex(
+          (sc) => sc.id === targetStep.sceneId || (sc as any)._id === targetStep.sceneId
+        );
+        if (scIdx !== -1 && scIdx !== currentSceneIndex) {
+          setCurrentSceneIndex(scIdx);
+        }
+      }
+      if (targetStep?.chapterId && targetStep.chapterId !== activeChapterId) {
+        setActiveChapterId(targetStep.chapterId);
+      }
+      setTimeout(() => setPlaybackStatus('ready'), 200);
+    },
+    [steps, scenes, currentSceneIndex, activeChapterId, cancelPlaybackLifecycle, updateCameraScale]
+  );
+
+  const goToChapter = useCallback(
+    (chapterId?: string) => {
+      if (!chapters || chapters.length === 0) return;
+      if (isZoomingOutRef.current) return;
+      cancelPlaybackLifecycle();
+      updateCameraScale(1.0);
+      setCameraTransition('none');
+      stepPhaseRef.current = 'init';
+      setIsAtChapter(true);
+      if (chapterId) {
+        setActiveChapterId(chapterId);
+      } else if (chapters[0]) {
+        setActiveChapterId(chapters[0].id);
+      }
+      setIsPlaying(false);
+      setPlaybackStatus('ready');
+    },
+    [chapters, cancelPlaybackLifecycle, updateCameraScale]
+  );
 
   // Event bus & action handling
   const handleAction = useCallback(
@@ -559,12 +723,15 @@ export const DemoRuntimePlayer: React.FC<DemoRuntimePlayerProps> = ({
 
       if (action.type === 'next') {
         if (activeChapter) {
-          const firstStepIdx = steps.findIndex(
+          let firstStepIdx = steps.findIndex(
             (s) =>
               s.chapterId === activeChapter.id ||
               s.chapterId === (activeChapter as any)._id ||
               String(s.chapterId) === String(activeChapter.id)
           );
+          if (firstStepIdx === -1 && chapters[0]?.id === activeChapter.id) {
+            firstStepIdx = 0;
+          }
           if (firstStepIdx !== -1) {
             setCurrentStepIndex(firstStepIdx);
             const targetStep = steps[firstStepIdx];
@@ -576,7 +743,14 @@ export const DemoRuntimePlayer: React.FC<DemoRuntimePlayerProps> = ({
             }
           }
         }
-        setIsAtChapter(false);
+  
+
+
+
+      setIsAtChapter(false);
+      if (demoSettings.autoplay) {
+        setIsPlaying(true);
+      }
       } else if (action.type === 'previous') {
         goToPrevStep();
       } else if (action.type === 'go_to_step') {
@@ -593,7 +767,14 @@ export const DemoRuntimePlayer: React.FC<DemoRuntimePlayerProps> = ({
               );
               if (scIdx !== -1) setCurrentSceneIndex(scIdx);
             }
-            setIsAtChapter(false);
+      
+
+
+
+      setIsAtChapter(false);
+      if (demoSettings.autoplay) {
+        setIsPlaying(true);
+      }
           }
         }
       } else if (action.type === 'go_to_chapter') {
@@ -650,7 +831,14 @@ export const DemoRuntimePlayer: React.FC<DemoRuntimePlayerProps> = ({
               stepPhaseRef.current = 'init';
               setPlaybackStatus('transitioning');
               setCurrentStepIndex(idx);
-              setIsAtChapter(false);
+        
+
+
+
+      setIsAtChapter(false);
+      if (demoSettings.autoplay) {
+        setIsPlaying(true);
+      }
               const targetStep = steps[idx];
               if (targetStep?.sceneId) {
                 const scIdx = scenes.findIndex(
@@ -970,6 +1158,13 @@ export const DemoRuntimePlayer: React.FC<DemoRuntimePlayerProps> = ({
         return;
       }
 
+      // On last step: Autoplay completes its single run, do not loop to first slide
+      if (currentStepIndex >= steps.length - 1) {
+        setIsPlaying(false);
+        setPlaybackStatus('ready');
+        return;
+      }
+
       setPlaybackStatus('playing');
       const nominalDwell = getStepDwellDuration(currentStep, demoSettings);
       const transitionDelayMs = Math.max(0, demoSettings?.transitionDelayMs ?? 500);
@@ -1043,7 +1238,14 @@ export const DemoRuntimePlayer: React.FC<DemoRuntimePlayerProps> = ({
                   return;
                 }
 
-                setPlaybackStatus('playing');
+                // On last step: Autoplay completes its single run, do not loop to first slide
+      if (currentStepIndex >= steps.length - 1) {
+        setIsPlaying(false);
+        setPlaybackStatus('ready');
+        return;
+      }
+
+      setPlaybackStatus('playing');
                 const transitionDelayMs = Math.max(0, demoSettings?.transitionDelayMs ?? 500);
                 setTimeout(() => {
                   goToNextStepRef.current();
@@ -1064,7 +1266,14 @@ export const DemoRuntimePlayer: React.FC<DemoRuntimePlayerProps> = ({
             return;
           }
 
-          setPlaybackStatus('playing');
+          // On last step: Autoplay completes its single run, do not loop to first slide
+      if (currentStepIndex >= steps.length - 1) {
+        setIsPlaying(false);
+        setPlaybackStatus('ready');
+        return;
+      }
+
+      setPlaybackStatus('playing');
 
           // Phase 6: Hold duration & safe automatic progression
           const nominalDwell = getStepDwellDuration(currentStep, demoSettings);
@@ -1099,6 +1308,8 @@ export const DemoRuntimePlayer: React.FC<DemoRuntimePlayerProps> = ({
     demoSettings.autoplayProgressionPolicy,
     cancelPlaybackLifecycle,
     updateCameraScale,
+    isAtChapter,
+    chapters,
   ]);
 
   // Handle Play/Pause toggling without re-initializing camera transform
@@ -1121,7 +1332,14 @@ export const DemoRuntimePlayer: React.FC<DemoRuntimePlayerProps> = ({
 
       if (stepPhaseRef.current === 'holding') {
         // Schedule nominal dwell & advance only after camera animation has already completed
-        setPlaybackStatus('playing');
+        // On last step: Autoplay completes its single run, do not loop to first slide
+      if (currentStepIndex >= steps.length - 1) {
+        setIsPlaying(false);
+        setPlaybackStatus('ready');
+        return;
+      }
+
+      setPlaybackStatus('playing');
         const zoomConfig = currentStep.zoomPan;
         const hasZoom = Boolean(zoomConfig?.enabled);
         const nominalDwell = getStepDwellDuration(currentStep, demoSettings);
@@ -1160,6 +1378,19 @@ export const DemoRuntimePlayer: React.FC<DemoRuntimePlayerProps> = ({
     variables
   );
 
+  const handleContainerClick = (e: React.PointerEvent<HTMLDivElement> | React.MouseEvent<HTMLDivElement>) => {
+    if (!containerRef.current) return;
+    if (typeof e.clientX !== 'number' || typeof e.clientY !== 'number') return;
+    const rect = containerRef.current.getBoundingClientRect();
+    const x = Math.round(e.clientX - rect.left);
+    const y = Math.round(e.clientY - rect.top);
+    const id = Date.now() + Math.random();
+    setClickRipples((prev) => [...prev.slice(-4), { id, x, y }]);
+    setTimeout(() => {
+      setClickRipples((prev) => prev.filter((r) => r.id !== id));
+    }, 750);
+  };
+
   // Empty demo state guard
   if (steps.length === 0 && (!chapters || chapters.length === 0)) {
     return (
@@ -1178,11 +1409,43 @@ export const DemoRuntimePlayer: React.FC<DemoRuntimePlayerProps> = ({
   return (
     <div
       ref={containerRef}
-      className={`relative w-full h-full flex flex-col items-center justify-center overflow-hidden font-sans select-none bg-dark text-white ${
-        isFullscreen ? 'fixed inset-0 z-50 rounded-0' : 'rounded-2xl shadow-2xl'
+      onPointerDownCapture={handleContainerClick}
+      className={`group/player mac-preview-cursor relative w-full h-full flex flex-col items-center justify-center overflow-hidden font-sans select-none bg-dark text-white ${
+        isFullscreen ? 'fixed inset-0 z-50 rounded-none' : 'rounded-2xl shadow-2xl border border-white/10'
       }`}
     >
-      {/* Viewport Stage */}
+      {/* macOS Browser Mockup Top Bar (Matches Supademo Image 1 & 2) */}
+      {showBrowserFrame !== false && !isFullscreen && (
+        <div className="w-full h-10 bg-[#f1f2f4] border-b border-[#e2e4e8] px-4 flex items-center justify-between select-none flex-shrink-0 z-40 rounded-t-2xl">
+          {/* Traffic Light Dots */}
+          <div className="flex items-center gap-2">
+            <span className="w-3 h-3 rounded-full bg-[#FF5F56] shadow-xs" />
+            <span className="w-3 h-3 rounded-full bg-[#FFBD2E] shadow-xs" />
+            <span className="w-3 h-3 rounded-full bg-[#27C93F] shadow-xs" />
+          </div>
+
+          {/* Centered Pill with Demo Name */}
+          <div className="w-[420px] max-w-[50%] h-6 rounded-full bg-[#e3e5e8] flex items-center justify-center text-center text-[#374151] text-xs font-medium truncate px-4 shadow-xs">
+            {demoName || 'New Demo'}
+          </div>
+
+          {/* Top Right Controls: Fullscreen Expand */}
+          <div className="flex items-center gap-2 text-[#6b7280]">
+            <button
+              type="button"
+              onClick={toggleFullscreen}
+              className="p-1 hover:text-[#111827] transition-colors cursor-pointer"
+              title="Fullscreen"
+            >
+              <Maximize2 className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Main Viewport Stage Container */}
+      <div className="relative flex-1 w-full flex items-center justify-center overflow-hidden">
+        {/* Viewport Stage */}
       <PlayerViewport
         currentScene={currentScene}
         currentStep={currentStep}
@@ -1211,6 +1474,9 @@ export const DemoRuntimePlayer: React.FC<DemoRuntimePlayerProps> = ({
         showHotspots={showHotspots}
       />
 
+
+      </div>
+
       {/* Completion Modal */}
       {isCompleted && (
         <PlayerCompletion
@@ -1221,18 +1487,43 @@ export const DemoRuntimePlayer: React.FC<DemoRuntimePlayerProps> = ({
         />
       )}
 
+      {/* Bottom Hover Sensor Region (Hovering bottom reveals Supademo controls) */}
+      <div
+        onMouseEnter={handleMouseEnterBottom}
+        onMouseLeave={handleMouseLeaveBottom}
+        className="absolute bottom-0 inset-x-0 h-28 sm:h-36 z-30 pointer-events-auto"
+      />
+
       {/* Floating Bottom Control Bar */}
+      <div
+        onMouseEnter={handleMouseEnterBottom}
+        onMouseLeave={handleMouseLeaveBottom}
+        className="contents"
+      >
       <PlayerControls
         currentStepIndex={currentStepIndex}
         totalSteps={steps.length}
+        steps={steps}
+        chapters={chapters}
         isPlaying={isPlaying}
         isCompleted={isCompleted}
         isFullscreen={isFullscreen}
-        canGoPrev={currentStepIndex > 0 && !isAtChapter && !isZoomingOut}
-        canGoNext={currentStepIndex < steps.length - 1 && !isZoomingOut}
+        canGoPrev={!isAtChapter && (currentStepIndex > 0 || Boolean(chapters && chapters.length > 0)) && !isZoomingOut}
+        canGoNext={isAtChapter ? steps.length > 0 : currentStepIndex < steps.length - 1 && !isZoomingOut}
         onPrev={goToPrevStep}
         onNext={goToNextStep}
-        onTogglePlay={() => setIsPlaying((p) => !p)}
+        onGoToStep={goToStep}
+        onGoToChapter={goToChapter}
+        onTogglePlay={() => {
+          if (isAtChapter) {
+            goToNextStep();
+            if (demoSettings.autoplay) setIsPlaying(true);
+          } else {
+            setIsPlaying((p) => !p);
+          }
+        }}
+        isHovered={isControlsHovered}
+        isAtChapter={isAtChapter}
         onRestart={handleRestart}
         onToggleFullscreen={toggleFullscreen}
         activeChapterTitle={activeChapter?.title}
@@ -1240,6 +1531,8 @@ export const DemoRuntimePlayer: React.FC<DemoRuntimePlayerProps> = ({
         onOpenChapterMenu={() => setIsChapterMenuOpen(true)}
         demoSettings={demoSettings}
       />
+
+      </div>
 
       {/* Chapter Menu Drawer */}
       <PlayerChapterMenu
@@ -1260,12 +1553,70 @@ export const DemoRuntimePlayer: React.FC<DemoRuntimePlayerProps> = ({
           href={demoSettings.branding?.ctaButtonUrl || 'https://preveuo.com'}
           target="_blank"
           rel="noopener noreferrer"
-          className="absolute bottom-4 left-4 z-40 px-2.5 py-1 rounded-xl bg-white/90 hover:bg-white text-heading text-[10px] font-bold shadow-md border border-border-default flex items-center gap-1.5 transition-all hover:scale-105"
+          className={`absolute right-6 sm:right-8 z-40 px-3 py-1.5 rounded-xl bg-white text-[#111827] text-xs font-semibold shadow-md border border-black/10 flex items-center gap-2 transition-all duration-300 ${
+            isControlsHovered ? 'bottom-12 sm:bottom-14' : 'bottom-5 sm:bottom-6'
+          } hover:scale-105 active:scale-95`}
         >
-          <span className="w-1.5 h-1.5 rounded-full bg-brand-purple" />
+          <span className="w-5 h-5 rounded-md bg-brand-purple flex items-center justify-center text-white text-[11px] font-bold shadow-xs">
+            P
+          </span>
           <span>{demoSettings.branding?.watermarkText || 'Created on Preveuo'}</span>
         </a>
       )}
+
+      {/* Scoped MacBook Cursor Styling */}
+      <style jsx global>{`
+        .mac-preview-cursor {
+          cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none'%3E%3Cpath d='M2 1V21.5L7.5 16H15.5L2 1Z' fill='rgba(0,0,0,0.35)' transform='translate(1, 1)'/%3E%3Cpath d='M2 1V21.5L7.5 16H15.5L2 1Z' fill='%23ffffff' stroke='%23000000' stroke-width='2' stroke-linejoin='round'/%3E%3C/svg%3E") 2 1, default;
+        }
+        .mac-preview-cursor button,
+        .mac-preview-cursor button *,
+        .mac-preview-cursor a,
+        .mac-preview-cursor a *,
+        .mac-preview-cursor [role="button"],
+        .mac-preview-cursor [role="button"] *,
+        .mac-preview-cursor .cursor-pointer,
+        .mac-preview-cursor .cursor-pointer *,
+        .mac-preview-cursor [data-clickable="true"],
+        .mac-preview-cursor [data-clickable="true"] *,
+        .mac-preview-cursor [onclick],
+        .mac-preview-cursor [onclick] * {
+          cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 28 28' fill='none'%3E%3Cpath d='M8 1.5c-1 0-1.8.8-1.8 1.8v8.2c-.6-.6-1.5-.9-2.3-.5-1.1.6-1.4 1.8-.8 2.8l2.5 4.5c1.1 1.9 3 3.5 5.4 3.5h3.8c3.4 0 5.1-2.5 5.1-5.9v-3.4c0-1-.8-1.7-1.7-1.7-.2 0-.5 0-.7.1-.2-.8-.9-1.4-1.8-1.4-.2 0-.5 0-.7.1-.3-.8-1.1-1.4-2.1-1.4-.2 0-.5 0-.8.1V3.3c0-1-.8-1.8-1.8-1.8z' fill='rgba(0,0,0,0.35)' transform='translate(0.8, 1)'/%3E%3Cpath d='M8 1.5c-1 0-1.8.8-1.8 1.8v8.2c-.6-.6-1.5-.9-2.3-.5-1.1.6-1.4 1.8-.8 2.8l2.5 4.5c1.1 1.9 3 3.5 5.4 3.5h3.8c3.4 0 5.1-2.5 5.1-5.9v-3.4c0-1-.8-1.7-1.7-1.7-.2 0-.5 0-.7.1-.2-.8-.9-1.4-1.8-1.4-.2 0-.5 0-.7.1-.3-.8-1.1-1.4-2.1-1.4-.2 0-.5 0-.8.1V3.3c0-1-.8-1.8-1.8-1.8z' fill='%23ffffff' stroke='%23000000' stroke-width='1.8' stroke-linejoin='round'/%3E%3Cline x1='10.5' y1='12.5' x2='10.5' y2='17' stroke='%23000000' stroke-width='1.6' stroke-linecap='round'/%3E%3Cline x1='13.5' y1='12.5' x2='13.5' y2='17' stroke='%23000000' stroke-width='1.6' stroke-linecap='round'/%3E%3Cline x1='16.5' y1='12.5' x2='16.5' y2='17' stroke='%23000000' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E") 8 2, pointer !important;
+        }
+        .mac-preview-cursor input,
+        .mac-preview-cursor textarea {
+          cursor: text !important;
+        }
+      `}</style>
+
+      {/* Liquid Wave Ripple Click Layer (Mapped 1:1 to containerRef coordinates) */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden z-50">
+        {clickRipples.map((r) => (
+          <div
+            key={r.id}
+            style={{ left: `${r.x}px`, top: `${r.y}px` }}
+            className="absolute pointer-events-none select-none w-0 h-0"
+          >
+            {/* Impact Drop Pearl Glow */}
+            <span className="absolute w-3 h-3 -left-1.5 -top-1.5 rounded-full bg-white/90 shadow-[0_0_8px_rgba(255,255,255,0.95)] animate-click-droplet pointer-events-none" />
+
+            {/* Primary Liquid Wave Ring */}
+            <span className="absolute w-12 h-12 -left-6 -top-6 rounded-full border-2 border-brand-purple/80 shadow-[0_0_12px_rgba(91,92,226,0.4),inset_0_0_6px_rgba(147,197,253,0.35)] animate-click-wave-1 bg-transparent pointer-events-none" />
+
+            {/* Secondary Liquid Wave Ring */}
+            <span className="absolute w-16 h-16 -left-8 -top-8 rounded-full border border-blue-400/70 shadow-[0_0_10px_rgba(96,165,250,0.3)] animate-click-wave-2 bg-transparent pointer-events-none" />
+
+            {/* Tertiary Dissipating Ambient Wave */}
+            <span className="absolute w-22 h-22 -left-11 -top-11 rounded-full border border-white/45 shadow-[0_0_8px_rgba(255,255,255,0.2)] animate-click-wave-3 bg-transparent pointer-events-none" />
+
+            {/* Micro Splash Droplets */}
+            <span className="absolute w-1 h-1 -left-0.5 -top-0.5 rounded-full bg-blue-300 animate-click-splash-1 pointer-events-none" />
+            <span className="absolute w-1 h-1 -left-0.5 -top-0.5 rounded-full bg-white animate-click-splash-2 pointer-events-none" />
+            <span className="absolute w-1 h-1 -left-0.5 -top-0.5 rounded-full bg-blue-300 animate-click-splash-3 pointer-events-none" />
+            <span className="absolute w-1 h-1 -left-0.5 -top-0.5 rounded-full bg-white animate-click-splash-4 pointer-events-none" />
+          </div>
+        ))}
+      </div>
 
       {/* Embed Open in New Tab Button (Appearance -> Demo) */}
       {demoSettings.openInNewTab && (

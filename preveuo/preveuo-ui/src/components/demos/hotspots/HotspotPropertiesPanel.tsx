@@ -7,12 +7,9 @@ import {
   IDemoStep,
   IDemoScene,
   HotspotType,
-  HotspotPointerStyle,
   HotspotTextAlign,
   HotspotBorderRadius,
   HotspotWidth,
-  HotspotAnimation,
-  HotspotVisibility,
   HotspotActionType,
   IDemoChapter,
   PointerAnimationSettings,
@@ -31,21 +28,16 @@ import {
   Trash2,
   X,
   Save,
-  MousePointer,
-  HelpCircle,
+  Radio,
+  MessageSquareText,
   Square,
-  Sparkles,
   AlignLeft,
   AlignCenter,
   AlignRight,
-  Radio,
-  Pointer,
-  Target,
-  Hash,
 } from 'lucide-react';
 import { PointerStyleSelector } from './PointerStyleSelector';
 import { PointerMiniPreview } from './PointerMiniPreview';
-import { PRIMARY_COLOR, THEME_COLORS, PRESET_HOTSPOT_COLORS, PRESET_TEXT_COLORS } from '@/lib/constants/theme';
+import { PRIMARY_COLOR, THEME_COLORS } from '@/lib/constants/theme';
 
 interface HotspotPropertiesPanelProps {
   element: IDemoElement;
@@ -83,21 +75,22 @@ export const HotspotPropertiesPanel: React.FC<HotspotPropertiesPanelProps> = ({
       borderRadius: 'rounded',
       width: 'medium',
       animation: 'ping',
+      pointerStyle: 'beacon',
     },
     visibility: 'always',
     navigation: {
       showNext: true,
       nextButton: {
         enabled: true,
-        text: 'Continue',
-        background: THEME_COLORS.white,
-        textColor: PRIMARY_COLOR,
+        text: 'Next',
+        background: PRIMARY_COLOR,
+        textColor: 'white',
         action: 'nextStep',
       },
       backButton: {
         enabled: false,
-        text: 'Back',
-        background: THEME_COLORS.white,
+        text: 'Skip',
+        background: 'white',
         textColor: THEME_COLORS.textBody,
         action: 'previousStep',
       },
@@ -138,7 +131,13 @@ export const HotspotPropertiesPanel: React.FC<HotspotPropertiesPanelProps> = ({
     });
   };
 
-  const isArea = config.type === 'area';
+  const updateArea = (areaPatch: Partial<NonNullable<HotspotConfig['area']>>) => {
+    updateConfig({
+      area: { ...(config.area || {}), ...areaPatch },
+    });
+  };
+
+  const activeToolType: HotspotType = config.type || 'pointer';
 
   const effectivePointerColor =
     config.appearance.pointerColor ||
@@ -169,108 +168,161 @@ export const HotspotPropertiesPanel: React.FC<HotspotPropertiesPanelProps> = ({
         </button>
       </div>
 
-      {/* Grouped Properties List */}
+      {/* Main Scrollable Inspector Body */}
       <div className="flex-1 overflow-y-auto overflow-x-hidden p-5 space-y-6">
-        {/* 1. CONTENT SECTION */}
-        <section className="space-y-3.5">
-          <span className="text-[10.5px] font-semibold uppercase tracking-[0.16em] text-brand-purple">
-            Content
-          </span>
+        {/* =========================================================================
+            TOOL TYPE SWITCHER (Supademo 3 styles: Pointer, Callout, Area)
+            ========================================================================= */}
+        <section className="space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="text-[10.5px] font-semibold uppercase tracking-[0.16em] text-brand-purple">
+              Hotspot Style
+            </span>
+            <span className="text-[10px] text-muted">
+              {activeToolType === 'pointer'
+                ? 'Pinpoint Marker'
+                : activeToolType === 'callout'
+                ? 'Floating Card'
+                : 'Area Highlight'}
+            </span>
+          </div>
 
-          <Input
-            label="Badge Label (Optional)"
-            placeholder="e.g. STEP 2 OF 12"
-            value={config.content.badge || ''}
-            onChange={(e) => updateContent({ badge: e.target.value })}
-          />
+          <div className="grid grid-cols-3 gap-1 p-1 rounded-xl bg-slate-100 border border-slate-200">
+            {/* 1. Pointer (Pinpoint) Button */}
+            <button
+              type="button"
+              onClick={() => {
+                if (activeToolType === 'area') {
+                  const areaW = element.position?.width || 32;
+                  const areaH = element.position?.height || 22;
+                  const newX = Math.max(1, Math.min(99, element.position.x + areaW / 2));
+                  const newY = Math.max(1, Math.min(99, element.position.y + areaH / 2));
+                  onUpdate({
+                    position: {
+                      ...element.position,
+                      x: Math.round(newX * 10) / 10,
+                      y: Math.round(newY * 10) / 10,
+                    },
+                    hotspotConfig: {
+                      ...config,
+                      type: 'pointer',
+                    },
+                  });
+                } else {
+                  updateConfig({ type: 'pointer' });
+                }
+              }}
+              className={`flex flex-col items-center justify-center py-2 px-1 rounded-lg transition-all cursor-pointer ${
+                activeToolType === 'pointer'
+                  ? 'bg-white text-heading font-bold shadow-xs border border-slate-200 ring-1 ring-brand-purple/20'
+                  : 'text-body hover:text-heading hover:bg-white/70'
+              }`}
+            >
+              <Radio className={`w-4 h-4 mb-1 ${activeToolType === 'pointer' ? 'text-brand-purple' : 'text-slate-500'}`} />
+              <span className="text-[11px] font-semibold">Pointer</span>
+              <span className="text-[9px] text-muted">Pinpoint</span>
+            </button>
 
-          <Input
-            label="Headline / Title"
-            placeholder="e.g. Everything, at a glance"
-            value={
-              config.content.title !== undefined
-                ? config.content.title
-                : config.content.text?.includes('\n')
-                ? config.content.text.split('\n')[0]
-                : config.content.text || ''
-            }
-            onChange={(e) => {
-              const newTitle = e.target.value;
-              const currentDesc = config.content.description || '';
-              updateContent({
-                title: newTitle,
-                text: currentDesc ? `${newTitle}\n${currentDesc}` : newTitle,
-              });
-            }}
-          />
+            {/* 2. Callout Button */}
+            <button
+              type="button"
+              onClick={() => {
+                if (activeToolType === 'area') {
+                  const areaW = element.position?.width || 32;
+                  const areaH = element.position?.height || 22;
+                  const newX = Math.max(1, Math.min(99, element.position.x + areaW / 2));
+                  const newY = Math.max(1, Math.min(99, element.position.y + areaH / 2));
+                  onUpdate({
+                    position: {
+                      ...element.position,
+                      x: Math.round(newX * 10) / 10,
+                      y: Math.round(newY * 10) / 10,
+                    },
+                    hotspotConfig: {
+                      ...config,
+                      type: 'callout',
+                    },
+                  });
+                } else {
+                  updateConfig({ type: 'callout' });
+                }
+              }}
+              className={`flex flex-col items-center justify-center py-2 px-1 rounded-lg transition-all cursor-pointer ${
+                activeToolType === 'callout'
+                  ? 'bg-white text-heading font-bold shadow-xs border border-slate-200 ring-1 ring-brand-purple/20'
+                  : 'text-body hover:text-heading hover:bg-white/70'
+              }`}
+            >
+              <MessageSquareText className={`w-4 h-4 mb-1 ${activeToolType === 'callout' ? 'text-brand-purple' : 'text-slate-500'}`} />
+              <span className="text-[11px] font-semibold">Callout</span>
+              <span className="text-[9px] text-muted">Floating</span>
+            </button>
 
-          <Textarea
-            label="Description"
-            rows={3}
-            placeholder="e.g. See the metrics that matter and spot changes before they become blockers."
-            value={
-              config.content.description !== undefined
-                ? config.content.description
-                : config.content.text?.includes('\n')
-                ? config.content.text.split('\n').slice(1).join('\n')
-                : ''
-            }
-            onChange={(e) => {
-              const newDesc = e.target.value;
-              const currentTitle = config.content.title || config.content.text || '';
-              updateContent({
-                description: newDesc,
-                text: `${currentTitle}\n${newDesc}`,
-              });
-            }}
-          />
-
-          <div>
-            <label className="block text-[12.5px] font-medium text-gray-700 mb-1.5">
-              Text Alignment
-            </label>
-            <SegmentedControl
-              value={config.content.textAlign || 'left'}
-              onChange={(val) => updateContent({ textAlign: val as HotspotTextAlign })}
-              options={[
-                { value: 'left', label: 'Left', icon: <AlignLeft className="w-3.5 h-3.5" /> },
-                { value: 'center', label: 'Center', icon: <AlignCenter className="w-3.5 h-3.5" /> },
-                { value: 'right', label: 'Right', icon: <AlignRight className="w-3.5 h-3.5" /> },
-              ]}
-            />
+            {/* 3. Area Button */}
+            <button
+              type="button"
+              onClick={() => {
+                if (activeToolType !== 'area') {
+                  const areaW = element.position?.width || 32;
+                  const areaH = element.position?.height || 22;
+                  const newX = Math.max(1, Math.min(99 - areaW, element.position.x - areaW / 2));
+                  const newY = Math.max(1, Math.min(99 - areaH, element.position.y - areaH / 2));
+                  onUpdate({
+                    position: {
+                      ...element.position,
+                      x: Math.round(newX * 10) / 10,
+                      y: Math.round(newY * 10) / 10,
+                      width: areaW,
+                      height: areaH,
+                    },
+                    hotspotConfig: {
+                      ...config,
+                      type: 'area',
+                      area: config.area || {
+                        fillColor: config.appearance.background || PRIMARY_COLOR,
+                        fillOpacity: 0.14,
+                        borderColor: config.appearance.background || PRIMARY_COLOR,
+                        borderWidth: 2,
+                        borderStyle: 'solid',
+                        borderRadius: 12,
+                      },
+                    },
+                  });
+                }
+              }}
+              className={`flex flex-col items-center justify-center py-2 px-1 rounded-lg transition-all cursor-pointer ${
+                activeToolType === 'area'
+                  ? 'bg-white text-heading font-bold shadow-xs border border-slate-200 ring-1 ring-brand-purple/20'
+                  : 'text-body hover:text-heading hover:bg-white/70'
+              }`}
+            >
+              <Square className={`w-4 h-4 mb-1 ${activeToolType === 'area' ? 'text-brand-purple' : 'text-slate-500'}`} />
+              <span className="text-[11px] font-semibold">Area</span>
+              <span className="text-[9px] text-muted">Region</span>
+            </button>
           </div>
         </section>
 
-        {/* 2. APPEARANCE SECTION */}
-        <section className="space-y-4 pt-4 border-t border-border-light">
-          <span className="text-[10.5px] font-semibold uppercase tracking-[0.16em] text-brand-purple">
-            Appearance
-          </span>
+        {/* =========================================================================
+            TOOL-SPECIFIC CONTROLS
+            ========================================================================= */}
 
-          <div>
-            <label className="block text-[12.5px] font-medium text-gray-700 mb-1.5">
-              Hotspot Style
-            </label>
-            <SegmentedControl
-              value={config.type}
-              onChange={(val) => updateConfig({ type: val as HotspotType })}
-              options={[
-                { value: 'pointer', label: 'Pointer', icon: <MousePointer className="w-3.5 h-3.5" /> },
-                { value: 'callout', label: 'Callout', icon: <HelpCircle className="w-3.5 h-3.5" /> },
-                { value: 'area', label: 'Area', icon: <Square className="w-3.5 h-3.5" /> },
-              ]}
-            />
-          </div>
+        {/* 1. POINTER SPECIFIC: Pin Appearance & Coordinates */}
+        {activeToolType === 'pointer' && (
+          <>
+            {/* Visual Pointer Style */}
+            <section className="space-y-3.5 pt-3 border-t border-border-light">
+              <span className="text-[10.5px] font-semibold uppercase tracking-[0.16em] text-brand-purple">
+                Pointer Appearance
+              </span>
 
-          {config.type === 'pointer' && (
-            <div className="space-y-3.5">
               <PointerStyleSelector
-                value={config.appearance.pointerStyle || 'ripple'}
+                value={config.appearance.pointerStyle || 'beacon'}
                 onChange={(val) => updateAppearance({ pointerStyle: val })}
               />
 
               <PointerMiniPreview
-                style={config.appearance.pointerStyle || 'ripple'}
+                style={config.appearance.pointerStyle || 'beacon'}
                 color={effectivePointerColor}
                 size={config.appearance.pointerAnimation?.size || 'md'}
                 animationSettings={config.appearance.pointerAnimation}
@@ -290,32 +342,223 @@ export const HotspotPropertiesPanel: React.FC<HotspotPropertiesPanelProps> = ({
                 onChange={(color) => updateAppearance({ pointerColor: color })}
                 presetColors={['#5B5CE2', '#6366F1', '#EC4899', '#F59E0B', '#10B981', '#06B6D4', '#8B5CF6', '#FFFFFF']}
               />
-            </div>
-          )}
+            </section>
+          </>
+        )}
+
+        {/* 2. AREA SPECIFIC: Region Geometry & Border Styling */}
+        {activeToolType === 'area' && (
+          <>
+            <section className="space-y-3.5 pt-3 border-t border-border-light">
+              <span className="text-[10.5px] font-semibold uppercase tracking-[0.16em] text-brand-purple">
+                Region Highlight Geometry
+              </span>
+
+              <div className="grid grid-cols-2 gap-3">
+                <Input
+                  type="number"
+                  step="0.5"
+                  min={5}
+                  max={100}
+                  label="Width (%)"
+                  value={Math.round((element.position.width || 30) * 10) / 10}
+                  onChange={(e) => {
+                    const parsed = parseFloat(e.target.value);
+                    if (!isNaN(parsed)) {
+                      onUpdate({
+                        position: { ...element.position, width: Math.max(5, Math.min(100, parsed)) },
+                      });
+                    }
+                  }}
+                />
+                <Input
+                  type="number"
+                  step="0.5"
+                  min={5}
+                  max={100}
+                  label="Height (%)"
+                  value={Math.round((element.position.height || 20) * 10) / 10}
+                  onChange={(e) => {
+                    const parsed = parseFloat(e.target.value);
+                    if (!isNaN(parsed)) {
+                      onUpdate({
+                        position: { ...element.position, height: Math.max(5, Math.min(100, parsed)) },
+                      });
+                    }
+                  }}
+                />
+              </div>
+
+              <ColorField
+                label="Highlight & Border Color"
+                value={config.area?.borderColor || config.appearance.background || PRIMARY_COLOR}
+                onChange={(color) => {
+                  updateAppearance({ background: color });
+                  updateArea({ borderColor: color, fillColor: color });
+                }}
+                presetColors={['#5B5CE2', '#6366F1', '#EC4899', '#F59E0B', '#10B981', '#06B6D4', '#8B5CF6']}
+              />
+
+              <div>
+                <label className="block text-[12px] font-medium text-gray-700 mb-1.5">
+                  Fill Tint Opacity
+                </label>
+                <SegmentedControl
+                  value={String(config.area?.fillOpacity ?? 0.14)}
+                  onChange={(val) => updateArea({ fillOpacity: parseFloat(val) })}
+                  options={[
+                    { value: '0.08', label: 'Subtle' },
+                    { value: '0.14', label: 'Medium' },
+                    { value: '0.25', label: 'Solid' },
+                  ]}
+                />
+              </div>
+            </section>
+          </>
+        )}
+
+        {/* =========================================================================
+            TOOLTIP CARD CONTENT (Visible across ALL 3 tools: Pointer, Callout, Area)
+            ========================================================================= */}
+        <section className="space-y-3.5 pt-3 border-t border-border-light">
+          <span className="text-[10.5px] font-semibold uppercase tracking-[0.16em] text-brand-purple">
+            Tooltip Text & Content
+          </span>
+
+          <Input
+            label="Title / Main Text"
+            value={
+              config.content.title !== undefined
+                ? config.content.title
+                : config.content.text?.includes('\n')
+                ? config.content.text.split('\n')[0]
+                : config.content.text || ''
+            }
+            placeholder="Add some hotspot text here."
+            onChange={(e) => {
+              const newTitle = e.target.value;
+              const currentDesc = config.content.description || '';
+              updateContent({
+                title: newTitle,
+                text: currentDesc ? `${newTitle}\n${currentDesc}` : newTitle,
+              });
+            }}
+          />
+
+          <Textarea
+            label="Description (Optional)"
+            rows={2}
+            placeholder="Additional guidance for viewers..."
+            value={
+              config.content.description !== undefined
+                ? config.content.description
+                : config.content.text?.includes('\n')
+                ? config.content.text.split('\n').slice(1).join('\n')
+                : ''
+            }
+            onChange={(e) => {
+              const newDesc = e.target.value;
+              const currentTitle = config.content.title || config.content.text || '';
+              updateContent({
+                description: newDesc,
+                text: `${currentTitle}\n${newDesc}`,
+              });
+            }}
+          />
+
+          <div>
+            <label className="block text-[12px] font-medium text-gray-700 mb-1.5">
+              Text Alignment
+            </label>
+            <SegmentedControl
+              value={config.content.textAlign || 'left'}
+              onChange={(val) => updateContent({ textAlign: val as HotspotTextAlign })}
+              options={[
+                { value: 'left', label: 'Left', icon: <AlignLeft className="w-3.5 h-3.5" /> },
+                { value: 'center', label: 'Center', icon: <AlignCenter className="w-3.5 h-3.5" /> },
+                { value: 'right', label: 'Right', icon: <AlignRight className="w-3.5 h-3.5" /> },
+              ]}
+            />
+          </div>
+        </section>
+
+        {/* =========================================================================
+            TOOLTIP CARD APPEARANCE (Visible across ALL 3 tools)
+            ========================================================================= */}
+        <section className="space-y-3.5 pt-3 border-t border-border-light">
+          <span className="text-[10.5px] font-semibold uppercase tracking-[0.16em] text-brand-purple">
+            Tooltip Appearance
+          </span>
 
           <ColorField
-            label="Tooltip Background Color"
-            value={config.appearance.background || THEME_COLORS.bgDark}
+            label="Card Background Color"
+            value={config.appearance.background || PRIMARY_COLOR}
             onChange={(color) => updateAppearance({ background: color })}
-            presetColors={PRESET_HOTSPOT_COLORS as unknown as string[]}
+            presetColors={['#5B5CE2', '#0f0f1a', '#1e293b', '#4338ca', '#047857', '#be123c', '#ffffff']}
           />
 
           <ColorField
             label="Text Color"
-            value={config.appearance.textColor || THEME_COLORS.white}
+            value={config.appearance.textColor || '#ffffff'}
             onChange={(color) => updateAppearance({ textColor: color })}
-            presetColors={PRESET_TEXT_COLORS as unknown as string[]}
+            presetColors={['#ffffff', '#0f0f1a', '#e2e8f0', '#f8fafc']}
           />
 
-          <Switch
-            label="Backdrop Dimming"
-            description="Darken scene to highlight this hotspot"
-            checked={config.appearance.backdrop}
-            onChange={(checked) => updateAppearance({ backdrop: checked })}
-          />
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-[12px] font-medium text-gray-700 mb-1.5">
+                Card Width
+              </label>
+              <SegmentedControl
+                value={
+                  config.appearance.customWidth === 200
+                    ? 'small'
+                    : config.appearance.customWidth === 320
+                    ? 'large'
+                    : config.appearance.customWidth === 244
+                    ? 'medium'
+                    : config.appearance.customWidth
+                    ? 'custom'
+                    : config.appearance.width || 'medium'
+                }
+                onChange={(val) =>
+                  updateAppearance({
+                    width: val === 'custom' ? 'medium' : (val as HotspotWidth),
+                    customWidth: val === 'small' ? 200 : val === 'large' ? 320 : val === 'custom' ? config.appearance.customWidth : 244,
+                  })
+                }
+                options={[
+                  { value: 'small', label: '200px' },
+                  { value: 'medium', label: '244px' },
+                  { value: 'large', label: '320px' },
+                  ...(config.appearance.customWidth && ![200, 244, 320].includes(config.appearance.customWidth)
+                    ? [{ value: 'custom', label: `${config.appearance.customWidth}px` }]
+                    : []),
+                ]}
+              />
+            </div>
+
+            <div>
+              <label className="block text-[12px] font-medium text-gray-700 mb-1.5">
+                Card Height
+              </label>
+              <SegmentedControl
+                value={config.appearance.customHeight ? 'custom' : 'auto'}
+                onChange={(val) =>
+                  updateAppearance({
+                    customHeight: val === 'auto' ? undefined : config.appearance.customHeight || 140,
+                  })
+                }
+                options={[
+                  { value: 'auto', label: 'Auto (Fit)' },
+                  { value: 'custom', label: config.appearance.customHeight ? `${config.appearance.customHeight}px` : 'Fixed (140px)' },
+                ]}
+              />
+            </div>
+          </div>
 
           <div>
-            <label className="block text-[12.5px] font-medium text-gray-700 mb-1.5">
+            <label className="block text-[12px] font-medium text-gray-700 mb-1.5">
               Border Radius
             </label>
             <SegmentedControl
@@ -329,391 +572,146 @@ export const HotspotPropertiesPanel: React.FC<HotspotPropertiesPanelProps> = ({
             />
           </div>
 
-          <div>
-            <label className="block text-[12.5px] font-medium text-gray-700 mb-1.5">
-              Animation
-            </label>
-            <SegmentedControl
-              value={config.appearance.animation || 'ping'}
-              onChange={(val) => updateAppearance({ animation: val as HotspotAnimation })}
-              options={[
-                { value: 'none', label: 'None' },
-                { value: 'ping', label: 'Ping' },
-                { value: 'pulse', label: 'Pulse' },
-                { value: 'bounce', label: 'Bounce' },
-              ]}
-            />
-          </div>
-
-          <div>
-            <label className="block text-[12.5px] font-medium text-gray-700 mb-1.5">
-              Visibility
-            </label>
-            <Select
-              value={config.visibility || 'always'}
-              onChange={(e) => updateConfig({ visibility: e.target.value as HotspotVisibility })}
-              options={[
-                { value: 'always', label: 'Always Visible' },
-                { value: 'onHover', label: 'Show On Hover' },
-                { value: 'onClick', label: 'Show On Click' },
-                { value: 'afterDelay', label: 'Show After Delay (2s)' },
-              ]}
-            />
-          </div>
-
-          {!isArea && (
-            <div>
-              <label className="block text-[12.5px] font-medium text-gray-700 mb-1.5">
-                Callout Width
-              </label>
-              <SegmentedControl
-                value={config.appearance.width || 'medium'}
-                onChange={(val) => updateAppearance({ width: val as HotspotWidth })}
-                options={[
-                  { value: 'small', label: 'Small' },
-                  { value: 'medium', label: 'Medium' },
-                  { value: 'large', label: 'Large' },
-                ]}
-              />
-            </div>
-          )}
+          <Switch
+            label="Backdrop Dimming"
+            description="Darken scene to spotlight this hotspot"
+            checked={config.appearance.backdrop}
+            onChange={(checked) => updateAppearance({ backdrop: checked })}
+          />
         </section>
 
-        {/* 3. POSITION & ANCHOR SECTION */}
-        <section className="space-y-3.5 pt-4 border-t border-border-light">
-          <div className="flex items-center justify-between">
-            <span className="text-[10.5px] font-semibold uppercase tracking-[0.16em] text-brand-purple">
-              Position & Anchor
-            </span>
-            <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-brand-purple/10 text-brand-purple text-[10.5px] font-medium">
-              <span className="w-1.5 h-1.5 rounded-full bg-brand-purple" />
-              Anchor Point
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <Input
-              type="number"
-              step="0.5"
-              min={0}
-              max={100}
-              label="Anchor X (%)"
-              value={Math.round(element.position.x * 10) / 10}
-              onChange={(e) => {
-                const parsed = parseFloat(e.target.value);
-                if (!isNaN(parsed)) {
-                  const clamped = Math.max(0, Math.min(100, Math.round(parsed * 10) / 10));
-                  onUpdate({
-                    position: { ...element.position, x: clamped },
-                  });
-                }
-              }}
-              helperText="0% left → 100% right"
-            />
-            <Input
-              type="number"
-              step="0.5"
-              min={0}
-              max={100}
-              label="Anchor Y (%)"
-              value={Math.round(element.position.y * 10) / 10}
-              onChange={(e) => {
-                const parsed = parseFloat(e.target.value);
-                if (!isNaN(parsed)) {
-                  const clamped = Math.max(0, Math.min(100, Math.round(parsed * 10) / 10));
-                  onUpdate({
-                    position: { ...element.position, y: clamped },
-                  });
-                }
-              }}
-              helperText="0% top → 100% bottom"
-            />
-          </div>
-
-          {/* Anchor Interpretation Info */}
-          <div className="p-2.5 bg-light rounded-xl border border-border-default flex items-center justify-between text-xs text-body">
-            <span className="font-medium">Anchor Interpretation</span>
-            <span className="font-bold text-heading bg-white px-2 py-0.5 rounded border border-border-default shadow-2xs">
-              {isArea ? 'Top-Left Origin' : '● Center Anchor'}
-            </span>
-          </div>
-
-          {isArea && (
-            <div className="grid grid-cols-2 gap-3 pt-1">
-              <Input
-                type="number"
-                min={5}
-                max={100}
-                label="Width (%)"
-                value={element.position.width || 30}
-                onChange={(e) =>
-                  onUpdate({
-                    position: {
-                      ...element.position,
-                      width: Math.max(5, Math.min(100, Number(e.target.value))),
-                    },
-                  })
-                }
-              />
-              <Input
-                type="number"
-                min={5}
-                max={100}
-                label="Height (%)"
-                value={element.position.height || 20}
-                onChange={(e) =>
-                  onUpdate({
-                    position: {
-                      ...element.position,
-                      height: Math.max(5, Math.min(100, Number(e.target.value))),
-                    },
-                  })
-                }
-              />
-            </div>
-          )}
-        </section>
-
-        {/* 4. NAVIGATION SECTION */}
-        <section className="space-y-4 pt-4 border-t border-border-light">
+        {/* =========================================================================
+            NAVIGATION & ACTION
+            ========================================================================= */}
+        <section className="space-y-3.5 pt-3 border-t border-border-light">
           <span className="text-[10.5px] font-semibold uppercase tracking-[0.16em] text-brand-purple">
-            Navigation Buttons
+            Navigation Actions
           </span>
 
-          {/* Show Next Toggle */}
           <Switch
             label="Show Next Button"
+            description="Render the forward arrow button inside the card"
             checked={config.navigation.showNext}
             onChange={(checked) => updateNavigation({ showNext: checked })}
           />
 
-          {/* Next Button Config */}
-          {config.navigation.showNext && (
-            <div className="p-3.5 bg-canvas rounded-2xl border border-border-default space-y-3">
-              <span className="text-xs font-medium text-heading block">
-                Next Button Settings
-              </span>
+          <Select
+            label="Next Button Action"
+            value={config.navigation.nextButton?.action || 'nextStep'}
+            onChange={(e) =>
+              updateNavigation({
+                nextButton: {
+                  enabled: true,
+                  text: 'Next',
+                  background: PRIMARY_COLOR,
+                  textColor: 'white',
+                  action: e.target.value as HotspotActionType,
+                  target: config.navigation.nextButton?.target,
+                },
+              })
+            }
+            options={[
+              { value: 'nextStep', label: 'Go to Next Step' },
+              { value: 'goToStep', label: 'Go to Specific Step...' },
+              { value: 'goToScene', label: 'Go to Specific Scene...' },
+              { value: 'goToChapter', label: 'Go to Specific Chapter...' },
+              { value: 'externalUrl', label: 'Open External URL...' },
+            ]}
+          />
 
-              <Input
-                label="Button Text"
-                value={config.navigation.nextButton?.text || 'Continue'}
-                onChange={(e) =>
-                  updateNavigation({
-                    nextButton: {
-                      ...config.navigation.nextButton,
-                      enabled: true,
-                      background: config.navigation.nextButton?.background || THEME_COLORS.white,
-                      textColor: config.navigation.nextButton?.textColor || PRIMARY_COLOR,
-                      text: e.target.value,
-                      action: config.navigation.nextButton?.action || 'nextStep',
-                    },
-                  })
-                }
-              />
-
-              <div className="grid grid-cols-2 gap-2">
-                <ColorField
-                  label="Button Bg"
-                  value={config.navigation.nextButton?.background || THEME_COLORS.white}
-                  onChange={(color) =>
-                    updateNavigation({
-                      nextButton: {
-                        ...config.navigation.nextButton!,
-                        background: color,
-                      },
-                    })
-                  }
-                  presetColors={[THEME_COLORS.white, PRIMARY_COLOR, THEME_COLORS.bgDark]}
-                />
-                <ColorField
-                  label="Button Text"
-                  value={config.navigation.nextButton?.textColor || PRIMARY_COLOR}
-                  onChange={(color) =>
-                    updateNavigation({
-                      nextButton: {
-                        ...config.navigation.nextButton!,
-                        textColor: color,
-                      },
-                    })
-                  }
-                  presetColors={[PRIMARY_COLOR, THEME_COLORS.white, THEME_COLORS.bgDark]}
-                />
-              </div>
-
-              <Select
-                label="Button Action"
-                value={config.navigation.nextButton?.action || 'nextStep'}
-                onChange={(e) =>
-                  updateNavigation({
-                    nextButton: {
-                      ...config.navigation.nextButton!,
-                      action: e.target.value as HotspotActionType,
-                    },
-                  })
-                }
-                options={[
-                  { value: 'nextStep', label: 'Next Step' },
-                  { value: 'goToStep', label: 'Go to Step...' },
-                  { value: 'goToChapter', label: 'Go to Chapter...' },
-                  { value: 'goToScene', label: 'Go to Scene...' },
-                  { value: 'externalUrl', label: 'External URL...' },
-                ]}
-              />
-
-              {config.navigation.nextButton?.action === 'goToStep' && (
-                <Select
-                  label="Target Step"
-                  value={config.navigation.nextButton?.target || ''}
-                  onChange={(e) =>
-                    updateNavigation({
-                      nextButton: {
-                        ...config.navigation.nextButton!,
-                        target: e.target.value,
-                      },
-                    })
-                  }
-                  options={steps.map((st, i) => ({
-                    value: st.id || st._id || '',
-                    label: `Step ${i + 1}: ${st.title || 'Untitled'}`,
-                  }))}
-                />
-              )}
-
-              {config.navigation.nextButton?.action === 'goToChapter' && (
-                <Select
-                  label="Target Chapter"
-                  value={config.navigation.nextButton?.target || ''}
-                  onChange={(e) =>
-                    updateNavigation({
-                      nextButton: {
-                        ...config.navigation.nextButton!,
-                        target: e.target.value,
-                      },
-                    })
-                  }
-                  options={chapters.map((ch, i) => ({
-                    value: ch.id || ch._id || '',
-                    label: `Chapter ${i + 1}: ${ch.title}`,
-                  }))}
-                />
-              )}
-
-              {config.navigation.nextButton?.action === 'goToScene' && (
-                <Select
-                  label="Target Scene"
-                  value={config.navigation.nextButton?.target || ''}
-                  onChange={(e) =>
-                    updateNavigation({
-                      nextButton: {
-                        ...config.navigation.nextButton!,
-                        target: e.target.value,
-                      },
-                    })
-                  }
-                  options={scenes.map((sc, i) => ({
-                    value: sc.id || sc._id || '',
-                    label: `Scene ${i + 1}: ${sc.name}`,
-                  }))}
-                />
-              )}
-
-              {config.navigation.nextButton?.action === 'externalUrl' && (
-                <Input
-                  label="Target External URL"
-                  value={config.navigation.nextButton?.target || ''}
-                  onChange={(e) =>
-                    updateNavigation({
-                      nextButton: {
-                        ...config.navigation.nextButton!,
-                        target: e.target.value,
-                      },
-                    })
-                  }
-                  placeholder="https://example.com"
-                />
-              )}
-            </div>
+          {config.navigation.nextButton?.action === 'goToStep' && (
+            <Select
+              label="Target Step"
+              value={config.navigation.nextButton?.target || ''}
+              onChange={(e) =>
+                updateNavigation({
+                  nextButton: {
+                    ...config.navigation.nextButton!,
+                    target: e.target.value,
+                  },
+                })
+              }
+              options={steps.map((st, i) => ({
+                value: st.id || st._id || '',
+                label: `Step ${i + 1}: ${st.title || 'Untitled'}`,
+              }))}
+            />
           )}
 
-          {/* Back Button Config */}
-          <div className="p-3.5 bg-canvas rounded-2xl border border-border-default space-y-3">
-            <Switch
-              label="Display Back Button"
-              checked={config.navigation.backButton?.enabled ?? false}
-              onChange={(checked) =>
+          {config.navigation.nextButton?.action === 'goToScene' && (
+            <Select
+              label="Target Scene"
+              value={config.navigation.nextButton?.target || ''}
+              onChange={(e) =>
                 updateNavigation({
-                  backButton: {
-                    ...config.navigation.backButton,
-                    enabled: checked,
-                    text: config.navigation.backButton?.text || 'Back',
-                    background: config.navigation.backButton?.background || THEME_COLORS.white,
-                    textColor: config.navigation.backButton?.textColor || THEME_COLORS.textBody,
-                    action: config.navigation.backButton?.action || 'previousStep',
+                  nextButton: {
+                    ...config.navigation.nextButton!,
+                    target: e.target.value,
+                  },
+                })
+              }
+              options={scenes.map((sc, i) => ({
+                value: sc.id || sc._id || '',
+                label: `Scene ${i + 1}: ${sc.name || 'Untitled'}`,
+              }))}
+            />
+          )}
+
+          {config.navigation.nextButton?.action === 'goToChapter' && (
+            <Select
+              label="Target Chapter"
+              value={config.navigation.nextButton?.target || ''}
+              onChange={(e) =>
+                updateNavigation({
+                  nextButton: {
+                    ...config.navigation.nextButton!,
+                    target: e.target.value,
+                  },
+                })
+              }
+              options={chapters.map((ch, i) => ({
+                value: ch.id || ch._id || '',
+                label: `Chapter ${i + 1}: ${ch.title || 'Untitled'}`,
+              }))}
+            />
+          )}
+
+          {config.navigation.nextButton?.action === 'externalUrl' && (
+            <Input
+              label="Target URL"
+              value={config.navigation.nextButton?.target || ''}
+              placeholder="https://example.com"
+              onChange={(e) =>
+                updateNavigation({
+                  nextButton: {
+                    ...config.navigation.nextButton!,
+                    target: e.target.value,
                   },
                 })
               }
             />
+          )}
 
-            {config.navigation.backButton?.enabled && (
-              <>
-                <Input
-                  label="Back Button Text"
-                  value={config.navigation.backButton?.text || 'Back'}
-                  onChange={(e) =>
-                    updateNavigation({
-                      backButton: {
-                        ...config.navigation.backButton!,
-                        text: e.target.value,
-                      },
-                    })
-                  }
-                />
-
-                <Select
-                  label="Back Button Action"
-                  value={config.navigation.backButton?.action || 'previousStep'}
-                  onChange={(e) =>
-                    updateNavigation({
-                      backButton: {
-                        ...config.navigation.backButton!,
-                        action: e.target.value as HotspotActionType,
-                      },
-                    })
-                  }
-                  options={[
-                    { value: 'previousStep', label: 'Previous Step' },
-                    { value: 'goToStep', label: 'Go to Step...' },
-                    { value: 'goToChapter', label: 'Go to Chapter...' },
-                    { value: 'goToScene', label: 'Go to Scene...' },
-                    { value: 'externalUrl', label: 'External URL...' },
-                  ]}
-                />
-
-                {config.navigation.backButton?.action === 'goToChapter' && (
-                  <Select
-                    label="Target Chapter"
-                    value={config.navigation.backButton?.target || ''}
-                    onChange={(e) =>
-                      updateNavigation({
-                        backButton: {
-                          ...config.navigation.backButton!,
-                          target: e.target.value,
-                        },
-                      })
-                    }
-                    options={chapters.map((ch, i) => ({
-                      value: ch.id || ch._id || '',
-                      label: `Chapter ${i + 1}: ${ch.title}`,
-                    }))}
-                  />
-                )}
-              </>
-            )}
-          </div>
+          <Switch
+            label="Show Skip / Back Button"
+            description="Optional secondary action on the card"
+            checked={config.navigation.backButton?.enabled ?? false}
+            onChange={(checked) =>
+              updateNavigation({
+                backButton: {
+                  enabled: checked,
+                  text: 'Skip',
+                  background: 'white',
+                  textColor: THEME_COLORS.textBody,
+                  action: 'previousStep',
+                },
+              })
+            }
+          />
         </section>
       </div>
 
-      {/* Footer Action Buttons */}
+      {/* Footer Actions */}
       <div className="p-4 border-t border-border-light bg-canvas flex items-center justify-between gap-2 shrink-0">
         <button
           type="button"

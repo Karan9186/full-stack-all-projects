@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui';
 import { authService } from '@/lib/api/authService';
 import {
@@ -10,21 +11,45 @@ import {
   SsoLoginForm,
 } from '@/components/auth';
 
-export default function LoginPage() {
+function LoginContent() {
+  const searchParams = useSearchParams();
+  const callbackUrl = searchParams.get('callbackUrl');
   const [loginMode, setLoginMode] = useState<'standard' | 'sso'>('standard');
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
 
   useEffect(() => {
+    // If there is a callbackUrl (e.g. /workspace), it means middleware explicitly bounced
+    // the user here because the server preveuo_token cookie is missing or invalid.
+    // In that scenario, any localStorage session is desynchronized/stale.
+    // We MUST clear it and NOT redirect back to /workspace, otherwise an infinite loop occurs!
+    const hasCookie =
+      typeof document !== 'undefined' && document.cookie.includes('preveuo_token=');
     const session = authService.getStoredSession();
-    if (session) {
+
+    if (callbackUrl || !hasCookie) {
+      if (session && !hasCookie) {
+        authService.clearSession();
+      }
+      setIsCheckingAuth(false);
+      return;
+    }
+
+    // Only redirect if BOTH a valid session and token cookie exist,
+    // and the user was NOT bounced by middleware
+    if (session && hasCookie) {
       window.location.replace('/workspace');
     } else {
       setIsCheckingAuth(false);
     }
-  }, []);
+  }, [callbackUrl]);
 
   const handleSuccess = (redirectUrl?: string) => {
-    window.location.href = redirectUrl || '/workspace';
+    // If a valid callbackUrl exists (and is not /login), prioritize it
+    const target =
+      callbackUrl && !callbackUrl.startsWith('/login')
+        ? callbackUrl
+        : redirectUrl || '/workspace';
+    window.location.href = target;
   };
 
   if (isCheckingAuth) {
@@ -163,5 +188,19 @@ export default function LoginPage() {
       {/* Right Column: Visual Showcase Sidebar */}
       <AuthShowcaseSidebar mode="login" />
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-white flex items-center justify-center">
+          <div className="w-8 h-8 rounded-full border-2 border-brand-purple border-t-transparent animate-spin" />
+        </div>
+      }
+    >
+      <LoginContent />
+    </Suspense>
   );
 }

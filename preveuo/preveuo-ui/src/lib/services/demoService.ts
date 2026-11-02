@@ -235,6 +235,7 @@ export class DemoService {
       theme: ch.theme || 'dark',
       opacity: ch.opacity ?? 24,
       blur: ch.blur ?? false,
+      blurAmount: ch.blurAmount ?? 8,
       buttons: ch.buttons || [],
       createdAt: ch.createdAt ? ch.createdAt.toISOString() : undefined,
       updatedAt: ch.updatedAt ? ch.updatedAt.toISOString() : undefined,
@@ -536,6 +537,7 @@ export class DemoService {
             theme: ch.theme || 'dark',
             opacity: ch.opacity ?? 24,
             blur: ch.blur ?? false,
+      blurAmount: ch.blurAmount ?? 8,
             buttons: ch.buttons || [],
           };
         });
@@ -807,6 +809,7 @@ export class DemoService {
             theme: ch.theme || 'dark',
             opacity: ch.opacity ?? 24,
             blur: ch.blur ?? false,
+      blurAmount: ch.blurAmount ?? 8,
             buttons: (ch.buttons || []).map((b) => ({
               ...b,
               id: `btn_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,

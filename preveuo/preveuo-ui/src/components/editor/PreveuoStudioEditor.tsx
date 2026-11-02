@@ -10,6 +10,7 @@ import {
   IDemoElement,
   IDemoInteraction,
   IDemoChapter,
+  HotspotType,
 } from '@/types/demo';
 import { DemoRuntimePlayer } from '@/components/runtime/DemoRuntimePlayer';
 import { HotspotMarker, HotspotPropertiesPanel } from '@/components/demos/hotspots';
@@ -40,6 +41,8 @@ import {
   Sparkles,
   SlidersHorizontal,
   Radio,
+  MessageSquareText,
+  Square,
   Droplets,
   Mic,
   MoreVertical,
@@ -77,6 +80,9 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
   const [scenes, setScenes] = useState<IDemoScene[]>(initialData.scenes);
   const [steps, setSteps] = useState<IDemoStep[]>(initialData.steps);
   const [elements, setElements] = useState<IDemoElement[]>(initialData.elements);
+  const elementsRef = useRef<IDemoElement[]>(initialData.elements);
+  elementsRef.current = elements;
+  const [previewTimestamp, setPreviewTimestamp] = useState<number>(Date.now());
   const [interactions, setInteractions] = useState<IDemoInteraction[]>(initialData.interactions);
   const [chapters, setChapters] = useState<IDemoChapter[]>(initialData.chapters || []);
 
@@ -165,7 +171,16 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
   const directFileInputRef = useRef<HTMLInputElement>(null);
 
   // Hotspot Editing & Placement state
-  const [isPlacingHotspot, setIsPlacingHotspot] = useState(false);
+  // Annotation Tool placement state (Hotspot, Callout, Area)
+  const [placingAnnotationType, setPlacingAnnotationType] = useState<HotspotType | null>(null);
+  const isPlacingHotspot = Boolean(placingAnnotationType);
+  const setIsPlacingHotspot = (val: boolean | ((prev: boolean) => boolean)) => {
+    if (typeof val === 'function') {
+      setPlacingAnnotationType((prev) => (prev ? null : 'pointer'));
+    } else {
+      setPlacingAnnotationType(val ? 'pointer' : null);
+    }
+  };
   const [selectedElementId, setSelectedElementId] = useState<string | null>(null);
   const [openStepMenuIdx, setOpenStepMenuIdx] = useState<number | null>(null);
 
@@ -295,7 +310,7 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
       updatedDemo = demo,
       updatedScenes = scenes,
       updatedSteps = steps,
-      updatedElements = elements,
+      updatedElements = elementsRef.current || elements,
       updatedInteractions = interactions,
       updatedChapters = chapters
     ) => {
@@ -365,7 +380,7 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
       updatedDemo = demo,
       updatedScenes = scenes,
       updatedSteps = steps,
-      updatedElements = elements,
+      updatedElements = elementsRef.current || elements,
       updatedInteractions = interactions,
       updatedChapters = chapters
     ) => {
@@ -396,6 +411,7 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
   // Immediate Save for manual button press
   const handleImmediateSave = async () => {
     await saveImmediately();
+    setPreviewTimestamp(Date.now());
   };
 
   // Update Demo Details
@@ -760,6 +776,7 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
     // Reindex order
     nextSteps = nextSteps.map((st, i) => ({ ...st, order: i }));
 
+    elementsRef.current = nextElements;
     setElements(nextElements);
     setSteps(nextSteps);
     setSelectedNodeType('step');
@@ -1107,6 +1124,7 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
     const nextSteps = [...steps];
     nextSteps.splice(idx + 1, 0, clonedStep);
 
+    elementsRef.current = nextElements;
     setElements(nextElements);
     setSteps(nextSteps);
     setActiveStepIndex(idx + 1);
@@ -1145,6 +1163,7 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
     );
 
     setSteps(nextSteps);
+    elementsRef.current = nextElements;
     setElements(nextElements);
 
     const nextActive = Math.min(idx, nextSteps.length - 1);
@@ -1163,6 +1182,20 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
   // Canvas Click: Place new Hotspot or Click Canvas
   const handleCanvasClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!canvasRef.current) return;
+    const target = e.target as HTMLElement;
+
+    // Guard: ignore if click was inside an interactive element, hotspot, bounding box, button, or form control
+    if (
+      target.closest('[data-zoom-box]') ||
+      target.closest('[data-hotspot-element]') ||
+      target.closest('[data-no-canvas-click]') ||
+      target.closest('button') ||
+      target.closest('input') ||
+      target.closest('textarea') ||
+      target.closest('select')
+    ) {
+      return;
+    }
     const rect = canvasRef.current.getBoundingClientRect();
     const rawX = Math.round(((e.clientX - rect.left) / rect.width) * 100);
     const rawY = Math.round(((e.clientY - rect.top) / rect.height) * 100);
@@ -1200,27 +1233,39 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
       return;
     }
 
-    if (isPlacingHotspot) {
-      // Create new hotspot at clicked point
+    if (placingAnnotationType) {
+      // Create new annotation of the selected type at clicked point
       const newElementId = `el_${Date.now()}`;
-      const newHotspot: IDemoElement = {
+      const isCallout = placingAnnotationType === 'callout';
+      const isArea = placingAnnotationType === 'area';
+
+      const newElement: IDemoElement = {
         id: newElementId,
         demoId: demo.id,
         sceneId: currentScene?.id || '',
         stepId: currentStep?.id,
         type: 'hotspot',
-        name: `Hotspot ${elements.length + 1}`,
-        position: { x: clampedX, y: clampedY, width: 28, height: 18 },
+        name: `${isCallout ? 'Callout' : isArea ? 'Area' : 'Hotspot'} ${elements.length + 1}`,
+        position: isArea
+          ? { x: clampedX, y: clampedY, width: 32, height: 22 }
+          : { x: clampedX, y: clampedY, width: 28, height: 18 },
         style: {
           backgroundColor: PRIMARY_COLOR,
           color: THEME_COLORS.white,
           borderRadius: 16,
-          pulseAnimation: true,
+          pulseAnimation: placingAnnotationType === 'pointer',
         },
         hotspotConfig: {
-          type: 'pointer',
+          type: placingAnnotationType,
           content: {
             text: 'Add some hotspot text here.',
+            title: 'Add some hotspot text here.',
+
+
+
+
+
+
             textAlign: 'left',
           },
           appearance: {
@@ -1229,17 +1274,35 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
             backdrop: false,
             borderRadius: 'rounded',
             width: 'medium',
-            animation: 'ping',
-            pointerStyle: 'ripple',
+            animation: isArea ? 'none' : 'ping',
+            pointerStyle: 'beacon',
           },
+          callout: isCallout
+            ? {
+                targetPoint: { x: clampedX, y: clampedY },
+                cardOffset: { x: 0, y: 35 },
+                placement: 'bottom',
+                showLeaderLine: true,
+              }
+            : undefined,
+          area: isArea
+            ? {
+                fillColor: PRIMARY_COLOR,
+                fillOpacity: 0.14,
+                borderColor: PRIMARY_COLOR,
+                borderWidth: 2,
+                borderStyle: 'solid',
+                borderRadius: 12,
+              }
+            : undefined,
           visibility: 'always',
           navigation: {
             showNext: true,
             nextButton: {
               enabled: true,
-              text: '',
-              background: 'rgba(255, 255, 255, 0.22)',
-              textColor: 'white',
+              text: 'Next',
+              background: isCallout ? THEME_COLORS.white : PRIMARY_COLOR,
+              textColor: isCallout ? PRIMARY_COLOR : 'white',
               action: 'nextStep',
             },
             backButton: {
@@ -1255,10 +1318,11 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
         order: elements.length,
       };
 
-      const nextElements = [...elements, newHotspot];
-      setElements(nextElements);
+      const nextElements = [...elements, newElement];
+      elementsRef.current = nextElements;
+    setElements(nextElements);
       setSelectedElementId(newElementId);
-      setIsPlacingHotspot(false);
+      setPlacingAnnotationType(null);
 
       triggerAutosave(demo, scenes, steps, nextElements, interactions, chapters);
     }
@@ -1274,6 +1338,7 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
           }
         : el
     );
+    elementsRef.current = nextElements;
     setElements(nextElements);
 
     // If current step's zoomPan is linked to this hotspot, synchronize focusPoint
@@ -1315,6 +1380,7 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
           }
         : el
     );
+    elementsRef.current = nextElements;
     setElements(nextElements);
     triggerAutosave(demo, scenes, steps, nextElements, interactions, chapters);
   };
@@ -1324,6 +1390,7 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
     const nextElements = elements.map((el) =>
       el.id === elementId || el._id === elementId ? { ...el, ...updates } : el
     );
+    elementsRef.current = nextElements;
     setElements(nextElements);
     triggerAutosave(demo, scenes, steps, nextElements, interactions, chapters);
   };
@@ -1343,6 +1410,7 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
       }
       return updatedSt;
     });
+    elementsRef.current = nextElements;
     setElements(nextElements);
     setSteps(nextSteps);
     setSelectedElementId(null);
@@ -1525,6 +1593,7 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
   // Open Preview Modal ensuring any latest in-flight changes are saved
   const handleOpenPreview = async () => {
     await saveImmediately();
+    setPreviewTimestamp(Date.now());
     setIsPreviewOpen(true);
   };
 
@@ -1533,6 +1602,7 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
     try {
       setIsPublishing(true);
       await saveImmediately();
+    setPreviewTimestamp(Date.now());
       const res = await fetch(`/api/demos/${demo.id}/publish`, {
         method: 'POST',
       });
@@ -1668,20 +1738,50 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
           </div>
         ) : (
           <div className="flex items-center gap-2">
-            {/* Hotspot Toggle */}
-            <button
-              type="button"
-              onClick={() => setIsPlacingHotspot((prev) => !prev)}
-              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs transition-all cursor-pointer ${
-                isPlacingHotspot
-                  ? 'font-semibold bg-brand-purple text-white shadow-sm ring-2 ring-brand-purple/40'
-                  : 'font-medium bg-white hover:bg-light text-heading border border-border-input'
-              }`}
-              title="Click to place a new hotspot on canvas"
-            >
-              <Radio className="w-3.5 h-3.5" />
-              <span>Hotspot</span>
-            </button>
+            {/* Annotation Tools Selector (Supabase-style) */}
+            <div className="flex items-center p-0.5 rounded-xl bg-slate-100 border border-border-default">
+              <button
+                type="button"
+                onClick={() => setPlacingAnnotationType((prev) => (prev === 'pointer' ? null : 'pointer'))}
+                className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs transition-all cursor-pointer ${
+                  placingAnnotationType === 'pointer'
+                    ? 'font-bold bg-white text-brand-purple shadow-xs ring-1 ring-brand-purple/25'
+                    : 'font-medium text-body hover:text-heading hover:bg-white/60'
+                }`}
+                title="Place a compact Hotspot pinpoint marker"
+              >
+                <Radio className="w-3.5 h-3.5" />
+                <span>Hotspot</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setPlacingAnnotationType((prev) => (prev === 'callout' ? null : 'callout'))}
+                className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs transition-all cursor-pointer ${
+                  placingAnnotationType === 'callout'
+                    ? 'font-bold bg-white text-brand-purple shadow-xs ring-1 ring-brand-purple/25'
+                    : 'font-medium text-body hover:text-heading hover:bg-white/60'
+                }`}
+                title="Place a connected Callout tour card"
+              >
+                <MessageSquareText className="w-3.5 h-3.5" />
+                <span>Callout</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setPlacingAnnotationType((prev) => (prev === 'area' ? null : 'area'))}
+                className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs transition-all cursor-pointer ${
+                  placingAnnotationType === 'area'
+                    ? 'font-bold bg-white text-brand-purple shadow-xs ring-1 ring-brand-purple/25'
+                    : 'font-medium text-body hover:text-heading hover:bg-white/60'
+                }`}
+                title="Highlight an Area region on screen"
+              >
+                <Square className="w-3.5 h-3.5" />
+                <span>Area</span>
+              </button>
+            </div>
 
             {/* Animation Toggle & Dropdown Menu */}
             <div ref={animationMenuRef} className="relative inline-block">
@@ -1740,6 +1840,7 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
                             zoomPan: {
                               ...(currentStep?.zoomPan || DEFAULT_ZOOM_PAN_CONFIG),
                               enabled: true,
+                              linkedHotspotId: null,
                             },
                           });
                         }
@@ -2607,6 +2708,7 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
                               ...existing,
                               ...updates,
                               enabled: true,
+                              linkedHotspotId: null,
                             },
                           });
                         }}
@@ -2646,6 +2748,7 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
                             onSelect={() => setSelectedElementId(element.id)}
                             onMove={(x, y) => handleMoveHotspot(element.id, x, y)}
                             onResize={(w, h, x, y) => handleResizeHotspot(element.id, w, h, x, y)}
+                            onUpdate={(updates) => handleUpdateHotspot(element.id, updates)}
                             onAction={(action, target) => handleHotspotAction(action, target)}
                           />
                         );
@@ -3048,8 +3151,17 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
 
       {/* Full Preview Modal using REAL DemoRuntimePlayer */}
       {isPreviewOpen && (
-        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex flex-col p-4 sm:p-6 animate-in fade-in duration-200">
-          <div className="flex items-center justify-between pb-3 text-white">
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 animate-in fade-in duration-200">
+          {/* Subtle Exit Preview Button */}
+          <button
+            type="button"
+            onClick={() => setIsPreviewOpen(false)}
+            className="fixed top-4 right-4 z-50 p-2.5 rounded-full bg-white/10 hover:bg-white/20 text-white/80 hover:text-white transition-all cursor-pointer backdrop-blur-md shadow-2xl hover:scale-105 active:scale-95"
+            title="Exit Preview (Esc)"
+          >
+            <X className="w-5 h-5" />
+          </button>
+          <div style={{ display: 'none' }}>
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
               <span className="font-semibold text-sm">Live Preview Mode</span>
@@ -3064,17 +3176,26 @@ export const PreveuoStudioEditor: React.FC<PreveuoStudioEditorProps> = ({
             </button>
           </div>
 
-          <div className="flex-1 w-full max-w-6xl mx-auto rounded-2xl overflow-hidden shadow-2xl border border-white/10 animate-preview-modal">
+          <div className="w-full max-w-6xl h-full max-h-[90vh] mx-auto rounded-2xl overflow-hidden shadow-2xl border border-white/10 animate-preview-modal flex flex-col">
             <DemoRuntimePlayer
-              key={`preview-${activeStepIndex}-${steps.length}-${JSON.stringify(demo.settings || {})}-${scenes.map((s) => s.sourceAssetUrl).join('|')}`}
+              key={`preview-${selectedNodeType}-${selectedNodeType === 'chapter' ? (selectedChapterId || 'first') : activeStepIndex}-${previewTimestamp}`}
+              initialChapterId={
+                selectedNodeType === 'chapter' && selectedChapterId
+                  ? selectedChapterId
+                  : steps[activeStepIndex]?.chapterId || (chapters && chapters.length > 0 ? chapters[0].id : null)
+              }
+              startAtChapter={
+                Boolean(chapters && chapters.length > 0) &&
+                (selectedNodeType === 'chapter' || activeStepIndex === 0)
+              }
               demoName={demo.name}
               demoSettings={demo.settings}
               scenes={scenes}
               steps={steps}
               chapters={chapters}
-              elements={elements}
+              elements={elementsRef.current || elements}
               interactions={interactions}
-              initialStepIndex={activeStepIndex}
+              initialStepIndex={selectedNodeType === 'chapter' ? 0 : activeStepIndex}
             />
           </div>
         </div>

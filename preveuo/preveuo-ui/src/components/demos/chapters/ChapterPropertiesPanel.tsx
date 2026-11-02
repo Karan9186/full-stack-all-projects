@@ -439,8 +439,33 @@ export const ChapterPropertiesPanel: React.FC<ChapterPropertiesPanelProps> = ({
             label="Background Blur"
             description="Apply blur filter to chapter background"
             checked={chapter.blur ?? false}
-            onChange={(checked) => onUpdate({ blur: checked })}
+            onChange={(checked) => onUpdate({ blur: checked, blurAmount: chapter.blurAmount ?? 8 })}
           />
+
+          {/* Blur Amount Slider */}
+          {Boolean(chapter.blur) && (
+            <div className="pl-2 border-l-2 border-brand-purple/30 space-y-1.5 animate-in fade-in duration-200">
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="text-[12.5px] font-medium text-gray-700">Blur Amount</label>
+                <span className="text-xs font-mono font-medium text-brand-purple">
+                  {chapter.blurAmount ?? 8}px
+                </span>
+              </div>
+              <input
+                type="range"
+                min="1"
+                max="40"
+                value={chapter.blurAmount ?? 8}
+                onChange={(e) => onUpdate({ blurAmount: Number(e.target.value) })}
+                className="w-full accent-brand-purple cursor-pointer"
+              />
+              <div className="flex items-center justify-between text-[10px] text-muted font-medium pt-0.5">
+                <span>Subtle (4px)</span>
+                <span>Medium (12px)</span>
+                <span>Heavy (24px)</span>
+              </div>
+            </div>
+          )}
 
           {/* Logo Settings */}
           <div className="space-y-3 pt-2">

@@ -90,9 +90,9 @@ export const PointerRenderer: React.FC<PointerRendererProps> = ({
   const onActionCompleteRef = useRef(onActionComplete);
   onActionCompleteRef.current = onActionComplete;
 
-  // Entrance & Click feedback sequence
+  // Entrance & Click feedback sequence (In editor mode, stay completely stable at idle to prevent UI jump)
   useEffect(() => {
-    if (!autoPlayMotion || reducedMotion || isDragging) {
+    if (!autoPlayMotion || reducedMotion || isDragging || isEditor) {
       setMotionPhase('idle');
       return;
     }
@@ -133,9 +133,9 @@ export const PointerRenderer: React.FC<PointerRendererProps> = ({
     animationSettings?.clickFeedback,
   ]);
 
-  // Motion transitions
+  // Motion transitions (In editor mode, stay locked at 0, 0 with no displacement)
   const getCursorTransform = () => {
-    if (reducedMotion || !autoPlayMotion) return 'translate(0, 0) scale(1)';
+    if (reducedMotion || !autoPlayMotion || isEditor) return 'translate(0, 0) scale(1)';
     switch (motionPhase) {
       case 'moving':
         return 'translate(44px, 36px) scale(0.96)';
@@ -149,7 +149,7 @@ export const PointerRenderer: React.FC<PointerRendererProps> = ({
   };
 
   const getHandTransform = () => {
-    if (reducedMotion || !autoPlayMotion) return 'translate(0, 0) rotate(0deg) scale(1)';
+    if (reducedMotion || !autoPlayMotion || isEditor) return 'translate(0, 0) rotate(0deg) scale(1)';
     switch (motionPhase) {
       case 'moving':
         return 'translate(36px, 44px) rotate(-12deg) scale(0.96)';
@@ -463,13 +463,13 @@ export const PointerRenderer: React.FC<PointerRendererProps> = ({
           />
         )}
 
-        {/* Realistic Simulated Vector Mouse Pointer Arrow */}
+        {/* Realistic Simulated Vector Mouse Pointer Arrow - tip at (0, 0) */}
         <div
           style={{
             transform: getCursorTransform(),
             transition: motionTransition,
           }}
-          className={`relative filter drop-shadow-[0_4px_12px_rgba(0,0,0,0.45)] origin-top-left -translate-x-1 -translate-y-1 ${
+          className={`relative filter drop-shadow-[0_4px_12px_rgba(0,0,0,0.45)] origin-top-left -translate-x-[3px] -translate-y-[2px] ${
             isDragging ? 'scale-125' : isSelected ? 'scale-110' : 'group-hover:scale-105'
           }`}
         >
@@ -488,12 +488,6 @@ export const PointerRenderer: React.FC<PointerRendererProps> = ({
               strokeLinejoin="round"
             />
           </svg>
-
-          {/* Micro active status pip at top-right of cursor */}
-          <span
-            style={{ backgroundColor: color }}
-            className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full border border-white shadow-xs"
-          />
         </div>
       </div>
     );
@@ -552,10 +546,10 @@ export const PointerRenderer: React.FC<PointerRendererProps> = ({
   }
 
   // =========================================================================
-  // 7. DEFAULT: CONCENTRIC ULTRASONIC RIPPLE
+  // 7. DEFAULT: WATER DROP JUMP & SURFACE LIQUID RIPPLE
+  // "When one drop of water jumps to water" animation
   // =========================================================================
-  const rippleClass =
-    size === 'sm' ? 'w-10 h-10' : size === 'lg' ? 'w-16 h-16' : 'w-14 h-14';
+  const dropSize = size === 'sm' ? 20 : size === 'lg' ? 28 : 24;
 
   return (
     <div
@@ -563,16 +557,50 @@ export const PointerRenderer: React.FC<PointerRendererProps> = ({
         isDragging ? 'scale-115' : isSelected ? 'scale-110' : 'hover:scale-105'
       } ${className}`}
       style={{
-        width: size === 'sm' ? '40px' : size === 'lg' ? '64px' : '56px',
-        height: size === 'sm' ? '40px' : size === 'lg' ? '64px' : '56px',
+        width: size === 'sm' ? '48px' : size === 'lg' ? '72px' : '60px',
+        height: size === 'sm' ? '48px' : size === 'lg' ? '72px' : '60px',
       }}
     >
-      <Ripple
-        className={`${rippleClass} w-full h-full`}
-        color={color || PRIMARY_COLOR}
+      {/* 1. Concentric Water Surface Waves expanding outwards from the drop impact */}
+      <span
+        style={{ borderColor: color || PRIMARY_COLOR, backgroundColor: `${color || PRIMARY_COLOR}15` }}
+        className="absolute left-1/2 top-1/2 -ml-6 -mt-6 w-12 h-12 rounded-full border-2 animate-water-wave-primary pointer-events-none"
+      />
+      <span
+        style={{ borderColor: color || PRIMARY_COLOR, backgroundColor: `${color || PRIMARY_COLOR}0a` }}
+        className="absolute left-1/2 top-1/2 -ml-8 -mt-8 w-16 h-16 rounded-full border animate-water-wave-secondary pointer-events-none"
+      />
+      <span
+        style={{ borderColor: color || PRIMARY_COLOR }}
+        className="absolute left-1/2 top-1/2 -ml-5 -mt-5 w-10 h-10 rounded-full border opacity-40 animate-water-wave-ambient pointer-events-none"
       />
 
-      {/* Entrance / Click Feedback Ripple */}
+      {/* 2. Water Surface Contact Shadow / Base Pool that contracts on leap and expands on landing */}
+      <span
+        style={{ backgroundColor: `${color || PRIMARY_COLOR}50` }}
+        className="absolute left-1/2 -ml-3 bottom-2.5 w-6 h-2 rounded-full animate-water-surface-pool pointer-events-none filter blur-[1px]"
+      />
+
+      {/* 3. Water Droplet: Leaping/Jumping up from the water and landing with fluid physics */}
+      <div className="relative animate-water-drop-jump flex items-center justify-center pointer-events-none z-10">
+        <div
+          style={{
+            backgroundColor: color || PRIMARY_COLOR,
+            boxShadow: `0 4px 14px ${color || PRIMARY_COLOR}80, 0 0 0 2.5px rgba(255, 255, 255, 0.95)`,
+            width: `${dropSize}px`,
+            height: `${dropSize}px`,
+          }}
+          className="relative rounded-full flex items-center justify-center shadow-lg"
+        >
+          {/* Specular White Water Reflection Glint */}
+          <span className="absolute top-1 left-1.5 w-1.5 h-1.5 rounded-full bg-white/90 shadow-[0_0_3px_white]" />
+
+          {/* Tiny translucent water core */}
+          <span className="w-1.5 h-1.5 rounded-full bg-white/60" />
+        </div>
+      </div>
+
+      {/* 4. Click Feedback Burst on user interaction */}
       {(showRipple || motionPhase === 'clicking') && (
         <span
           style={{ borderColor: color || PRIMARY_COLOR, backgroundColor: `${color || PRIMARY_COLOR}35` }}

@@ -18,8 +18,19 @@ export default function RegisterPage() {
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
 
   useEffect(() => {
+    const hasCookie =
+      typeof document !== 'undefined' && document.cookie.includes('preveuo_token=');
     const session = authService.getStoredSession();
-    if (session) {
+
+    if (!hasCookie) {
+      if (session) {
+        authService.clearSession();
+      }
+      setIsCheckingAuth(false);
+      return;
+    }
+
+    if (session && hasCookie) {
       window.location.replace('/workspace');
     } else {
       setIsCheckingAuth(false);

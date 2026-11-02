@@ -84,12 +84,12 @@ export const PointerMiniPreview: React.FC<PointerMiniPreviewProps> = ({
         className="h-28 relative flex items-center justify-center overflow-hidden p-4"
       >
         {/* Sample Target UI element inside miniature canvas */}
-        <div className="relative inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-white border border-border-input text-xs font-semibold text-heading shadow-xs">
-          <Sparkles className="w-3.5 h-3.5 text-brand-purple" />
-          <span>Save changes</span>
+        <div className="relative inline-flex items-center gap-2 pl-3.5 pr-9 py-2 rounded-xl bg-white border border-border-input text-xs font-semibold text-heading shadow-xs">
+          <Sparkles className="w-3.5 h-3.5 text-brand-purple shrink-0" />
+          <span className="whitespace-nowrap">Save changes</span>
 
-          {/* Pointer Anchored right on the target */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none">
+          {/* Pointer Anchored gracefully with dedicated clear space so all text is 100% visible */}
+          <div className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none">
             <PointerRenderer
               key={replayKey}
               style={style}

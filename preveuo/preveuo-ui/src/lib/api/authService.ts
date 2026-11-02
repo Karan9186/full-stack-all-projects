@@ -110,6 +110,9 @@ export const authService = {
     try {
       const res = await fetch('/api/auth/me');
       const data: AuthApiResponse<AuthSession> = await res.json();
+      if (data.success && data.data) {
+        authService.saveSession(data.data);
+      }
       return data;
     } catch (err: unknown) {
       console.error('authService.getMe error:', err);
@@ -137,12 +140,16 @@ export const authService = {
   },
 
   /**
-   * Store active session in localStorage for client-side persistence
+   * Store active session in localStorage and synchronize preveuo_token cookie
    */
   saveSession(session: AuthSession): void {
     if (typeof window !== 'undefined') {
       try {
         localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(session));
+        if (session.token) {
+          // Explicitly sync cookie to prevent desync between client localStorage and server middleware
+          document.cookie = `preveuo_token=${encodeURIComponent(session.token)}; path=/; max-age=${7 * 24 * 60 * 60}; SameSite=Lax`;
+        }
       } catch (e) {
         console.warn('Unable to persist session to localStorage', e);
       }
@@ -150,30 +157,46 @@ export const authService = {
   },
 
   /**
-   * Retrieve active session from localStorage
+   * Retrieve active session from localStorage (validates expiration)
    */
   getStoredSession(): AuthSession | null {
     if (typeof window === 'undefined') return null;
     try {
       const raw = localStorage.getItem(SESSION_STORAGE_KEY);
       if (!raw) return null;
-      return JSON.parse(raw);
+      const session: AuthSession = JSON.parse(raw);
+      // If session is expired, purge it automatically
+      if (session.expiresAt && new Date(session.expiresAt).getTime() < Date.now()) {
+        authService.clearSession();
+        return null;
+      }
+      return session;
     } catch {
       return null;
     }
   },
 
   /**
-   * Remove active session
+   * Remove active session from both localStorage and cookies
    */
   clearSession(): void {
     if (typeof window !== 'undefined') {
       try {
         localStorage.removeItem(SESSION_STORAGE_KEY);
-        document.cookie = 'preveuo_token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+        document.cookie = 'preveuo_token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=Lax;';
       } catch (e) {
         console.warn('Unable to remove session from localStorage', e);
       }
     }
+  },
+
+  /**
+   * Check if user is fully authenticated (both session and server cookie present)
+   */
+  isAuthenticated(): boolean {
+    if (typeof window === 'undefined') return false;
+    const session = authService.getStoredSession();
+    const hasCookie = document.cookie.includes('preveuo_token=');
+    return Boolean(session && hasCookie);
   },
 };

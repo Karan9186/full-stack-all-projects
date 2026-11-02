@@ -38,8 +38,15 @@ function WorkspaceContent() {
     const session = authService.getStoredSession();
     const hasCookie = typeof document !== 'undefined' && document.cookie.includes('preveuo_token=');
     if (!session && !hasCookie) {
-      window.location.replace('/login');
+      window.location.replace('/login?callbackUrl=' + encodeURIComponent(window.location.pathname + window.location.search));
     } else {
+      if (hasCookie && !session) {
+        authService.getMe().then((res) => {
+          if (res.success && res.data) {
+            authService.saveSession(res.data);
+          }
+        });
+      }
       setIsAuthenticated(true);
     }
   }, []);

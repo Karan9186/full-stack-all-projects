@@ -253,6 +253,34 @@ export type HotspotAnimation = 'none' | 'ping' | 'pulse' | 'bounce';
 export type HotspotVisibility = 'always' | 'onHover' | 'onClick' | 'afterDelay';
 export type HotspotActionType = 'nextStep' | 'previousStep' | 'goToStep' | 'goToScene' | 'goToChapter' | 'externalUrl';
 
+export type HotspotPlacement =
+  | 'top'
+  | 'bottom'
+  | 'left'
+  | 'right'
+  | 'top-left'
+  | 'top-right'
+  | 'bottom-left'
+  | 'bottom-right'
+  | 'auto';
+
+export interface CalloutPositionConfig {
+  targetPoint?: { x: number; y: number }; // Target anchor pin percentage (0 - 100)
+  cardOffset?: { x: number; y: number }; // Offset in pixels { x, y } relative to placement/target
+  placement?: HotspotPlacement;
+  showLeaderLine?: boolean;
+}
+
+export interface AreaHighlightConfig {
+  fillColor?: string;
+  fillOpacity?: number; // 0.05 to 0.5
+  borderColor?: string;
+  borderWidth?: number; // 1 to 4
+  borderStyle?: 'solid' | 'dashed';
+  borderRadius?: number; // e.g. 12
+  label?: string;
+}
+
 export type HotspotPointerStyle = 'aura' | 'sparkle' | 'beacon' | 'ripple' | 'cursor' | 'hand' | 'target' | 'bullseye' | 'number';
 
 export interface PointerAnimationSettings {
@@ -290,11 +318,15 @@ export interface HotspotConfig {
     backdrop: boolean;
     borderRadius: HotspotBorderRadius;
     width: HotspotWidth;
+    customWidth?: number;
+    customHeight?: number;
     animation: HotspotAnimation;
     pointerStyle?: HotspotPointerStyle;
     pointerColor?: string;
     pointerAnimation?: PointerAnimationSettings;
   };
+  callout?: CalloutPositionConfig;
+  area?: AreaHighlightConfig;
   visibility: HotspotVisibility;
   delayMs?: number;
   navigation: {
@@ -357,6 +389,7 @@ export interface IDemoChapter {
   theme?: ChapterTheme;
   opacity?: number;
   blur?: boolean;
+  blurAmount?: number;
   buttons?: ChapterButton[];
   formConfig?: {
     buttonLabel?: string;

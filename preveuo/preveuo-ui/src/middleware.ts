@@ -3,11 +3,19 @@ import type { NextRequest } from 'next/server';
 
 /**
  * Preveuo SaaS Authentication Route Guard Middleware
- * - Protects authenticated routes (/workspace, /create, /edit) -> redirects unauthenticated users to /login
+ * - Protects authenticated routes (/workspace, /demos, /create, /edit) -> redirects unauthenticated users to /login
  * - Protects auth routes (/login, /register) -> redirects authenticated users to /workspace
  */
 export function middleware(request: NextRequest) {
-  const token = request.cookies.get('preveuo_token')?.value;
+  const rawToken = request.cookies.get('preveuo_token')?.value;
+  const token =
+    rawToken &&
+    rawToken !== 'undefined' &&
+    rawToken !== 'null' &&
+    rawToken.trim() !== ''
+      ? rawToken
+      : undefined;
+
   const { pathname, search } = request.nextUrl;
 
   const isAuthRoute = pathname === '/login' || pathname === '/register';
